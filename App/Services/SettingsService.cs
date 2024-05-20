@@ -5,25 +5,24 @@ using Zine.App.Repositories;
 
 namespace Zine.App.Services;
 
-public class SettingsService(ISettingsRepository repository, ILoggerService logger) : ISettingsService
+public class SettingsService(ISettingsRepository settingsRepository, ILoggerService logger) : ISettingsService
 {
-    public IRepository<Setting> Repository { get; } = repository;
 
     public IEnumerable<Setting> GetAll()
     {
-        return repository.GetAll();
+        return settingsRepository.GetAll();
     }
 
     public Setting? GetByKey(string key)
     {
-        return repository.GetByKey(key);
+        return settingsRepository.GetByKey(key);
     }
 
     public bool SetSetting(string key, string value)
     {
         try
         {
-            return repository.SetSetting(key, value);
+            return settingsRepository.SetSetting(key, value);
         }
         catch (DataException e)
         {

@@ -15,10 +15,4 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite($"Data Source={DbPath}");
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Setting>().HasData(new Setting{ Id = 1, Key = SettingsKeys.ComicBookPath, InitialValue = ""});
-    }
 }

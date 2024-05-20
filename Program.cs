@@ -1,5 +1,6 @@
 using ElectronNET.API;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using MudBlazor.Services;
 using Zine.App.Database;
 using Zine.App.Enums;
@@ -15,7 +16,10 @@ builder.WebHost.UseStaticWebAssets();
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddElectron();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+});
 
 builder.Services.AddSingleton<ILoggerService, SerilogLogger>();
 
@@ -26,8 +30,8 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
 builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
-builder.Services.AddScoped<IComicRepository, ComicRepository>();
-builder.Services.AddScoped<IComicService, ComicService>();
+builder.Services.AddScoped<IComicBookRepository, ComicBookBookRepository>();
+builder.Services.AddScoped<IComicBookService, ComicBookService>();
 
 
 var app = builder.Build();

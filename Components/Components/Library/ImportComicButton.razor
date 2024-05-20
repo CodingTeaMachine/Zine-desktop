@@ -1,0 +1,46 @@
+@using Zine.App.Enums
+@using Zine.App.FileHelpers
+<MudMenu
+	Label="Import"
+	AnchorOrigin="Origin.BottomLeft"
+	Variant="Variant.Filled"
+	Color="Color.Primary"
+	StartIcon="@Icons.Material.Filled.ArrowUpward">
+
+	<MudMenuItem
+		Icon="@Icons.Material.Filled.InsertDriveFile"
+		IconSize="Size.Small"
+		OnClick="() => FileImportAction(ImportType.File)">
+		File
+	</MudMenuItem>
+	<MudMenuItem
+		Icon="@Icons.Material.Filled.Folder"
+		IconSize="Size.Small"
+		OnClick="() => FileImportAction(ImportType.Directory)">
+		Directory
+	</MudMenuItem>
+
+</MudMenu>
+
+@code {
+
+	[Parameter]
+	public EventCallback<(ImportType, string)> Import { get; set; }
+
+
+	private async void FileImportAction(ImportType importType)
+	{
+		string? selectedPath = importType switch
+		{
+			ImportType.File => await FileSelector.GetFilePathFromFileDialog(),
+			ImportType.Directory => await FileSelector.GetDirectoryPathFromFileDialog(),
+			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, null)
+		};
+
+		if (string.IsNullOrEmpty(selectedPath))
+			return;
+
+		_ = Import.InvokeAsync((importType, selectedPath));
+	}
+
+}

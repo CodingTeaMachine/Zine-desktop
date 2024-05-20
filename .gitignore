@@ -1,12 +1,12 @@
 ### Manually declared
 
-appsettings.json
 .config
-packages-microsoft-prod.deb
 .idea/
 Data/
+ComicBookLinks/
 start_app.sh
-
+packages-microsoft-prod.deb
+appsettings.json
 
 
 ### DotnetCore template

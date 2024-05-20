@@ -49,6 +49,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="ComicBookLinks\" />
     <Folder Include="Data\" />
     <Folder Include="logs\" />
   </ItemGroup>

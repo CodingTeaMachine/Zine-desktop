@@ -1,60 +1,90 @@
 @page "/Library"
+@using Zine.App.Enums
 @using Zine.App.Model
 @using Zine.App.Services
 @using Zine.Window
-
-@inject IComicService ComicService
+@using Zine.Components.Components.Library
 
 <div class="flex justify-between items-center mb-4">
-    <MudButton Variant="Variant.Filled" Size="Size.Medium" Color="Color.Primary">Import</MudButton>
+	<ImportComicButton Import="@Import"/>
 
-    <MudTextField
-        Value="@SearchWord"
-        class="max-w-xs"
-        Label="Search"
-        Variant="Variant.Outlined"
-        Clearable="true"
-        AutoGrow="true"
-        Adornment="Adornment.Start"
-        AdornmentIcon="@Icons.Material.Filled.Search"
-        DebounceInterval="500"
-        TextChanged="SearchByTitle"/>
+	<MudTextField
+		Value="@SearchWord"
+		class="max-w-xs"
+		Label="Search"
+		Variant="Variant.Outlined"
+		Clearable="true"
+		AutoGrow="true"
+		Adornment="Adornment.Start"
+		AdornmentIcon="@Icons.Material.Filled.Search"
+		DebounceInterval="500"
+		TextChanged="SearchByTitle"/>
 </div>
 
 
 <MudGrid class="mx-auto" Justify="Justify.Center">
 
-    @foreach (var comic in FilteredComics)
-    {
-        <MudItem>
-            <div class="md:max-w-64 max-w-44">
+	@foreach (var comic in FilteredComics)
+	{
+		<MudItem>
+			<div class="md:max-w-64 max-w-44">
 
-                <MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg"/>
-                <p class="pt-2 font-lg">@comic.Name</p>
-            </div>
+				<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg"/>
+				<p class="pt-2 font-lg">@comic.Name</p>
+			</div>
 
-        </MudItem>
-    }
+		</MudItem>
+	}
 
 </MudGrid>
 
 
 @code
 {
-    string SearchWord { get; set; } = "";
-    List<Comic> OriginalComicsList { get; set; } = [];
-    List<Comic> FilteredComics { get; set; } = [];
+	[Inject]
+	private ISnackbar? Snackbar { get; set; }
 
-    protected void SearchByTitle(string searchTerm)
-    {
-        SearchWord = searchTerm;
-        FilteredComics = OriginalComicsList.Where(comic => comic.Name.Contains(SearchWord)).ToList();
-    }
+	[Inject]
+	private IComicBookService? ComicBookService { get; set; }
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        PageTitleManager.PageTitle = "Library";
-        FilteredComics = OriginalComicsList = ComicService.GetAll().ToList();
-    }
+	string SearchWord { get; set; } = "";
+	List<Comic> OriginalComicsList { get; set; } = [];
+	List<Comic> FilteredComics { get; set; } = [];
+
+	protected void SearchByTitle(string searchTerm)
+	{
+		SearchWord = searchTerm;
+		FilteredComics = OriginalComicsList.Where(comic => comic.Name.Contains(SearchWord)).ToList();
+	}
+
+	private void Import((ImportType importType, string path) args)
+	{
+		try
+		{
+			bool importSuccessful = ComicBookService!.ImportFromDisk(args.importType, args.path);
+
+			if (!importSuccessful)
+				Snackbar!.Add("An error occured during importing...", Severity.Error);
+			else
+				LoadComics();
+		}
+		catch (ArgumentOutOfRangeException e)
+		{
+			Snackbar!.Add(e.Message, Severity.Error);
+			throw;
+		}
+	}
+
+	private void LoadComics()
+	{
+		SearchWord = "";
+		FilteredComics = OriginalComicsList = ComicBookService!.GetAll().ToList();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		PageTitleManager.PageTitle = "Library";
+		LoadComics();
+	}
 }
