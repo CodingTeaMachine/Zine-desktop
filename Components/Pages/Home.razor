@@ -1,0 +1,16 @@
+﻿@page "/"
+@using Zine.Window
+@rendermode InteractiveServer
+
+<h1 class="text-blue-400">Hello, world!</h1>
+
+Welcome to your new app.
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        PageTitleManager.PageTitle = "Home";
+    }
+}

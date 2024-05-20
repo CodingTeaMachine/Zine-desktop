@@ -1,0 +1,50 @@
+@page "/Settings"
+
+@using Microsoft.IdentityModel.Tokens
+@using Zine.App.Enums
+@using Zine.App.FileHelpers
+@using Zine.App.Services
+@using Zine.Window
+@inject ISettingsService settingsService;
+
+<MudStack Spacing="6" class="[&_div]:flex [&_div]:justify-between [&_div]:items-center [&_div]:gap-3 [&_label]:text-lg max-w-4xl mx-auto">
+    <div>
+        <label>
+            Comic book directory:
+
+            @if (@ComicBookDirectory.IsNullOrEmpty())
+            {
+                <span class="italic">Not selected</span>
+            }
+            else
+            {
+                <span class="font-bold break-words"> @ComicBookDirectory </span>
+            }
+        </label>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Folder" OnClick="GetComicBookDirectory">Browse...</MudButton>
+    </div>
+</MudStack>
+
+
+@code
+{
+    string ComicBookDirectory { get; set; } = "";
+
+    async Task GetComicBookDirectory()
+    {
+        string selectedDirectoryPath = await FileSelector.GetDirectoryPathFromFileDialog() ?? "";
+        bool successfulSettingUpdate = settingsService.SetSetting(SettingsKeys.ComicBookPath, selectedDirectoryPath);
+
+        if (successfulSettingUpdate)
+        {
+            ComicBookDirectory = selectedDirectoryPath;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnInitialized();
+        PageTitleManager.PageTitle = "Settings";
+    }
+
+}

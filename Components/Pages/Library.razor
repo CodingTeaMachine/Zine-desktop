@@ -1,0 +1,60 @@
+@page "/Library"
+@using Zine.App.Model
+@using Zine.App.Services
+@using Zine.Window
+
+@inject IComicService ComicService
+
+<div class="flex justify-between items-center mb-4">
+    <MudButton Variant="Variant.Filled" Size="Size.Medium" Color="Color.Primary">Import</MudButton>
+
+    <MudTextField
+        Value="@SearchWord"
+        class="max-w-xs"
+        Label="Search"
+        Variant="Variant.Outlined"
+        Clearable="true"
+        AutoGrow="true"
+        Adornment="Adornment.Start"
+        AdornmentIcon="@Icons.Material.Filled.Search"
+        DebounceInterval="500"
+        TextChanged="SearchByTitle"/>
+</div>
+
+
+<MudGrid class="mx-auto" Justify="Justify.Center">
+
+    @foreach (var comic in FilteredComics)
+    {
+        <MudItem>
+            <div class="md:max-w-64 max-w-44">
+
+                <MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg"/>
+                <p class="pt-2 font-lg">@comic.Name</p>
+            </div>
+
+        </MudItem>
+    }
+
+</MudGrid>
+
+
+@code
+{
+    string SearchWord { get; set; } = "";
+    List<Comic> OriginalComicsList { get; set; } = [];
+    List<Comic> FilteredComics { get; set; } = [];
+
+    protected void SearchByTitle(string searchTerm)
+    {
+        SearchWord = searchTerm;
+        FilteredComics = OriginalComicsList.Where(comic => comic.Name.Contains(SearchWord)).ToList();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        PageTitleManager.PageTitle = "Library";
+        FilteredComics = OriginalComicsList = ComicService.GetAll().ToList();
+    }
+}

@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="ElectronNET.API" Version="23.6.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MudBlazor" Version="7.0.0-preview.2" />
+    <PackageReference Include="Serilog" Version="4.0.0-dev-02174" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00972" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Update="electron.manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Styles\app.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="wwwroot\Fonts\Roboto\LICENSE.txt" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Black.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-BlackItalic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Bold.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-BoldItalic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Italic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Light.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-LightItalic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Medium.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-MediumItalic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Regular.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-Thin.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\Roboto-ThinItalic.ttf" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\Components\NavMenu.razor" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="logs\" />
+  </ItemGroup>
+  
+  
+</Project>
