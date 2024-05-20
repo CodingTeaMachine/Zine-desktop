@@ -45,6 +45,7 @@
     {
         base.OnInitialized();
         PageTitleManager.PageTitle = "Settings";
+        ComicBookDirectory = settingsService.GetByKey(SettingsKeys.ComicBookPath)?.Value ?? "";
     }
 
 }
