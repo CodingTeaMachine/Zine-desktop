@@ -30,7 +30,7 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
 builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
-builder.Services.AddScoped<IComicBookRepository, ComicBookBookRepository>();
+builder.Services.AddScoped<IComicBookRepository, ComicBookRepository>();
 builder.Services.AddScoped<IComicBookService, ComicBookService>();
 
 

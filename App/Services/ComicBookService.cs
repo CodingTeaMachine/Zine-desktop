@@ -3,7 +3,7 @@ using Zine.App.Enums;
 using Zine.App.Factories;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
-using Zine.App.Model;
+using Zine.App.Model.DB;
 using Zine.App.Repositories;
 
 namespace Zine.App.Services;
@@ -11,10 +11,9 @@ namespace Zine.App.Services;
 public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerService logger): IComicBookService
 {
 
-    public IEnumerable<Comic> GetAll()
+    public IEnumerable<ComicBook> GetAll()
     {
-        var result = comicBookRepository.GetAll();
-        return result;
+        return comicBookRepository.GetAll();
     }
 
     public bool ImportFromDisk(ImportType importType ,string pathOnDisk)
@@ -34,6 +33,12 @@ public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerS
         try
         {
             SymlinkCreator.CreateComicBookLink(pathOnDisk);
+
+            comicBookRepository.Create(
+                Path.GetFileNameWithoutExtension(pathOnDisk),
+                Path.GetFileName(pathOnDisk)
+            );
+
             return true;
         }
         catch (DataException)
@@ -44,22 +49,12 @@ public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerS
 
     public bool ImportDirectoryFromDisk(string pathOnDisk)
     {
-        List<string> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
+        List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
             .Where(filePath => ComicFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
+            .Select(filePath => new ComicBook {Name = Path.GetFileNameWithoutExtension(filePath), FileName = Path.GetFileName(filePath)})
             .ToList();
 
-        foreach (var file in comicBookFiles)
-        {
-            try
-            {
-                SymlinkCreator.CreateComicBookLink(file);
-            }
-            catch (DataException)
-            {
-                //TODO: Display errors to user
-                logger.Warning($"Could not import file: {Path.GetFileName(file)}");
-            }
-        }
+        comicBookRepository.CreateMany(comicBookFiles);
 
         return true;
     }

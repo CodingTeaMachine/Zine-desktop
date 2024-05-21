@@ -1,6 +1,7 @@
 @page "/Library"
 @using Zine.App.Enums
 @using Zine.App.Model
+@using Zine.App.Model.DB
 @using Zine.App.Services
 @using Zine.Window
 @using Zine.Components.Components.Library
@@ -48,8 +49,8 @@
 	private IComicBookService? ComicBookService { get; set; }
 
 	string SearchWord { get; set; } = "";
-	List<Comic> OriginalComicsList { get; set; } = [];
-	List<Comic> FilteredComics { get; set; } = [];
+	List<ComicBook> OriginalComicsList { get; set; } = [];
+	List<ComicBook> FilteredComics { get; set; } = [];
 
 	protected void SearchByTitle(string searchTerm)
 	{
