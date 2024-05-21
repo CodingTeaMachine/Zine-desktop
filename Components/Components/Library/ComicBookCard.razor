@@ -1,0 +1,11 @@
+@using Zine.App.Model.DB
+<MudItem>
+	<div class="md:max-w-60 max-w-44">
+		<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg" />
+		<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+	</div>
+</MudItem>
+@code {
+	[Parameter]
+	public required ComicBook ComicBook { get; set; }
+}

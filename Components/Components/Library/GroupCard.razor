@@ -1,0 +1,30 @@
+<MudItem>
+	<div class="md:max-w-60 max-w-44">
+		<MudPaper class="bg-[rgba(39,39,47,1)] p-3.5 rounded-lg">
+			<MudGrid Spacing="2">
+				@* Display the covers of the first 4 comicbooks in the group.
+				   If fewer covers are present, display as many as posible *@
+				@foreach (var imageIndex in Enumerable.Range(1, 4).ToList())
+				{
+					<MudItem sm="6" class="flex items-center justify-center">
+						<MudPaper class="h-group-card w-full rounded-lg">
+							<MudImage Src="https://picsum.photos/100/150" Elevation="25" Class="rounded-lg h-group-card" />
+						</MudPaper>
+					</MudItem>
+				}
+				@* Display the name of the group *@
+				<MudItem sm="12" class="py-0">
+					<p class="font-medium text-center line-clamp-3 ">@Group</p>
+				</MudItem>
+			</MudGrid>
+		</MudPaper>
+	</div>
+</MudItem>
+
+
+@code {
+
+	[Parameter]
+	public required string Group { get; set; }
+
+}

@@ -7,7 +7,7 @@
 @using Zine.Components.Components.Library
 
 <div class="flex justify-between items-center mb-4">
-	<ImportComicButton Import="@Import"/>
+	<ImportComicButton Import="@Import" />
 
 	<MudTextField
 		Value="@SearchWord"
@@ -19,23 +19,24 @@
 		Adornment="Adornment.Start"
 		AdornmentIcon="@Icons.Material.Filled.Search"
 		DebounceInterval="500"
-		TextChanged="SearchByTitle"/>
+		TextChanged="SearchByTitle" />
 </div>
 
 
 <MudGrid class="mx-auto" Justify="Justify.Center">
 
+	@* Display groups *@
+	@foreach (var group in Groups)
+	{
+		<GroupCard Group="@group"/>
+	}
+
+	@* Display comicbooks *@
 	@foreach (var comic in FilteredComics)
 	{
-		<MudItem>
-			<div class="md:max-w-64 max-w-44">
-
-				<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg"/>
-				<p class="pt-2 font-lg">@comic.Name</p>
-			</div>
-
-		</MudItem>
+		<ComicBookCard ComicBook="comic"/>
 	}
+
 
 </MudGrid>
 
@@ -51,6 +52,7 @@
 	string SearchWord { get; set; } = "";
 	List<ComicBook> OriginalComicsList { get; set; } = [];
 	List<ComicBook> FilteredComics { get; set; } = [];
+	List<string> Groups { get; set; } = ["Comics I want to read", "Comics I should read", "Comics I need to read"];
 
 	protected void SearchByTitle(string searchTerm)
 	{
