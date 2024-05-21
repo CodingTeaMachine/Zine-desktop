@@ -1,38 +1,37 @@
 @page "/Library"
 @using Zine.App.Enums
-@using Zine.App.Model
 @using Zine.App.Model.DB
 @using Zine.App.Services
 @using Zine.Window
 @using Zine.Components.Components.Library
 
+@* Action row with import, create directory and search *@
 <div class="flex justify-between items-center mb-4">
 	<ImportComicButton Import="@Import" />
 
 	<MudTextField
-		Value="@SearchWord"
+		@bind-Value="@SearchWord"
 		class="max-w-xs"
 		Label="Search"
 		Variant="Variant.Outlined"
 		Clearable="true"
-		AutoGrow="true"
 		Adornment="Adornment.Start"
 		AdornmentIcon="@Icons.Material.Filled.Search"
-		DebounceInterval="500"
-		TextChanged="SearchByTitle" />
+		DebounceInterval="300"
+		OnDebounceIntervalElapsed="SearchByTitle" />
 </div>
 
 
 <MudGrid class="mx-auto" Justify="Justify.Center">
 
 	@* Display groups *@
-	@foreach (var group in Groups)
+	@foreach (var group in FilteredGroupList)
 	{
 		<GroupCard Group="@group"/>
 	}
 
 	@* Display comicbooks *@
-	@foreach (var comic in FilteredComics)
+	@foreach (var comic in FilteredComicsList)
 	{
 		<ComicBookCard ComicBook="comic"/>
 	}
@@ -49,15 +48,20 @@
 	[Inject]
 	private IComicBookService? ComicBookService { get; set; }
 
+	[Inject]
+	private IGroupService? GroupService { get; set; }
+
 	string SearchWord { get; set; } = "";
 	List<ComicBook> OriginalComicsList { get; set; } = [];
-	List<ComicBook> FilteredComics { get; set; } = [];
-	List<string> Groups { get; set; } = ["Comics I want to read", "Comics I should read", "Comics I need to read"];
+	List<ComicBook> FilteredComicsList { get; set; } = [];
+	List<Group> OriginalGroupList { get; set; } = [];
+	List<Group> FilteredGroupList { get; set; } = [];
 
 	protected void SearchByTitle(string searchTerm)
 	{
-		SearchWord = searchTerm;
-		FilteredComics = OriginalComicsList.Where(comic => comic.Name.Contains(SearchWord)).ToList();
+		var lowerCaseSearchTerm = searchTerm.ToLower();
+		FilteredComicsList = OriginalComicsList.Where(comic => comic.Name.ToLower().Contains(lowerCaseSearchTerm)).ToList();
+		FilteredGroupList = OriginalGroupList.Where(group => group.Name.ToLower().Contains(lowerCaseSearchTerm)).ToList();
 	}
 
 	private void Import((ImportType importType, string path) args)
@@ -80,10 +84,16 @@
 		}
 	}
 
+	private void LoadGroups()
+	{
+		SearchWord = "";
+		FilteredGroupList = OriginalGroupList = GroupService!.GetAllByParentId().ToList();
+	}
+
 	private void LoadComics()
 	{
 		SearchWord = "";
-		FilteredComics = OriginalComicsList = ComicBookService!.GetAll().ToList();
+		FilteredComicsList = OriginalComicsList = ComicBookService!.GetAll().ToList();
 	}
 
 	protected override void OnInitialized()
@@ -91,5 +101,6 @@
 		base.OnInitialized();
 		PageTitleManager.PageTitle = "Library";
 		LoadComics();
+		LoadGroups();
 	}
 }

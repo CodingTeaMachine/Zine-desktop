@@ -5,11 +5,11 @@ namespace Zine.App.Repositories;
 
 public class Repository(IDbContextFactory<ZineDbContext> contextFactory)
 {
-    private ZineDbContext? _context { get; set; }
+    private ZineDbContext? Context { get; set; }
 
     public ZineDbContext GetDbContext()
     {
-        return _context ??= contextFactory.CreateDbContext();
+        return Context ??= contextFactory.CreateDbContext();
     }
 
 }
