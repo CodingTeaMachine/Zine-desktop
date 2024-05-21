@@ -16,4 +16,9 @@ public class GroupService(IGroupRepository groupRepository) : IGroupService
 			})
 			.ToList();
 	}
+
+	public Group Create(string newGroupName, int? parentId = null)
+	{
+		return groupRepository.Create(newGroupName, parentId);
+	}
 }

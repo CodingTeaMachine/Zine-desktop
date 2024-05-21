@@ -7,7 +7,12 @@
 
 @* Action row with import, create directory and search *@
 <div class="flex justify-between items-center mb-4">
-	<ImportComicButton Import="@Import" />
+	<div class="flex items-center gap-3">
+		<CreateGroupButton CreateGroup="@CreateGroup"/>
+
+		<ImportComicButton Import="@Import" />
+	</div>
+
 
 	<MudTextField
 		@bind-Value="@SearchWord"
@@ -27,13 +32,13 @@
 	@* Display groups *@
 	@foreach (var group in FilteredGroupList)
 	{
-		<GroupCard Group="@group"/>
+		<GroupCard Group="@group" />
 	}
 
 	@* Display comicbooks *@
 	@foreach (var comic in FilteredComicsList)
 	{
-		<ComicBookCard ComicBook="comic"/>
+		<ComicBookCard ComicBook="comic" />
 	}
 
 
@@ -82,6 +87,12 @@
 		{
 			Snackbar!.Add(e.Message, Severity.Error);
 		}
+	}
+
+	private void CreateGroup(string newGroupName)
+	{
+		GroupService!.Create(newGroupName);
+		LoadGroups();
 	}
 
 	private void LoadGroups()

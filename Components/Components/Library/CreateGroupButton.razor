@@ -1,0 +1,50 @@
+<div class="flex">
+	<MudIconButton
+		Variant="Variant.Filled"
+		Color="Color.Primary"
+		Icon="@Icons.Material.Filled.CreateNewFolder"
+		Size="Size.Medium"
+		OnClick="@ToggleOpenState"/>
+
+	<MudPopover Open="@_isOpen" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft" Class="mt-1">
+		<div class="absolute top-[-12px] right-[-12px]">
+			<MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Secondary" OnClick="@ToggleOpenState"/>
+		</div>
+		<div class="flex gap-3 h-16 p-3 items-center">
+			<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+				<MudTextField
+					@bind-Value="@_newGroupName"
+					class="h-full"
+					Label="Group name..."
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense" />
+			</MudFocusTrap>
+
+			<MudIconButton
+				Variant="Variant.Filled"
+				Color="Color.Primary"
+				Icon="@Icons.Material.Filled.Add"
+				Size="Size.Medium"
+				OnClick="ConfirmCreateGroup"/>
+		</div>
+	</MudPopover>
+</div>
+
+@code {
+	[Parameter]
+	public EventCallback<string> CreateGroup { get; set; }
+
+	private bool _isOpen = false;
+	private string _newGroupName = "";
+
+	private void ToggleOpenState()
+	{
+		_isOpen = !_isOpen;
+	}
+
+	private void ConfirmCreateGroup()
+	{
+		CreateGroup.InvokeAsync(_newGroupName);
+		ToggleOpenState();
+	}
+}

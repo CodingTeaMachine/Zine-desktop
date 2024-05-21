@@ -11,7 +11,17 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 	{
 		return  GetDbContext().Groups
 			.Where(g => g.ParentGroupId == parentId)
+			.OrderBy(g => g.Name)
 			.Include(g => g.ComicBooks)
 			.ToList();
+	}
+
+	public Group Create(string newGroupName, int? parentId = null)
+	{
+		var groupToCreate = new Group { Name = newGroupName, ParentGroupId = parentId};
+		var context = GetDbContext();
+		var createdGroup = context.Groups.Add(groupToCreate);
+		context.SaveChanges();
+		return createdGroup.Entity;
 	}
 }

@@ -1,5 +1,6 @@
 @using Zine.App.Enums
 @using Zine.App.FileHelpers
+
 <MudMenu
 	Label="Import"
 	AnchorOrigin="Origin.BottomLeft"
@@ -13,6 +14,7 @@
 		OnClick="() => FileImportAction(ImportType.File)">
 		File
 	</MudMenuItem>
+
 	<MudMenuItem
 		Icon="@Icons.Material.Filled.Folder"
 		IconSize="Size.Small"
