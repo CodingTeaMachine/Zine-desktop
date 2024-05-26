@@ -1,3 +1,4 @@
+using Zine.App.Logger;
 using Zine.App.Repositories;
 using Group = Zine.App.Model.DB.Group;
 
@@ -16,6 +17,12 @@ public class GroupService(IGroupRepository groupRepository) : IGroupService
 			})
 			.ToList();
 	}
+
+	public Group? GetById(int groupId)
+	{
+		return groupRepository.GetById(groupId);
+	}
+
 
 	public Group Create(string newGroupName, int? parentId = null)
 	{

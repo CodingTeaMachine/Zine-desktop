@@ -10,10 +10,14 @@ public class ComicBookRepository(
 	ILoggerService logger)
 	: Repository(contextFactory), IComicBookRepository
 {
-	public IEnumerable<ComicBook> GetAll()
+	public IEnumerable<ComicBook> GetAllByGroupId(int? groupId = null)
 	{
-		return GetDbContext().ComicBooks.ToList();
-		// return GetAllFromDisk();
+		return GetDbContext().ComicBooks.Where(c => c.GroupId == groupId).ToList();
+	}
+
+	public ComicBook? GetById(int comicId)
+	{
+		return GetDbContext().ComicBooks.FirstOrDefault(c => c.Id == comicId);
 	}
 
 	/// <summary>
@@ -48,5 +52,14 @@ public class ComicBookRepository(
 		var dbContext = GetDbContext();
 		dbContext.ComicBooks.AddRange(comicBooks);
 		dbContext.SaveChanges();
+	}
+
+	public bool AddToGroup(int groupId, int targetId)
+	{
+		var comicBook = GetById(targetId);
+		comicBook!.GroupId = groupId;
+		GetDbContext().SaveChanges();
+		//TODO: Error handling
+		return true;
 	}
 }

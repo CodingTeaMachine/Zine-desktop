@@ -16,6 +16,11 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 			.ToList();
 	}
 
+	public Group? GetById(int groupId)
+	{
+		return GetDbContext().Groups.FirstOrDefault(g => g.Id == groupId);
+	}
+
 	public Group Create(string newGroupName, int? parentId = null)
 	{
 		var groupToCreate = new Group { Name = newGroupName, ParentGroupId = parentId};

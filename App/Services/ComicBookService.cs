@@ -8,12 +8,17 @@ using Zine.App.Repositories;
 
 namespace Zine.App.Services;
 
-public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerService logger): IComicBookService
+public class ComicBookService(IComicBookRepository comicBookRepository, IGroupService groupService, ILoggerService logger): IComicBookService
 {
 
-    public IEnumerable<ComicBook> GetAll()
+    public IEnumerable<ComicBook> GetAllByGroupId(int? groupId = null)
     {
-        return comicBookRepository.GetAll();
+        return comicBookRepository.GetAllByGroupId(groupId);
+    }
+
+    public ComicBook? GetById(int comicId)
+    {
+        return comicBookRepository.GetById(comicId);
     }
 
     public bool ImportFromDisk(ImportType importType ,string pathOnDisk)
@@ -28,7 +33,7 @@ public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerS
         };
     }
 
-    public bool ImportFileFromDisk(string pathOnDisk)
+    private bool ImportFileFromDisk(string pathOnDisk)
     {
         try
         {
@@ -47,7 +52,7 @@ public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerS
         }
     }
 
-    public bool ImportDirectoryFromDisk(string pathOnDisk)
+    private bool ImportDirectoryFromDisk(string pathOnDisk)
     {
         List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
             .Where(filePath => ComicFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
@@ -57,5 +62,24 @@ public class ComicBookService(IComicBookRepository comicBookRepository, ILoggerS
         comicBookRepository.CreateMany(comicBookFiles);
 
         return true;
+    }
+
+    public bool AddToGroup(int groupId, int targetId)
+    {
+        var comicBook = GetById(targetId);
+        if (comicBook == null)
+        {
+            logger.Warning($"Could not find comic with id: {targetId}");
+            return false;
+        }
+
+        var group = groupService.GetById(groupId);
+        if (group == null)
+        {
+            logger.Warning($"Could not find group with id: {groupId}");
+            return false;
+        }
+
+        return comicBookRepository.AddToGroup(groupId, targetId);
     }
 }
