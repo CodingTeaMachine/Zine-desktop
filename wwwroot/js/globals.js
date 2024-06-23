@@ -7,7 +7,6 @@
  */
 window.registerClickOutsideHandler = (elementId, dotNetHelper) => {
 	const element = document.getElementById(elementId);
-	console.log(element, elementId)
 	const handler = (event) => {
 		if (!element?.contains(event.target)) {
 			dotNetHelper.invokeMethodAsync('HandleClickOutside');

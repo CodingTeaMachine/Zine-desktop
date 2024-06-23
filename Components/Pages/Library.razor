@@ -3,8 +3,6 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
-@using Zine.App.Model.DB
-@using Zine.App.Services
 @using Zine.Window
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
@@ -13,7 +11,7 @@
 
 
 
-<MudLink class="flex items-center mx-5 w-fit pr-10" Href="#" Disabled="GroupId == null" OnClick="NavigateToParentGroup">
+<MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == null" OnClick="NavigateToParentGroup">
 	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == null ? Color.Surface : Color.Primary"/>
 	<p class="pt-0.5">Back</p>
 </MudLink>
@@ -77,6 +75,9 @@
 	private IComicBookService? ComicBookService { get; set; }
 
 	[Inject]
+	private IComicBookImportService? ComicBookImportService { get; set; }
+
+	[Inject]
 	private IGroupService? GroupService { get; set; }
 
 	private class DropItem
@@ -105,7 +106,7 @@
 	{
 		try
 		{
-			bool importSuccessful = ComicBookService!.ImportFromDisk(args.importType, args.path);
+			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path);
 
 			if (importSuccessful)
 			{

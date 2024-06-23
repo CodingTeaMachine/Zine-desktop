@@ -1,9 +1,8 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Zine.App.Database;
-using Zine.App.Model.DB;
 
-namespace Zine.App.Repositories;
+namespace Zine.App.Domain.Settings;
 
 public class SettingsRepository(IDbContextFactory<ZineDbContext> contextFactory) : Repository(contextFactory), ISettingsRepository
 {

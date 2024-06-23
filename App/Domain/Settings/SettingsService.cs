@@ -1,9 +1,7 @@
 using System.Data;
 using Zine.App.Logger;
-using Zine.App.Model.DB;
-using Zine.App.Repositories;
 
-namespace Zine.App.Services;
+namespace Zine.App.Domain.Settings;
 
 public class SettingsService(ISettingsRepository settingsRepository, ILoggerService logger) : ISettingsService
 {

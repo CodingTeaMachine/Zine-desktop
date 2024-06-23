@@ -1,6 +1,4 @@
-using Zine.App.Model.DB;
-
-namespace Zine.App.Services;
+namespace Zine.App.Domain.Settings;
 
 public interface ISettingsService
 {

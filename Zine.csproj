@@ -50,7 +50,9 @@
   
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Data\ComicBookLinks\" />
     <Folder Include="logs\" />
+    <Folder Include="wwwroot\images\ComicBookCovers\" />
   </ItemGroup>
   
   

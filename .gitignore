@@ -7,6 +7,7 @@ start_app.sh
 packages-microsoft-prod.deb
 appsettings.json
 wwwroot/css/app.css
+wwwroot/images/ComicBookCovers/
 
 
 ### DotnetCore template

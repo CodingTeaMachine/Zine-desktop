@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Zine.App.Domain.ComicBook;
+using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.Group;
+using Zine.App.Domain.Settings;
 using Zine.App.Enums;
-using Zine.App.Model.DB;
 
 namespace Zine.App.Database;
 
@@ -10,6 +11,7 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
 {
     public DbSet<Setting> Settings { get; set; }
     public DbSet<ComicBook> ComicBooks { get; set; }
+    public DbSet<ComicBookInformation> ComicBookInformation { get; set; }
     public DbSet<Group> Groups { get; set; }
 
     private string DbPath { get; } = Path.Join(
@@ -35,6 +37,12 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
             .WithMany(g => g.ComicBooks)
             .HasForeignKey(cb => cb.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ComicBook information relationship
+        modelBuilder.Entity<ComicBook>()
+            .HasOne(cb => cb.Information)
+            .WithOne(info => info.ComicBook)
+            .HasForeignKey<ComicBookInformation>(info => info.ComicBookId);
 
 
         base.OnModelCreating(modelBuilder);

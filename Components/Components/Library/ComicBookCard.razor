@@ -1,5 +1,6 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
+@using Zine.App.Enums
 
 @inject IJSRuntime JSRuntime
 
@@ -7,8 +8,8 @@
 
 	<ActivatorContent>
 		<MudItem>
-			<div class="md:max-w-60 max-w-44">
-				<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg" />
+			<div class="md:max-w-60 max-w-44 hover:cursor-pointer">
+				<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg" />
 				<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name - @ComicBook.CompressionFormat</p>
 			</div>
 		</MudItem>
@@ -45,7 +46,7 @@
 	public EventCallback<int?> AddToGroup { get; set; }
 
 	[Inject]
-    public IGroupService GroupService { get; set; }
+	public IGroupService GroupService { get; set; } = null!;
 
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
@@ -65,6 +66,11 @@
 		{
 			AddToGroupCallback(comicBookParentGroup.ParentGroupId);
 		}
+	}
+
+	private string GetCoverImage()
+	{
+		return Path.Join(DataPath.ComicBookCoverDirectory, ComicBook.Information.CoverImage).Replace("wwwroot", "");
 	}
 
 

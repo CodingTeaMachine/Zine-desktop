@@ -11,7 +11,7 @@ public class ComicBookRepository(
 {
 	public IEnumerable<ComicBook> GetAllByGroupId(int? groupId = null)
 	{
-		return GetDbContext().ComicBooks.Where(c => c.GroupId == groupId).ToList();
+		return GetDbContext().ComicBooks.Where(c => c.GroupId == groupId).Include(cb => cb.Information).ToList();
 	}
 
 	public ComicBook? GetById(int comicId)
@@ -19,17 +19,19 @@ public class ComicBookRepository(
 		return GetDbContext().ComicBooks.FirstOrDefault(c => c.Id == comicId);
 	}
 
-	/// <summary>
-	///		Creates a comicboob in the database
-	/// </summary>
-	/// <param name="name"></param>
-	/// <param name="fileName"></param>
-	/// <param name="groupId"></param>
-	/// <exception cref="DbUpdateException">Throws when the new comic book could not be inserted to the db</exception>
-	/// <returns></returns>
-	public ComicBook Create(string name, string fileName, int? groupId = null)
+	///  <summary>
+	/// 		Creates a comicboob in the database
+	///  </summary>
+	///  <param name="name"></param>
+	///  <param name="fileName"></param>
+	///  <param name="cbInfo"></param>
+	///  <param name="groupId"></param>
+	///  <exception cref="DbUpdateException">Throws when the new comic book could not be inserted to the db</exception>
+	///  <returns></returns>
+	public ComicBook Create(string name, string fileName, ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null )
 	{
-		var comicBookToCreate = new ComicBook { Name = name, FileName = fileName, GroupId = groupId};
+		var comicBookToCreate = new ComicBook { Name = name, FileName = fileName, GroupId = groupId, Information = cbInfo};
+
 		var dbContext = GetDbContext();
 		var createdComicBook = dbContext.ComicBooks.Add(comicBookToCreate);
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zine.App.Database;
 
@@ -10,9 +11,11 @@ using Zine.App.Database;
 namespace Zine.Migrations
 {
     [DbContext(typeof(ZineDbContext))]
-    partial class ZineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240623090524_AddComicBookCoverImageFilename")]
+    partial class AddComicBookCoverImageFilename
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.5");
@@ -22,6 +25,11 @@ namespace Zine.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("CoverImageFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -41,31 +49,6 @@ namespace Zine.Migrations
                     b.HasIndex("GroupId");
 
                     b.ToTable("ComicBooks");
-                });
-
-            modelBuilder.Entity("Zine.App.Domain.ComicBookInformation.ComicBookInformation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ComicBookId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CoverImage")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PageFormat")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComicBookId")
-                        .IsUnique();
-
-                    b.ToTable("ComicBookInformation");
                 });
 
             modelBuilder.Entity("Zine.App.Domain.Group.Group", b =>
@@ -126,17 +109,6 @@ namespace Zine.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Zine.App.Domain.ComicBookInformation.ComicBookInformation", b =>
-                {
-                    b.HasOne("Zine.App.Domain.ComicBook.ComicBook", "ComicBook")
-                        .WithOne("Information")
-                        .HasForeignKey("Zine.App.Domain.ComicBookInformation.ComicBookInformation", "ComicBookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ComicBook");
-                });
-
             modelBuilder.Entity("Zine.App.Domain.Group.Group", b =>
                 {
                     b.HasOne("Zine.App.Domain.Group.Group", "ParentGroup")
@@ -145,12 +117,6 @@ namespace Zine.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentGroup");
-                });
-
-            modelBuilder.Entity("Zine.App.Domain.ComicBook.ComicBook", b =>
-                {
-                    b.Navigation("Information")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Zine.App.Domain.Group.Group", b =>

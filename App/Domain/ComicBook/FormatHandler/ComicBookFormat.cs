@@ -1,4 +1,4 @@
-namespace Zine.App.Domain.ComicBook;
+namespace Zine.App.Domain.ComicBook.FormatHandler;
 
 public enum ComicBookFormat
 {

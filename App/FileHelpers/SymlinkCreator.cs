@@ -1,12 +1,10 @@
 using System.Data;
-using Zine.App.Logger;
+using Zine.App.Enums;
 
 namespace Zine.App.FileHelpers;
 
 public static class SymlinkCreator
 {
-    private const string ComicBookLinkDirectory = "Data/ComicBookLinks";
-
 
     /// <summary>
     ///     Creates a symlink to the given comic book to the ComicBookLinkDirectory destination
@@ -19,20 +17,20 @@ public static class SymlinkCreator
         if (!File.Exists(comicBookPath))
             throw new DataException("File doesn't exist");
 
-        if (!Directory.Exists(ComicBookLinkDirectory))
-            Directory.CreateDirectory(ComicBookLinkDirectory);
+        if (!Directory.Exists(DataPath.ComicBookLinkDirectory))
+            Directory.CreateDirectory(DataPath.ComicBookLinkDirectory);
 
         string filename = Path.GetFileName(comicBookPath);
         string fileExtension = Path.GetExtension(filename);
         int fileCounter = 1;
 
-        while (Path.Exists(Path.Join(ComicBookLinkDirectory, filename)))
+        while (Path.Exists(Path.Join(DataPath.ComicBookLinkDirectory, filename)))
         {
             filename = Path.GetFileNameWithoutExtension(filename) + $"-{fileCounter}" + fileExtension;
             fileCounter++;
         }
 
-        return Create(Path.Join(ComicBookLinkDirectory, filename), comicBookPath);
+        return Create(Path.Join(DataPath.ComicBookLinkDirectory, filename), comicBookPath);
     }
 
     private static FileSystemInfo Create(string linkPath, string originalPath)

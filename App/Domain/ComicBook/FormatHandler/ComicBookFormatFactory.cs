@@ -1,6 +1,6 @@
 using Zine.App.Enums;
 
-namespace Zine.App.Domain.ComicBook;
+namespace Zine.App.Domain.ComicBook.FormatHandler;
 
 public abstract class ComicBookFormatFactory
 {
@@ -17,5 +17,11 @@ public abstract class ComicBookFormatFactory
             ".cbz" => ComicBookFormat.Zip,
             _ => ComicBookFormat.Unknown
         };
+    }
+
+    public static ComicBookFormat GetFromFilePathOrName(string filePathOrName)
+    {
+        string extenstion = Path.GetExtension(filePathOrName);
+        return GetFromFileExtension(extenstion);
     }
 }

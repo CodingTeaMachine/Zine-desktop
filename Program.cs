@@ -5,10 +5,10 @@ using MudBlazor.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.Group;
+using Zine.App.Domain.Settings;
 using Zine.App.Enums;
 using Zine.App.Logger;
-using Zine.App.Repositories;
-using Zine.App.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +34,7 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 builder.Services.AddScoped<IComicBookRepository, ComicBookRepository>();
 builder.Services.AddScoped<IComicBookService, ComicBookService>();
+builder.Services.AddScoped<IComicBookImportService, ComicBookImportService>();
 
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupService, GroupService>();
