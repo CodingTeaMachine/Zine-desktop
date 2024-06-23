@@ -5,7 +5,7 @@ namespace Zine.App.FileHelpers;
 
 public static class SymlinkCreator
 {
-    private const string ComicBookLinkDirectory = "ComicBookLinks";
+    private const string ComicBookLinkDirectory = "Data/ComicBookLinks";
 
 
     /// <summary>

@@ -3,7 +3,6 @@
 .config
 .idea/
 Data/
-ComicBookLinks/
 start_app.sh
 packages-microsoft-prod.deb
 appsettings.json
