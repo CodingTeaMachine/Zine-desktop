@@ -5,6 +5,9 @@ module.exports = {
 		extend: {
 			height: {
 				'group-card': '150px'
+			},
+			color: {
+				primary: '#776be7' // mud-theme-primary
 			}
 		},
 	},

@@ -1,11 +1,88 @@
 @using Zine.App.Model.DB
-<MudItem>
-	<div class="md:max-w-60 max-w-44">
-		<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg" />
-		<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
-	</div>
-</MudItem>
+@using Zine.App.Services
+@inject IJSRuntime JSRuntime
+
+<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
+	<ActivatorContent>
+		<MudItem>
+			<div class="md:max-w-60 max-w-44">
+				<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg" />
+				<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+			</div>
+		</MudItem>
+	</ActivatorContent>
+	<ChildContent>
+		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
+			<ActivatorContent>
+				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
+					Add To Group
+					<MudIcon Icon="@Icons.Material.Filled.ChevronRight"/>
+				</MudMenuItem>
+			</ActivatorContent>
+			<ChildContent>
+				@foreach (var group in Groups)
+				{
+					<MudMenuItem  OnClick="() => AddToGroupCallback(group.Id)">@group.Name</MudMenuItem>
+				}
+			</ChildContent>
+		</MudMenu>
+		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete"  OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
+	</ChildContent>
+</MudMenu>
+
+
 @code {
 	[Parameter]
 	public required ComicBook ComicBook { get; set; }
+
+	[Parameter]
+    public required IEnumerable<Group> Groups { get; set; }
+
+	[Parameter]
+	public EventCallback<int?> AddToGroup { get; set; }
+
+	[Inject]
+    public IGroupService GroupService { get; set; }
+
+	private MudMenu _menuRef = null!;
+	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
+
+	private void AddToGroupCallback(int? groupId)
+	{
+		AddToGroup.InvokeAsync(groupId);
+		_menuRef!.CloseMenuAsync();
+	}
+
+	private void RemoveFromGroup()
+	{
+		if (ComicBook.GroupId == null) return;
+
+		var comicBookParentGroup = GroupService.GetById(ComicBook.GroupId.Value);
+		if (comicBookParentGroup != null)
+		{
+			AddToGroupCallback(comicBookParentGroup.ParentGroupId);
+		}
+	}
+
+
+	[JSInvokable]
+	public void HandleClickOutside()
+	{
+		_menuRef!.CloseMenuAsync();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_currentComponentRef = DotNetObjectReference.Create(this);
+			await JSRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-{ComicBook.Id}", _currentComponentRef);
+		}
+	}
+
+	public void Dispose()
+	{
+		_currentComponentRef?.Dispose();
+	}
+
 }

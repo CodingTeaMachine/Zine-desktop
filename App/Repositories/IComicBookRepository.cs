@@ -9,5 +9,5 @@ public interface IComicBookRepository
 	public ComicBook? GetById(int comicId);
 	public ComicBook Create(string name, string fileName, int? groupId = null);
 	public void CreateMany(IEnumerable<ComicBook> comicBooks);
-	public bool AddToGroup(int groupId, int targetId);
+	public bool AddToGroup(int? groupId, int targetId);
 }

@@ -13,6 +13,6 @@ public class Group
 	public int? ParentGroupId { get; set; }
 	public Group? ParentGroup { get; set; }
 
-	public ICollection<Group> ChildGroups { get; set; }
-	public ICollection<ComicBook> ComicBooks { get; set; }
+	public ICollection<Group> ChildGroups { get; set; } = [];
+	public ICollection<ComicBook> ComicBooks { get; set; } = [];
 }

@@ -54,7 +54,7 @@ public class ComicBookRepository(
 		dbContext.SaveChanges();
 	}
 
-	public bool AddToGroup(int groupId, int targetId)
+	public bool AddToGroup(int? groupId, int targetId)
 	{
 		var comicBook = GetById(targetId);
 		comicBook!.GroupId = groupId;

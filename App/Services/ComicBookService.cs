@@ -64,7 +64,7 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
         return true;
     }
 
-    public bool AddToGroup(int groupId, int targetId)
+    public bool AddToGroup(int? groupId, int targetId)
     {
         var comicBook = GetById(targetId);
         if (comicBook == null)
@@ -73,7 +73,12 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
             return false;
         }
 
-        var group = groupService.GetById(groupId);
+        if (groupId == null)
+        {
+            return comicBookRepository.AddToGroup(null, targetId);
+        }
+
+        var group = groupService.GetById(groupId.Value);
         if (group == null)
         {
             logger.Warning($"Could not find group with id: {groupId}");
