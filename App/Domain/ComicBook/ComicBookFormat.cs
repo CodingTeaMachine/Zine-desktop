@@ -1,6 +1,6 @@
 namespace Zine.App.Domain.ComicBook;
 
-public enum ComicFormat
+public enum ComicBookFormat
 {
    _7Z = 0,
    Ace = 1,

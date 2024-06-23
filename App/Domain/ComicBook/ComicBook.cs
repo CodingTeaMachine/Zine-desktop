@@ -16,4 +16,13 @@ public class ComicBook
 
 	public int? GroupId { get; set; }
 	public Group.Group? Group { get; set; }
+	
+	public ComicBookFormat CompressionFormat
+	{
+		get
+		{
+			string fileExtension = Path.GetExtension(FileName);
+			return ComicBookFormatFactory.GetFromFileExtension(fileExtension);
+		}
+	}
 }

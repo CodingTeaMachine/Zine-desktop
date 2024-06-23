@@ -53,7 +53,7 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
     private bool ImportDirectoryFromDisk(string pathOnDisk)
     {
         List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
-            .Where(filePath => ComicFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
+            .Where(filePath => ComicBookFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
             .Select(filePath => new ComicBook {Name = Path.GetFileNameWithoutExtension(filePath), FileName = Path.GetFileName(filePath)})
             .ToList();
 

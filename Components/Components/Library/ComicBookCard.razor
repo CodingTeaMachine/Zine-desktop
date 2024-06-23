@@ -4,30 +4,32 @@
 @inject IJSRuntime JSRuntime
 
 <MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
+
 	<ActivatorContent>
 		<MudItem>
 			<div class="md:max-w-60 max-w-44">
 				<MudImage Src="https://picsum.photos/290/446" Elevation="25" Class="rounded-lg" />
-				<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+				<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name - @ComicBook.CompressionFormat</p>
 			</div>
 		</MudItem>
 	</ActivatorContent>
+
 	<ChildContent>
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
 			<ActivatorContent>
 				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
 					Add To Group
-					<MudIcon Icon="@Icons.Material.Filled.ChevronRight"/>
+					<MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
 				</MudMenuItem>
 			</ActivatorContent>
 			<ChildContent>
 				@foreach (var group in Groups)
 				{
-					<MudMenuItem  OnClick="() => AddToGroupCallback(group.Id)">@group.Name</MudMenuItem>
+					<MudMenuItem OnClick="() => AddToGroupCallback(group.Id)">@group.Name</MudMenuItem>
 				}
 			</ChildContent>
 		</MudMenu>
-		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete"  OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
