@@ -109,6 +109,7 @@
 			{
 				Snackbar!.Add("Successfully imported comic books.", Severity.Success);
 				LoadComics();
+				ReloadDropzone();
 			}
 			else
 				Snackbar!.Add("An error occured during importing...", Severity.Error);
