@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
 using Zine.App.Database;
+using Zine.App.Domain.ComicBook;
+using Zine.App.Domain.Group;
 using Zine.App.Enums;
 using Zine.App.Logger;
 using Zine.App.Repositories;

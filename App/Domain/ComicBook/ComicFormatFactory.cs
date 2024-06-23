@@ -1,6 +1,6 @@
 using Zine.App.Enums;
 
-namespace Zine.App.Factories;
+namespace Zine.App.Domain.ComicBook;
 
 public abstract class ComicFormatFactory
 {

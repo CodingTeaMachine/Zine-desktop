@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Zine.App.Database;
 using Zine.App.Logger;
-using Zine.App.Model.DB;
 
-namespace Zine.App.Repositories;
+namespace Zine.App.Domain.ComicBook;
 
 public class ComicBookRepository(
 	IDbContextFactory<ZineDbContext> contextFactory,

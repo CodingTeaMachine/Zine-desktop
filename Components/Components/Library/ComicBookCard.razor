@@ -1,5 +1,6 @@
-@using Zine.App.Model.DB
-@using Zine.App.Services
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.Group
+
 @inject IJSRuntime JSRuntime
 
 <MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor>

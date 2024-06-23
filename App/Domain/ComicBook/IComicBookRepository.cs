@@ -1,7 +1,4 @@
-using Zine.App.Model;
-using Zine.App.Model.DB;
-
-namespace Zine.App.Repositories;
+namespace Zine.App.Domain.ComicBook;
 
 public interface IComicBookRepository
 {

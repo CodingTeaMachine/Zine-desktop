@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Zine.App.Model.DB;
+namespace Zine.App.Domain.ComicBook;
 
 public class ComicBook
 {
@@ -15,5 +15,5 @@ public class ComicBook
 	public required string FileName { get; set; }
 
 	public int? GroupId { get; set; }
-	public Group? Group { get; set; }
+	public Group.Group? Group { get; set; }
 }

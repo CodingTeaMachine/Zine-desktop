@@ -1,4 +1,4 @@
-namespace Zine.App.Enums;
+namespace Zine.App.Domain.Settings;
 
 public abstract class SettingsKeys
 {

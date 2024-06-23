@@ -1,12 +1,10 @@
 using System.Data;
+using Zine.App.Domain.Group;
 using Zine.App.Enums;
-using Zine.App.Factories;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
-using Zine.App.Model.DB;
-using Zine.App.Repositories;
 
-namespace Zine.App.Services;
+namespace Zine.App.Domain.ComicBook;
 
 public class ComicBookService(IComicBookRepository comicBookRepository, IGroupService groupService, ILoggerService logger): IComicBookService
 {

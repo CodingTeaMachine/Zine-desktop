@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Zine.App.Model.DB;
+namespace Zine.App.Domain.Group;
 
 public class Group
 {
@@ -14,5 +14,5 @@ public class Group
 	public Group? ParentGroup { get; set; }
 
 	public ICollection<Group> ChildGroups { get; set; } = [];
-	public ICollection<ComicBook> ComicBooks { get; set; } = [];
+	public ICollection<ComicBook.ComicBook> ComicBooks { get; set; } = [];
 }

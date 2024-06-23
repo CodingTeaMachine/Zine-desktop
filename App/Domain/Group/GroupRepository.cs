@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Zine.App.Database;
-using Zine.App.Model.DB;
 
-namespace Zine.App.Repositories;
+namespace Zine.App.Domain.Group;
 
 public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 	: Repository(contextFactory), IGroupRepository

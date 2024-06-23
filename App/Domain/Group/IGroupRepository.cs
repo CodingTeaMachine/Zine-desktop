@@ -1,6 +1,4 @@
-using Zine.App.Model.DB;
-
-namespace Zine.App.Repositories;
+namespace Zine.App.Domain.Group;
 
 public interface IGroupRepository
 {

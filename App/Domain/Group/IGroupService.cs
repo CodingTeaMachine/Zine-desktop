@@ -1,7 +1,4 @@
-
-using Zine.App.Model.DB;
-
-namespace Zine.App.Services;
+namespace Zine.App.Domain.Group;
 
 public interface IGroupService
 {

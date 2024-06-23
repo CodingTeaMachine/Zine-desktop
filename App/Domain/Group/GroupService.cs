@@ -1,8 +1,4 @@
-using Zine.App.Logger;
-using Zine.App.Repositories;
-using Group = Zine.App.Model.DB.Group;
-
-namespace Zine.App.Services;
+namespace Zine.App.Domain.Group;
 
 public class GroupService(IGroupRepository groupRepository) : IGroupService
 {

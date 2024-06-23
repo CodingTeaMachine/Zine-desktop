@@ -1,7 +1,6 @@
 using Zine.App.Enums;
-using Zine.App.Model.DB;
 
-namespace Zine.App.Services;
+namespace Zine.App.Domain.ComicBook;
 
 public interface IComicBookService
 {
