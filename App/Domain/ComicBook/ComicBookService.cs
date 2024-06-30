@@ -20,7 +20,7 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
                 {
                     logger.Warning($"Regenerating cover image for: {cb.Name}");
                     new ComicBookInformationFactory().GetCoverImage(Path.Join(DataPath.ComicBookLinkDirectory, cb.FileName),
-                        cb.CompressionFormat);
+                        cb.Information.CompressionFormat);
                 }
 
                 return cb;
@@ -47,12 +47,12 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
         }
 
         var group = groupService.GetById(groupId.Value);
-        if (group == null)
-        {
-            logger.Warning($"Could not find group with id: {groupId}");
-            return false;
-        }
 
-        return comicBookRepository.AddToGroup(groupId, targetId);
+        if (group != null)
+            return comicBookRepository.AddToGroup(groupId, targetId);
+
+        logger.Warning($"Could not find group with id: {groupId}");
+        return false;
+
     }
 }

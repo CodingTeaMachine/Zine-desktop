@@ -9,6 +9,6 @@ public static class ComicBookPageNamingFormat
 		new()
 		{
 			{ComicBookPageNamingFormatName.CTagged, CTagged},
-			{ComicBookPageNamingFormatName.CTaggedZeroBased, CTaggedZeroBased},
+			{ComicBookPageNamingFormatName.CTaggedZeroBased, CTaggedZeroBased}
 		};
 }

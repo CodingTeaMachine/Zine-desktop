@@ -1,6 +1,6 @@
 using Serilog;
 using Zine.App.Enums;
-using ILogger = Serilog.ILogger;
+using ILogger = Serilog.Core.Logger;
 
 namespace Zine.App.Logger;
 
@@ -11,7 +11,7 @@ public class SerilogLogger : ILoggerService
 
     public SerilogLogger(IConfiguration configuration)
     {
-        string logFile = Path.Join(configuration.GetValue<string>(ConfigKeys.LogFolder), "log-.log");
+        var logFile = Path.Join(configuration.GetValue<string>(ConfigKeys.LogFolder), "log-.log");
         _logger = new LoggerConfiguration()
             .WriteTo.File(logFile, rollingInterval: RollingInterval.Day)
             .CreateLogger();

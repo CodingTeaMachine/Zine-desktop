@@ -8,12 +8,12 @@ public class SettingsRepository(IDbContextFactory<ZineDbContext> contextFactory)
 {
     public IEnumerable<Setting> GetAll()
     {
-        return base.GetDbContext().Settings.ToList();
+        return GetDbContext().Settings.ToList();
     }
 
     public Setting? GetByKey(string key)
     {
-        return base.GetDbContext().Settings.FirstOrDefault(setting => setting.Key.Equals(key));
+        return GetDbContext().Settings.FirstOrDefault(setting => setting.Key.Equals(key));
     }
 
     public bool SetSetting(string key, string value)
@@ -25,7 +25,7 @@ public class SettingsRepository(IDbContextFactory<ZineDbContext> contextFactory)
         }
 
         setting.Value = value;
-        int changedLines = base.GetDbContext().SaveChanges();
+        int changedLines = GetDbContext().SaveChanges();
         return changedLines == 1;
     }
 }

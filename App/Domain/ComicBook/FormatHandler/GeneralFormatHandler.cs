@@ -1,14 +1,11 @@
 using System.IO.Compression;
-using System.Text.RegularExpressions;
 using Zine.App.Domain.ComicBookInformation;
+using static System.Text.RegularExpressions.Regex;
 
 namespace Zine.App.Domain.ComicBook.FormatHandler;
 
-public class GeneralFormatHandler(string filePath, string coverImageDirectory)
+public partial class GeneralFormatHandler(string coverImageDirectory)
 {
-	public string FilePath { get; set; } = filePath;
-	public string CoverImageDirectory { get; set; } = coverImageDirectory;
-
 	private readonly string[] _allowedImageExtensions =
 	[
 		".bmp",
@@ -16,10 +13,13 @@ public class GeneralFormatHandler(string filePath, string coverImageDirectory)
 		".jpg", ".jpeg",
 		".png",
 		".tif", ".tiff",
-		".webp",
+		".webp"
 	];
 
 	private const string FileNumberingRegex = "((0{2,4})|(0{1,3}1))$";
+
+	[System.Text.RegularExpressions.GeneratedRegex(FileNumberingRegex)]
+	private static partial System.Text.RegularExpressions.Regex PageFormatRegex();
 
 	private readonly string[] _excludedFirstFileEndings = ["101", "100"];
 
@@ -29,7 +29,7 @@ public class GeneralFormatHandler(string filePath, string coverImageDirectory)
 		var fileExtension = Path.GetExtension(filename);
 		var fileCounter = 1;
 
-		while (Path.Exists(Path.Join(CoverImageDirectory, filename)))
+		while (Path.Exists(Path.Join(coverImageDirectory, filename)))
 		{
 			filename = Path.GetFileNameWithoutExtension(filename) + $"-{fileCounter}" + fileExtension;
 			fileCounter++;
@@ -49,12 +49,12 @@ public class GeneralFormatHandler(string filePath, string coverImageDirectory)
 		{
 			return
 				!_excludedFirstFileEndings.Any(excludedFirstFileEnding => imageName.EndsWith(excludedFirstFileEnding))
-				&& Regex.IsMatch(imageName, FileNumberingRegex);
+				&& PageFormatRegex().IsMatch(imageName);
 		}
 
 		var regex = ComicBookPageNamingFormat.PageFromatToRegexDic[pageNamingFormatName];
 
-		return Regex.IsMatch(imageName, regex);
+		return IsMatch(imageName, regex);
 	}
 
 	protected ComicBookPageNamingFormatName GetPageNamingFormat(ZipArchive comicBookArchive)
@@ -63,7 +63,7 @@ public class GeneralFormatHandler(string filePath, string coverImageDirectory)
 
 		foreach (var regexToPageFormat in ComicBookPageNamingFormat.PageFromatToRegexDic)
 		{
-			if (filenames.Any(filename => Regex.IsMatch(filename.ToLower(), regexToPageFormat.Value)))
+			if (filenames.Any(filename => IsMatch(filename.ToLower(), regexToPageFormat.Value)))
 			{
 				return regexToPageFormat.Key;
 			}
@@ -71,4 +71,6 @@ public class GeneralFormatHandler(string filePath, string coverImageDirectory)
 
 		return ComicBookPageNamingFormatName.Enumeration;
 	}
+
+
 }

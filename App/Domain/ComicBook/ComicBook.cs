@@ -1,27 +1,24 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Zine.App.Domain.ComicBook.FormatHandler;
 
 namespace Zine.App.Domain.ComicBook;
 
 [Table("ComicBooks")]
 public class ComicBook
 {
-	public int Id { get; set; }
+	public int Id { get; init; }
 
 	[Required]
 	[MaxLength(255)]
-	public required string Name { get; set; }
+	public required string Name { get; init; }
 
 	[Required]
 	[MaxLength(255)]
-	public required string FileName { get; set; }
+	public required string FileName { get; init; }
 
 	public int? GroupId { get; set; }
 
-	public Group.Group? Group { get; set; }
-
-	public ComicBookInformation.ComicBookInformation Information { get; set; }
+	public Group.Group? Group { get; init; }
 
 	/// <summary>
 	///	This field is not stored in the DB, because it can just be calculated at runtime

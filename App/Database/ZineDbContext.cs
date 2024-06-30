@@ -9,10 +9,10 @@ namespace Zine.App.Database;
 
 public class ZineDbContext(IConfiguration configuration) : DbContext
 {
-    public DbSet<Setting> Settings { get; set; }
-    public DbSet<ComicBook> ComicBooks { get; set; }
-    public DbSet<ComicBookInformation> ComicBookInformation { get; set; }
-    public DbSet<Group> Groups { get; set; }
+    public DbSet<Setting> Settings { get; init; }
+    public DbSet<ComicBook> ComicBooks { get; init; }
+    public DbSet<ComicBookInformation> ComicBookInformation { get; init; }
+    public DbSet<Group> Groups { get; init; }
 
     private string DbPath { get; } = Path.Join(
         Directory.GetCurrentDirectory(),

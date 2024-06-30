@@ -7,5 +7,5 @@ public enum ComicBookFormat
    Rar = 2,
    Tar = 3,
    Zip = 4,
-   Unknown = 5,
+   Unknown = 5
 }

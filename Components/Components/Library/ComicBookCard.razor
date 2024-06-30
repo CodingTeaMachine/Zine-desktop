@@ -54,7 +54,7 @@
 	private void AddToGroupCallback(int? groupId)
 	{
 		AddToGroup.InvokeAsync(groupId);
-		_menuRef!.CloseMenuAsync();
+		_menuRef.CloseMenuAsync();
 	}
 
 	private void RemoveFromGroup()
@@ -77,7 +77,7 @@
 	[JSInvokable]
 	public void HandleClickOutside()
 	{
-		_menuRef!.CloseMenuAsync();
+		_menuRef.CloseMenuAsync();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -91,7 +91,7 @@
 
 	public void Dispose()
 	{
-		_currentComponentRef?.Dispose();
+		_currentComponentRef.Dispose();
 	}
 
 }

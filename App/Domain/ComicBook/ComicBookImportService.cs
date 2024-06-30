@@ -36,7 +36,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			var cbInfo = new ComicBookInformation.ComicBookInformation
 			{
 				CoverImage = coverImageName,
-				PageFormat = (int)format
+				PageNamingFormat = (int)format
 			};
 
 			comicBookRepository.Create(
@@ -68,7 +68,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 				var cbInfo = new ComicBookInformation.ComicBookInformation
 				{
 					CoverImage = coverImageName,
-					PageFormat = (int)format,
+					PageNamingFormat = (int)format
 				};
 
 				return (filePath, cbInfo);

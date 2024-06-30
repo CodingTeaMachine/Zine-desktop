@@ -1,5 +1,3 @@
-using Zine.App.Enums;
-
 namespace Zine.App.Domain.ComicBook.FormatHandler;
 
 public abstract class ComicBookFormatFactory
@@ -21,7 +19,7 @@ public abstract class ComicBookFormatFactory
 
     public static ComicBookFormat GetFromFilePathOrName(string filePathOrName)
     {
-        string extenstion = Path.GetExtension(filePathOrName);
+        var extenstion = Path.GetExtension(filePathOrName);
         return GetFromFileExtension(extenstion);
     }
 }

@@ -20,9 +20,9 @@ public static class SymlinkCreator
         if (!Directory.Exists(DataPath.ComicBookLinkDirectory))
             Directory.CreateDirectory(DataPath.ComicBookLinkDirectory);
 
-        string filename = Path.GetFileName(comicBookPath);
-        string fileExtension = Path.GetExtension(filename);
-        int fileCounter = 1;
+        var filename = Path.GetFileName(comicBookPath);
+        var fileExtension = Path.GetExtension(filename);
+        var fileCounter = 1;
 
         while (Path.Exists(Path.Join(DataPath.ComicBookLinkDirectory, filename)))
         {

@@ -1,5 +1,3 @@
-using Zine.App.Enums;
-
 namespace Zine.App.Domain.ComicBook;
 
 public interface IComicBookService

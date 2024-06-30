@@ -3,7 +3,7 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
-@using Zine.Window
+@using Zine.App.Window
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
 
@@ -110,12 +110,12 @@
 
 			if (importSuccessful)
 			{
-				Snackbar!.Add("Successfully imported comic books.", Severity.Success);
+				Snackbar.Add("Successfully imported comic books.", Severity.Success);
 				LoadComics();
 				ReloadDropzone();
 			}
 			else
-				Snackbar!.Add("An error occured during importing...", Severity.Error);
+				Snackbar.Add("An error occured during importing...", Severity.Error);
 
 		}
 		catch (ArgumentOutOfRangeException e)
@@ -181,7 +181,7 @@
 		SearchWord = "";
 		FilteredComicsList = OriginalComicsList = ComicBookService!
 			.GetAllByGroupId(GroupId)
-			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook", })
+			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook" })
 			.ToList();
 	}
 
@@ -191,7 +191,7 @@
 	/// </summary>
 	private void ReloadDropzone()
 	{
-		Task.Delay(1).ContinueWith(t => InvokeAsync(() => _dropContainer?.Refresh()));
+		Task.Delay(1).ContinueWith(_ => InvokeAsync(() => _dropContainer?.Refresh()));
 	}
 
 	private string GetGroupLink(int? groupId)
