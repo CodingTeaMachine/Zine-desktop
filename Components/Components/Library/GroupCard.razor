@@ -14,7 +14,7 @@
 						<MudPaper class="h-group-card w-full rounded-lg">
 							@if (Group.ComicBooks.Count > imageIndex)
 							{
-								<MudImage Src="@GetCoverImage(_comicBooks[imageIndex])" Elevation="25" Class="rounded-lg h-group-card" />
+								<MudImage Src="@GetCoverImage(imageIndex)" Elevation="25" Class="rounded-lg h-group-card" />
 							}
 						</MudPaper>
 					</MudItem>
@@ -36,9 +36,11 @@
 
 	private List<ComicBook> _comicBooks = [];
 
-	private string GetCoverImage(ComicBook comicBook)
+	private string GetCoverImage(int comicBookIndex)
 	{
-		return Path.Join(DataPath.ComicBookCoverDirectory, comicBook.Information.CoverImage).Replace("wwwroot", "");
+		return comicBookIndex < _comicBooks.Count
+			? Path.Join(DataPath.ComicBookCoverDirectory, _comicBooks[comicBookIndex].Information.CoverImage).Replace("wwwroot", "")
+			: "";
 	}
 
 	protected override void OnInitialized()

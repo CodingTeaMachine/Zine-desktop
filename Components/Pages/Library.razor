@@ -4,6 +4,7 @@
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 @using Zine.App.Window
+@using Zine.Assets.Icons
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
 
@@ -39,7 +40,6 @@
 		OnDebounceIntervalElapsed="SearchByTitle" />
 </div>
 
-
 <MudDropContainer @ref="_dropContainer" T="DropItem" Items="FilteredComicsList" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ItemDropEnd">
 	<ChildContent>
 		<MudListSubheader class="text-xl mb-3">Groups</MudListSubheader>
@@ -54,13 +54,33 @@
 			}
 		</MudGrid>
 
-		<MudListSubheader class="mt-10 text-xl">Comic Books</MudListSubheader>
-		<MudDropZone T="DropItem" Identifier="ComicBook" class="flex flex-wrap flex-grow mx-auto gap-6 px-10" />
+		<MudListSubheader class="text-xl mt-10 ">Comic Books</MudListSubheader>
+		<MudDropZone T="DropItem" Identifier="ComicBook" class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
+			<ChildContent>
+				@if(FilteredComicsList.Any())
+				{
+					@foreach (var dropItem in FilteredComicsList)
+					{
+						<MudDynamicDropItem T="DropItem" Item="dropItem">
+							<ComicBookCard ComicBook="@dropItem.ComicBook" Groups="OriginalGroupList" AddToGroup="groupId => AddItemToGroup(groupId, dropItem.ComicBook.Id)" />
+						</MudDynamicDropItem>
+					}
+				}
+				else
+				{
+					<div class="flex flex-col justify-center align-center gap-5 mx-auto">
+						<div class="flex justify-center align-center gap-3">
+							<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary" />
+							<span> No comic books found</span>
+						</div>
+						<ImportComicButton Import="@Import" />
+					</div>
+				}
+
+			</ChildContent>
+		</MudDropZone>
 	</ChildContent>
 
-	<ItemRenderer>
-		<ComicBookCard ComicBook="@context.ComicBook" Groups="OriginalGroupList" AddToGroup="groupId => AddItemToGroup(groupId, context.ComicBook.Id)" />
-	</ItemRenderer>
 </MudDropContainer>
 
 @code
@@ -174,6 +194,7 @@
 	{
 		SearchWord = "";
 		FilteredGroupList = OriginalGroupList = GroupService!.GetAllByParentId(GroupId).ToList();
+
 	}
 
 	private void LoadComics()

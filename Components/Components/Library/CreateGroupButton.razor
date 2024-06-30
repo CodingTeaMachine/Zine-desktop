@@ -17,7 +17,9 @@
 					class="h-full"
 					Label="Group name..."
 					Variant="Variant.Outlined"
-					Margin="Margin.Dense" />
+					Margin="Margin.Dense"
+					@onkeyup="HandleKeyPress"
+					/>
 			</MudFocusTrap>
 
 			<MudIconButton
@@ -46,5 +48,13 @@
 	{
 		CreateGroup.InvokeAsync(_newGroupName);
 		ToggleOpenState();
+	}
+
+	private void HandleKeyPress(KeyboardEventArgs eventArgs)
+	{
+		if (eventArgs.Key == "Enter")
+		{
+			ConfirmCreateGroup();
+		}
 	}
 }
