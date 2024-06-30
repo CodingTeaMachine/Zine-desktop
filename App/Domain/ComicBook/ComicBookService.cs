@@ -1,4 +1,6 @@
 using Zine.App.Domain.Group;
+using Zine.App.Enums;
+using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook;
@@ -8,7 +10,21 @@ public class ComicBookService(IComicBookRepository comicBookRepository, IGroupSe
 
     public IEnumerable<ComicBook> GetAllByGroupId(int? groupId = null)
     {
-        return comicBookRepository.GetAllByGroupId(groupId);
+        return comicBookRepository
+            .GetAllByGroupId(groupId)
+            .Select(cb =>
+            {
+
+                //Check if the cover image exists, and if not, regenerate it.
+                if (!File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
+                {
+                    logger.Warning($"Regenerating cover image for: {cb.Name}");
+                    new ComicBookInformationFactory().GetCoverImage(Path.Join(DataPath.ComicBookLinkDirectory, cb.FileName),
+                        cb.CompressionFormat);
+                }
+
+                return cb;
+            });
     }
 
     public ComicBook? GetById(int comicId)

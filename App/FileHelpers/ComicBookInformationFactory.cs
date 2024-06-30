@@ -4,12 +4,10 @@ using Zine.App.Logger;
 
 namespace Zine.App.FileHelpers;
 
-public class CoverImageExtractor
+public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
 
-	private ILoggerService? _logger;
-
-	public string ExtractCoverImage(string pathOnDisk, ComicBookFormat format)
+	public string GetCoverImage(string pathOnDisk, ComicBookFormat format)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
@@ -18,14 +16,8 @@ public class CoverImageExtractor
 		var formatHandler = new ComicBookFormatHandlerFactory(pathOnDisk, DataPath.ComicBookCoverDirectory).GetFromFormat(format);
 		var coverImageName  = formatHandler.ExtractCoverImage();
 
-		_logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");
+		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");
 
 		return coverImageName;
-	}
-
-	public CoverImageExtractor SetLogger(ILoggerService loggerService)
-	{
-		_logger = loggerService;
-		return this;
 	}
 }

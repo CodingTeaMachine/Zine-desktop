@@ -30,9 +30,8 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 
 			var format = ComicBookFormatFactory.GetFromFilePathOrName(pathOnDisk);
 
-			CoverImageExtractor coverImageExtractor = new();
-			coverImageExtractor.SetLogger(logger);
-			var coverImageName = coverImageExtractor.ExtractCoverImage(pathOnDisk, format);
+			ComicBookInformationFactory comicBookInformationFactory = new(logger);
+			var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk, format);
 
 			var cbInfo = new ComicBookInformation.ComicBookInformation
 			{
@@ -56,8 +55,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 
 	private bool ImportDirectoryFromDisk(string pathOnDisk)
 	{
-		CoverImageExtractor coverImageExtractor = new();
-		coverImageExtractor.SetLogger(logger);
+		ComicBookInformationFactory comicBookInformationFactory = new(logger);
 
 		List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
 			.Where(filePath => ComicBookFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
@@ -65,7 +63,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			{
 				SymlinkCreator.CreateComicBookLink(filePath);
 				var format = ComicBookFormatFactory.GetFromFilePathOrName(filePath);
-				var coverImageName = coverImageExtractor.ExtractCoverImage(filePath, format);
+				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath, format);
 
 				var cbInfo = new ComicBookInformation.ComicBookInformation
 				{
