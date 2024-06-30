@@ -12,6 +12,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 			.Where(g => g.ParentGroupId == parentId)
 			.OrderBy(g => g.Name)
 			.Include(g => g.ComicBooks)
+			.ThenInclude(cb => cb.Information)
 			.ToList();
 	}
 

@@ -1,4 +1,6 @@
+@using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
+@using Zine.App.Enums
 
 <MudItem>
 	<div class="md:w-60 md:max-w-60 max-w-44">
@@ -6,13 +8,13 @@
 			<MudGrid Spacing="2">
 				@* Display the covers of the first 4 comicbooks in the group.
 				   If fewer covers are present, display as many as posible *@
-				@foreach (var imageIndex in Enumerable.Range(1, 4).ToList())
+				@foreach (var imageIndex in Enumerable.Range(0, 4).ToList())
 				{
 					<MudItem sm="6" class="flex items-center justify-center">
 						<MudPaper class="h-group-card w-full rounded-lg">
-							@if (Group.ComicBooks.Count >= imageIndex)
+							@if (Group.ComicBooks.Count > imageIndex)
 							{
-								<MudImage Src="https://picsum.photos/100/150" Elevation="25" Class="rounded-lg h-group-card" />
+								<MudImage Src="@GetCoverImage(_comicBooks[imageIndex])" Elevation="25" Class="rounded-lg h-group-card" />
 							}
 						</MudPaper>
 					</MudItem>
@@ -31,5 +33,18 @@
 
 	[Parameter]
 	public required Group Group { get; set; }
+
+	private List<ComicBook> _comicBooks = [];
+
+	private string GetCoverImage(ComicBook comicBook)
+	{
+		return Path.Join(DataPath.ComicBookCoverDirectory, comicBook.Information.CoverImage).Replace("wwwroot", "");
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		_comicBooks = Group.ComicBooks.ToList();
+	}
 
 }
