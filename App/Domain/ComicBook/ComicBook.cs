@@ -10,7 +10,7 @@ public class ComicBook
 
 	[Required]
 	[MaxLength(255)]
-	public required string Name { get; init; }
+	public required string Name { get; set; }
 
 	[Required]
 	[MaxLength(255)]

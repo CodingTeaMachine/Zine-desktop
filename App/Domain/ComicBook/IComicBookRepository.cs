@@ -6,5 +6,6 @@ public interface IComicBookRepository
 	public ComicBook? GetById(int comicId);
 	public ComicBook Create(string name, string fileName,  ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null);
 	public void CreateMany(IEnumerable<ComicBook> comicBooks);
-	public bool AddToGroup(int? groupId, int targetId);
+	public bool AddToGroup(int? groupId, int comicBookId);
+	public bool Rename(int comicBookId, string newName);
 }

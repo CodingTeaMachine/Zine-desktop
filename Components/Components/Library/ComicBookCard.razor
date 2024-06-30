@@ -10,12 +10,28 @@
 		<MudItem>
 			<div class="md:max-w-60 max-w-44 hover:cursor-pointer">
 				<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg" />
-				<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+				@if (_renaming)
+				{
+					<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+						<MudTextField
+							@bind-Value="@_newComicBookName"
+							class="h-full"
+							Label="Comic book name..."
+							Variant="Variant.Outlined"
+							@onkeyup="HandleRenameKeypress"
+						/>
+					</MudFocusTrap>
+				}
+				else
+				{
+					<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+				}
 			</div>
 		</MudItem>
 	</ActivatorContent>
 
 	<ChildContent>
+		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" OnClick="RenameComicBook">Rename</MudMenuItem>
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
 			<ActivatorContent>
 				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
@@ -26,7 +42,7 @@
 			<ChildContent>
 				@foreach (var group in Groups)
 				{
-					<MudMenuItem OnClick="() => AddToGroupCallback(group.Id)">@group.Name</MudMenuItem>
+					<MudMenuItem OnClick="() => AddToGroup(group.Id)">@group.Name</MudMenuItem>
 				}
 			</ChildContent>
 		</MudMenu>
@@ -36,6 +52,10 @@
 
 
 @code {
+
+	[Inject]
+	private ISnackbar Snackbar { get; set; } = null!;
+
 	[Parameter]
 	public required ComicBook ComicBook { get; set; }
 
@@ -43,18 +63,42 @@
     public required IEnumerable<Group> Groups { get; set; }
 
 	[Parameter]
-	public EventCallback<int?> AddToGroup { get; set; }
+	public EventCallback UpdatedComicBook { get; set; }
 
-	[Inject]
+	[Parameter]
 	public IGroupService GroupService { get; set; } = null!;
+
+	[Parameter]
+	public IComicBookService ComicBookService { get; set; } = null!;
 
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
 
-	private void AddToGroupCallback(int? groupId)
+	private bool _renaming = false;
+	private string _newComicBookName = "";
+
+	private void RenameComicBook()
 	{
-		AddToGroup.InvokeAsync(groupId);
-		_menuRef.CloseMenuAsync();
+		_renaming = true;
+		_newComicBookName = ComicBook.Name;
+	}
+
+	private void ConfirmRename()
+	{
+		_renaming = false;
+		ComicBookService.Rename(ComicBook.Id, _newComicBookName);
+	}
+
+	private void AddToGroup(int? groupId)
+	{
+		var isAddedToGroup = ComicBookService!.AddToGroup(groupId, ComicBook.Id);
+		if (isAddedToGroup)
+		{
+			UpdatedComicBook.InvokeAsync(groupId);
+			_menuRef.CloseMenuAsync();
+		} else
+			Snackbar.Add("Error adding comic to group", Severity.Error);
+
 	}
 
 	private void RemoveFromGroup()
@@ -64,15 +108,25 @@
 		var comicBookParentGroup = GroupService.GetById(ComicBook.GroupId.Value);
 		if (comicBookParentGroup != null)
 		{
-			AddToGroupCallback(comicBookParentGroup.ParentGroupId);
+			AddToGroup(comicBookParentGroup.ParentGroupId);
 		}
 	}
+
+
+
+
+
 
 	private string GetCoverImage()
 	{
 		return Path.Join(DataPath.ComicBookCoverDirectory, ComicBook.Information.CoverImage).Replace("wwwroot", "");
 	}
 
+	private void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	{
+		if (eventArgs.Key.Equals("Enter"))
+			ConfirmRename();
+	}
 
 	[JSInvokable]
 	public void HandleClickOutside()

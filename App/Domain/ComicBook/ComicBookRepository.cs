@@ -55,12 +55,19 @@ public class ComicBookRepository(
 		dbContext.SaveChanges();
 	}
 
-	public bool AddToGroup(int? groupId, int targetId)
+	public bool AddToGroup(int? groupId, int comicBookId)
 	{
-		var comicBook = GetById(targetId);
+		var comicBook = GetById(comicBookId);
 		comicBook!.GroupId = groupId;
-		GetDbContext().SaveChanges();
-		//TODO: Error handling
-		return true;
+		var updatedLines = GetDbContext().SaveChanges();
+		return updatedLines == 1;
+	}
+
+	public bool Rename(int comicBookId, string newName)
+	{
+		var comicBook = GetById(comicBookId);
+		comicBook!.Name = newName;
+		var updatedLines = GetDbContext().SaveChanges();
+		return updatedLines == 1;
 	}
 }
