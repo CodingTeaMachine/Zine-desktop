@@ -9,20 +9,20 @@ namespace Zine.App.Domain.ComicBook;
 public class ComicBookImportService(IComicBookRepository comicBookRepository, ILoggerService logger) : IComicBookImportService
 {
 
-	public bool ImportFromDisk(ImportType importType ,string pathOnDisk)
+	public bool ImportFromDisk(ImportType importType ,string pathOnDisk, int? groupId)
 	{
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
 
 		return importType switch
 		{
-			ImportType.File => ImportFileFromDisk(pathOnDisk),
-			ImportType.Directory => ImportDirectoryFromDisk(pathOnDisk),
+			ImportType.File => ImportFileFromDisk(pathOnDisk, groupId),
+			ImportType.Directory => ImportDirectoryFromDisk(pathOnDisk, groupId),
 			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, null)
 		};
 	}
 
 
-	private bool ImportFileFromDisk(string pathOnDisk)
+	private bool ImportFileFromDisk(string pathOnDisk, int? groupId)
 	{
 		try
 		{
@@ -42,7 +42,8 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			comicBookRepository.Create(
 				Path.GetFileNameWithoutExtension(pathOnDisk),
 				Path.GetFileName(pathOnDisk),
-				cbInfo
+				cbInfo,
+				groupId
 			);
 
 			return true;
@@ -53,7 +54,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 		}
 	}
 
-	private bool ImportDirectoryFromDisk(string pathOnDisk)
+	private bool ImportDirectoryFromDisk(string pathOnDisk, int? groupId)
 	{
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
 
@@ -77,6 +78,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			{
 				Name = Path.GetFileNameWithoutExtension(cbData.filePath),
 				FileName = Path.GetFileName(cbData.filePath),
+				GroupId = groupId,
 				Information = cbData.cbInfo
 			})
 			.ToList();

@@ -106,7 +106,7 @@
 	{
 		try
 		{
-			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path);
+			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId);
 
 			if (importSuccessful)
 			{

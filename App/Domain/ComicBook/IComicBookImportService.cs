@@ -4,6 +4,6 @@ namespace Zine.App.Domain.ComicBook;
 
 public interface IComicBookImportService
 {
-	public bool ImportFromDisk(ImportType importType, string pathOnDisk);
+	public bool ImportFromDisk(ImportType importType, string pathOnDisk, int? groupId);
 
 }
