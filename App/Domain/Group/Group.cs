@@ -10,9 +10,9 @@ public class Group
 
 	[Required]
 	[MaxLength(255)]
-	public required string Name { get; init; }
+	public required string Name { get; set; }
 
-	public int? ParentGroupId { get; init; }
+	public int? ParentGroupId { get; set; }
 	public Group? ParentGroup { get; init; }
 
 	public ICollection<Group> ChildGroups { get; set; } = [];

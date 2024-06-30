@@ -2,39 +2,94 @@
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 
-<MudItem>
-	<div class="md:w-60 md:max-w-60 max-w-44">
-		<MudPaper class="bg-[rgba(39,39,47,1)] p-3.5 rounded-lg">
-			<MudGrid Spacing="2">
-				@* Display the covers of the first 4 comicbooks in the group.
-				   If fewer covers are present, display as many as posible *@
-				@foreach (var imageIndex in Enumerable.Range(0, 4).ToList())
-				{
-					<MudItem sm="6" class="flex items-center justify-center">
-						<MudPaper class="h-group-card w-full rounded-lg">
-							@if (Group.ComicBooks.Count > imageIndex)
-							{
-								<MudImage Src="@GetCoverImage(imageIndex)" Elevation="25" Class="rounded-lg h-group-card" />
-							}
-						</MudPaper>
-					</MudItem>
-				}
-				@* Display the name of the group *@
-				<MudItem sm="12" class="py-0">
-					<p class="font-medium text-center line-clamp-3 ">@Group.Name</p>
-				</MudItem>
-			</MudGrid>
-		</MudPaper>
-	</div>
-</MudItem>
+@inject IJSRuntime JSRuntime
 
+<MudMenu @ref="_menuRef" Id="@($"Menu-G-{Group.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
+
+	<ActivatorContent>
+		<MudItem>
+			<div class="md:w-60 md:max-w-60 max-w-44">
+				<MudPaper class="bg-[rgba(39,39,47,1)] p-3.5 rounded-lg">
+					<MudGrid Spacing="2">
+
+						@* Display the covers of the first 4 comicbooks in the group.
+						If fewer covers are present, display as many as posible *@
+						@foreach (var imageIndex in Enumerable.Range(0, 4).ToList())
+						{
+							<MudItem sm="6" class="flex items-center justify-center">
+								<MudPaper class="h-group-card w-full rounded-lg">
+									@if (Group.ComicBooks.Count > imageIndex)
+									{
+										<MudImage Src="@GetCoverImage(imageIndex)" Elevation="25" Class="rounded-lg h-group-card" />
+									}
+								</MudPaper>
+							</MudItem>
+						}
+
+					</MudGrid>
+					@if (_renaming)
+					{
+					<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+						<MudTextField
+							@bind-Value="@_newGroupName"
+							class="h-full"
+							Label="Group name..."
+							Variant="Variant.Outlined"
+							@onkeyup="HandleRenameKeypress"
+						/>
+					</MudFocusTrap>
+					}
+					else
+					{
+						<p class="font-medium text-center line-clamp-3 pt-3.5">@Group.Name</p>
+
+					}
+				</MudPaper>
+			</div>
+		</MudItem>
+	</ActivatorContent>
+
+	<ChildContent>
+		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" OnClick="RenameGroup">Rename</MudMenuItem>
+	</ChildContent>
+</MudMenu>
 
 @code {
 
 	[Parameter]
+	public bool ContextMenuDisabled { get; set; } = false;
+
+	[Parameter]
 	public required Group Group { get; set; }
 
+	[Parameter]
+	public IGroupService GroupService { get; set; } = null!;
+
+	[Parameter]
+	public EventCallback<bool> EditStateChanged { get; set; }
+
 	private List<ComicBook> _comicBooks = [];
+
+	private bool _renaming = false;
+	private string _newGroupName = "";
+
+	private MudMenu _menuRef = null!;
+	private DotNetObjectReference<GroupCard> _currentComponentRef = null!;
+
+	private void RenameGroup()
+	{
+		_renaming = true;
+		_newGroupName = Group.Name;
+		EditStateChanged.InvokeAsync(true);
+	}
+
+	private void ConfirmRename()
+	{
+		_renaming = false;
+		GroupService.Rename(Group.Id, _newGroupName);
+		EditStateChanged.InvokeAsync(false);
+	}
+
 
 	private string GetCoverImage(int comicBookIndex)
 	{
@@ -43,10 +98,36 @@
 			: "";
 	}
 
+
+	private void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	{
+		if (eventArgs.Key.Equals("Enter"))
+			ConfirmRename();
+	}
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
 		_comicBooks = Group.ComicBooks.ToList();
 	}
 
+	[JSInvokable]
+	public void HandleClickOutside()
+	{
+		_menuRef.CloseMenuAsync();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_currentComponentRef = DotNetObjectReference.Create(this);
+			await JSRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-G-{Group.Id}", _currentComponentRef);
+		}
+	}
+
+	public void Dispose()
+	{
+		_currentComponentRef.Dispose();
+	}
 }

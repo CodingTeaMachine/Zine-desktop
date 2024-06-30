@@ -29,4 +29,12 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 		context.SaveChanges();
 		return createdGroup.Entity;
 	}
+
+	public bool Rename(int comicBookId, string newName)
+	{
+		var group = GetById(comicBookId);
+		group!.Name = newName;
+		var updatedLines = GetDbContext().SaveChanges();
+		return updatedLines == 1;
+	}
 }

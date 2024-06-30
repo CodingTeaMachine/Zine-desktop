@@ -4,8 +4,7 @@
 
 @inject IJSRuntime JSRuntime
 
-<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
-
+<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
 	<ActivatorContent>
 		<MudItem>
 			<div class="md:max-w-60 max-w-44 hover:cursor-pointer">
@@ -57,6 +56,9 @@
 	private ISnackbar Snackbar { get; set; } = null!;
 
 	[Parameter]
+	public bool ContextMenuDisabled { get; set; } = false;
+
+	[Parameter]
 	public required ComicBook ComicBook { get; set; }
 
 	[Parameter]
@@ -71,6 +73,9 @@
 	[Parameter]
 	public IComicBookService ComicBookService { get; set; } = null!;
 
+	[Parameter]
+	public EventCallback<bool> EditStateChanged { get; set; }
+
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
 
@@ -81,12 +86,16 @@
 	{
 		_renaming = true;
 		_newComicBookName = ComicBook.Name;
+		EditStateChanged.InvokeAsync(true);
+
 	}
 
 	private void ConfirmRename()
 	{
 		_renaming = false;
 		ComicBookService.Rename(ComicBook.Id, _newComicBookName);
+		EditStateChanged.InvokeAsync(false);
+
 	}
 
 	private void AddToGroup(int? groupId)

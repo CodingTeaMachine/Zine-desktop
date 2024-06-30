@@ -38,7 +38,7 @@
 		OnDebounceIntervalElapsed="SearchByTitle" />
 </div>
 
-<MudDropContainer @ref="_dropContainer" T="DropItem" Items="FilteredComicsList" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ItemDropEnd">
+<MudDropContainer @ref="_dropContainer" T="DropItem" Items="FilteredComicsList" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ComicBookDropEnd">
 	<ChildContent>
 		<MudListSubheader class="text-xl mb-3">Groups</MudListSubheader>
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
@@ -46,7 +46,12 @@
 			{
 				<MudDropZone T="DropItem" OnlyZone="true" Identifier="@group.Id.ToString()">
 					<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
-						<GroupCard Group="@group" />
+						<GroupCard
+							GroupService="GroupService"
+							Group="@group"
+							ContextMenuDisabled="_editingInProgress"
+							EditStateChanged="newState => _editingInProgress = newState"
+						/>
 					</div>
 				</MudDropZone>
 			}
@@ -65,7 +70,9 @@
 								ComicBookService="ComicBookService"
 								ComicBook="@dropItem.ComicBook"
 								Groups="OriginalGroupList"
-								UpdatedComicBook="@UpdatedComicBook"
+								ContextMenuDisabled="_editingInProgress"
+								UpdatedComicBook="@UpdatedComicBookOrGroup"
+								EditStateChanged="newState => _editingInProgress = newState"
 							/>
 						</MudDynamicDropItem>
 					}
@@ -113,6 +120,7 @@
 	MudDropContainer<DropItem>? _dropContainer;
 
 	string SearchWord { get; set; } = "";
+	bool _editingInProgress = false;
 	List<DropItem> OriginalComicsList { get; set; } = [];
 	List<DropItem> FilteredComicsList { get; set; } = [];
 	List<Group> OriginalGroupList { get; set; } = [];
@@ -153,20 +161,8 @@
 		LoadGroups();
 	}
 
-	private void NavigateToParentGroup()
-	{
-		if (GroupId == null) return;
 
-		var parentGroupId = GroupService!.GetById(GroupId.Value)?.ParentGroupId;
-		NavigateToGroup(parentGroupId);
-	}
-
-	private void NavigateToGroup(int? groupId)
-	{
-		NavigationManager.NavigateTo(GetGroupLink(groupId), true);
-	}
-
-	private void ItemDropEnd(MudItemDropInfo<DropItem> dropItem)
+	private void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
 	{
 		dropItem.Item!.Identifier = dropItem.DropzoneIdentifier;
 		var isAddedToGroup = ComicBookService!.AddToGroup(int.Parse(dropItem.DropzoneIdentifier), dropItem.Item!.ComicBook.Id);
@@ -181,7 +177,7 @@
 
 	}
 
-	private void UpdatedComicBook()
+	private void UpdatedComicBookOrGroup()
 	{
 		LoadPage();
 		ReloadDropzone();
@@ -210,6 +206,21 @@
 			.ToList();
 	}
 
+	private void NavigateToParentGroup()
+	{
+		if (GroupId == null) return;
+
+		var parentGroupId = GroupService!.GetById(GroupId.Value)?.ParentGroupId;
+		NavigateToGroup(parentGroupId);
+	}
+
+	private void NavigateToGroup(int? groupId)
+	{
+		if(!_editingInProgress)
+			NavigationManager.NavigateTo(GetGroupLink(groupId), true);
+	}
+
+
 	/// <summary>
 	/// The dropzone doesn't automatically update, when <c> FilteredComicsList </c> updates
 	/// The delay is needed to make sure the list has already updated
@@ -218,6 +229,7 @@
 	{
 		Task.Delay(1).ContinueWith(_ => InvokeAsync(() => _dropContainer?.Refresh()));
 	}
+
 
 	private string GetGroupLink(int? groupId)
 	{
