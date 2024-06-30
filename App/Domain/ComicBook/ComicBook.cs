@@ -20,17 +20,5 @@ public class ComicBook
 
 	public Group.Group? Group { get; init; }
 
-	/// <summary>
-	///	This field is not stored in the DB, because it can just be calculated at runtime
-	/// </summary>
-	[NotMapped]
-	public ComicBookFormat CompressionFormat
-	{
-		get
-		{
-			string fileExtension = Path.GetExtension(FileName);
-			return ComicBookFormatFactory.GetFromFileExtension(fileExtension);
-		}
-	}
-
+	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
 }

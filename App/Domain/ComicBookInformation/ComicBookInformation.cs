@@ -17,6 +17,18 @@ public class ComicBookInformation
 
 	[Required]
 	[MaxLength(255)]
-	public required string CoverImage { get; set; }
 	public required string CoverImage { get; init; }
+
+	/// <summary>
+	///	This field is not stored in the DB, because it can just be calculated at runtime
+	/// </summary>
+	[NotMapped]
+	public ComicBookFormat CompressionFormat
+	{
+		get
+		{
+			var fileExtension = Path.GetExtension(ComicBook.FileName);
+			return ComicBookFormatFactory.GetFromFileExtension(fileExtension);
+		}
+	}
 }
