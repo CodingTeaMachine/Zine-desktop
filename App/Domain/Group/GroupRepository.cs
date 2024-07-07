@@ -37,4 +37,12 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 		var updatedLines = GetDbContext().SaveChanges();
 		return updatedLines == 1;
 	}
+
+	public bool AddToGroup(int? newParentGroupId, int groupId)
+	{
+		var group = GetById(groupId);
+		group!.ParentGroupId = newParentGroupId;
+		var updatedLines = GetDbContext().SaveChanges();
+		return updatedLines == 1;
+	}
 }

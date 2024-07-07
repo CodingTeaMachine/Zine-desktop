@@ -30,7 +30,10 @@
 	</ActivatorContent>
 
 	<ChildContent>
+		@* Rename comic book *@
 		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" OnClick="RenameComicBook">Rename</MudMenuItem>
+
+		@* Add comic book to a group *@
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
 			<ActivatorContent>
 				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
@@ -45,6 +48,8 @@
 				}
 			</ChildContent>
 		</MudMenu>
+
+		@* Remove comic book from current group *@
 		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
 	</ChildContent>
 </MudMenu>
@@ -107,7 +112,6 @@
 			_menuRef.CloseMenuAsync();
 		} else
 			Snackbar.Add("Error adding comic to group", Severity.Error);
-
 	}
 
 	private void RemoveFromGroup()

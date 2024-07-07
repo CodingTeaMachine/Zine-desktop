@@ -49,7 +49,9 @@
 						<GroupCard
 							GroupService="GroupService"
 							Group="@group"
+							Groups="OriginalGroupList"
 							ContextMenuDisabled="_editingInProgress"
+							UpdatedGroup="@UpdatedComicBookOrGroup"
 							EditStateChanged="newState => _editingInProgress = newState"
 						/>
 					</div>

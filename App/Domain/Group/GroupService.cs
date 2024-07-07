@@ -44,4 +44,9 @@ public class GroupService(IGroupRepository groupRepository, ILoggerService logge
 	{
 		return groupRepository.Rename(groupId, newName);
 	}
+
+	public bool AddToGroup(int? newParentGroupId, int groupId)
+	{
+		return groupRepository.AddToGroup(newParentGroupId, groupId);
+	}
 }

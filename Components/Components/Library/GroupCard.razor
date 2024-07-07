@@ -50,17 +50,44 @@
 	</ActivatorContent>
 
 	<ChildContent>
+		@* Rename group *@
 		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" OnClick="RenameGroup">Rename</MudMenuItem>
+
+		@* Add group to another group *@
+		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
+			<ActivatorContent>
+				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
+					Add To Group
+					<MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
+				</MudMenuItem>
+			</ActivatorContent>
+			<ChildContent>
+				@foreach (var group in Groups.Where(g => g.Id != Group.Id))
+				{
+					<MudMenuItem OnClick="() => AddToGroup(group.Id)">@group.Name</MudMenuItem>
+				}
+			</ChildContent>
+
+		</MudMenu>
 	</ChildContent>
 </MudMenu>
 
 @code {
+
+	[Inject]
+	private ISnackbar Snackbar { get; set; } = null!;
 
 	[Parameter]
 	public bool ContextMenuDisabled { get; set; } = false;
 
 	[Parameter]
 	public required Group Group { get; set; }
+
+	[Parameter]
+	public required IEnumerable<Group> Groups { get; set; }
+
+	[Parameter]
+	public EventCallback UpdatedGroup { get; set; }
 
 	[Parameter]
 	public IGroupService GroupService { get; set; } = null!;
@@ -89,6 +116,20 @@
 		GroupService.Rename(Group.Id, _newGroupName);
 		EditStateChanged.InvokeAsync(false);
 	}
+
+	private void AddToGroup(int? groupId)
+	{
+		var isAddedToGroup = GroupService!.AddToGroup(groupId, Group.Id);
+		if (isAddedToGroup)
+		{
+			UpdatedGroup.InvokeAsync(groupId);
+			_menuRef.CloseMenuAsync();
+		} else
+			Snackbar.Add("Error adding group to group", Severity.Error);
+	}
+
+
+
 
 
 	private string GetCoverImage(int comicBookIndex)
