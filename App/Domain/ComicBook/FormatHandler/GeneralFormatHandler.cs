@@ -4,8 +4,13 @@ using static System.Text.RegularExpressions.Regex;
 
 namespace Zine.App.Domain.ComicBook.FormatHandler;
 
-public partial class GeneralFormatHandler(string coverImageDirectory)
+public partial class GeneralFormatHandler
 {
+	public GeneralFormatHandler(string coverImageDirectory)
+	{
+		CoverImageDirectory = coverImageDirectory;
+	}
+
 	private readonly string[] _allowedImageExtensions =
 	[
 		".bmp",
@@ -17,6 +22,9 @@ public partial class GeneralFormatHandler(string coverImageDirectory)
 	];
 
 	private const string FileNumberingRegex = "((0{2,4})|(0{1,3}1))$";
+	
+	protected readonly string CoverImageDirectory;
+
 
 	[System.Text.RegularExpressions.GeneratedRegex(FileNumberingRegex)]
 	private static partial System.Text.RegularExpressions.Regex PageFormatRegex();
@@ -29,7 +37,7 @@ public partial class GeneralFormatHandler(string coverImageDirectory)
 		var fileExtension = Path.GetExtension(filename);
 		var fileCounter = 1;
 
-		while (Path.Exists(Path.Join(coverImageDirectory, filename)))
+		while (Path.Exists(Path.Join(CoverImageDirectory, filename)))
 		{
 			filename = Path.GetFileNameWithoutExtension(filename) + $"-{fileCounter}" + fileExtension;
 			fileCounter++;

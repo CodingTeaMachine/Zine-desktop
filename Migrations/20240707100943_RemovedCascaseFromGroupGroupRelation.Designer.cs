@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zine.App.Database;
 
@@ -10,9 +11,11 @@ using Zine.App.Database;
 namespace Zine.Migrations
 {
     [DbContext(typeof(ZineDbContext))]
-    partial class ZineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240707100943_RemovedCascaseFromGroupGroupRelation")]
+    partial class RemovedCascaseFromGroupGroupRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.5");
@@ -121,7 +124,7 @@ namespace Zine.Migrations
                     b.HasOne("Zine.App.Domain.Group.Group", "Group")
                         .WithMany("ComicBooks")
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.ClientNoAction);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Group");
                 });
@@ -142,7 +145,7 @@ namespace Zine.Migrations
                     b.HasOne("Zine.App.Domain.Group.Group", "ParentGroup")
                         .WithMany("ChildGroups")
                         .HasForeignKey("ParentGroupId")
-                        .OnDelete(DeleteBehavior.ClientNoAction);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ParentGroup");
                 });

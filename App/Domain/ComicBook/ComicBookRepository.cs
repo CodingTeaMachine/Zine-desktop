@@ -19,15 +19,6 @@ public class ComicBookRepository(
 		return GetDbContext().ComicBooks.FirstOrDefault(c => c.Id == comicId);
 	}
 
-	///  <summary>
-	/// 		Creates a comicboob in the database
-	///  </summary>
-	///  <param name="name"></param>
-	///  <param name="fileUri"></param>
-	///  <param name="cbInfo"></param>
-	///  <param name="groupId"></param>
-	///  <exception cref="DbUpdateException">Throws when the new comic book could not be inserted to the db</exception>
-	///  <returns></returns>
 	public ComicBook Create(string name, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null )
 	{
 		var comicBookToCreate = new ComicBook { Name = name, FileUri = fileUri, GroupId = groupId, Information = cbInfo};
@@ -41,7 +32,7 @@ public class ComicBookRepository(
 		}
 		catch (DbUpdateException e)
 		{
-			logger.Error($"Error saving comic to DB: {name} \n {e.Message}");
+			logger.Error($"ComicBookRepository.Create: Error saving comic to DB: {name} \n {e.Message}");
 			throw;
 		}
 
@@ -52,7 +43,9 @@ public class ComicBookRepository(
 	{
 		var dbContext = GetDbContext();
 		dbContext.ComicBooks.AddRange(comicBooks);
-		dbContext.SaveChanges();
+		var createdComicBooks = dbContext.SaveChanges();
+
+		logger.Information($"ComicBookRepository.CreateMany: Created {createdComicBooks} comic books");
 	}
 
 	public bool AddToGroup(int? groupId, int comicBookId)
@@ -60,14 +53,50 @@ public class ComicBookRepository(
 		var comicBook = GetById(comicBookId);
 		comicBook!.GroupId = groupId;
 		var updatedLines = GetDbContext().SaveChanges();
-		return updatedLines == 1;
+		var updateSuccessful =  updatedLines == 1;
+
+		if (updateSuccessful)
+			logger.Information($"ComicBookRepository.AddToGroup: Added {comicBookId} - {comicBook.Name} to {groupId}");
+		else
+			logger.Error($"ComicBookRepository.AddToGroup: Failed to add comic book ({comicBookId} - {comicBook.Name}) to {groupId}");
+
+		return updateSuccessful;
+	}
+
+	public void MoveAll(int currentGroupId, int? newGroupId)
+	{
+		var context = GetDbContext();
+		context.ComicBooks
+			.Where(cb => cb.GroupId == currentGroupId)
+			.ToList()
+			.ForEach(cb => cb.GroupId = newGroupId);
+
+		var updatedLines = context.SaveChanges();
+		var newParent = newGroupId == null ? "root" : newGroupId.ToString();
+		logger.Information($"ComicBookRepository.MoveAll: Moved {updatedLines} comic books  from: {currentGroupId} to: {newParent}");
 	}
 
 	public bool Rename(int comicBookId, string newName)
 	{
 		var comicBook = GetById(comicBookId);
-		comicBook!.Name = newName;
+
+		var oldComicBookName = comicBook!.Name;
+
+		comicBook.Name = newName;
 		var updatedLines = GetDbContext().SaveChanges();
-		return updatedLines == 1;
+		var updateSuccessful = updatedLines == 1;
+
+		if (updateSuccessful)
+			logger.Information($"ComicBookRepository.Rename: Renamed comic book from: {oldComicBookName} to: {newName} (id: {comicBookId})");
+		else
+			logger.Error($"ComicBookRepository.Rename: Failed to rename comic book: {comicBookId} to: {newName}");
+
+		return updateSuccessful;
+	}
+
+	public void DeleteAllFromGroup(int groupId)
+	{
+		var updatedLines = GetDbContext().ComicBooks.Where(cb => cb.GroupId == groupId).ExecuteDelete();
+		logger.Information($"ComicBookRepository.DeleteAllFromGroup: deleted {updatedLines} comic books");
 	}
 }

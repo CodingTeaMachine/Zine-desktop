@@ -4,8 +4,9 @@
 
 @inject IJSRuntime JSRuntime
 
-<MudMenu @ref="_menuRef" Id="@($"Menu-G-{Group.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
+<ConfirmGroupDeleteDialog @ref="_confirmGroupDeleteDialog" GroupName="@Group.Name"/>
 
+<MudMenu @ref="_menuRef" Id="@($"Menu-G-{Group.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
 	<ActivatorContent>
 		<MudItem>
 			<div class="md:w-60 md:max-w-60 max-w-44">
@@ -71,6 +72,9 @@
 
 		@* Remove group  from current group *@
 		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="Group.ParentGroupId == null">Remove from group</MudMenuItem>
+
+		@* Delete group *@
+		<MudMenuItem Icon="@Icons.Material.Filled.Delete" OnClick="DeleteGroup">Delete group</MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
@@ -104,6 +108,7 @@
 
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<GroupCard> _currentComponentRef = null!;
+	private ConfirmGroupDeleteDialog _confirmGroupDeleteDialog = null!;
 
 	private void RenameGroup()
 	{
@@ -121,7 +126,7 @@
 
 	private void AddToGroup(int? groupId)
 	{
-		var isAddedToGroup = GroupService!.AddToGroup(groupId, Group.Id);
+		var isAddedToGroup = GroupService.AddToGroup(groupId, Group.Id);
 		if (isAddedToGroup)
 		{
 			UpdatedGroup.InvokeAsync(groupId);
@@ -138,6 +143,20 @@
 		if (groupParentGroup != null)
 		{
 			AddToGroup(groupParentGroup.ParentGroupId);
+		}
+	}
+
+	private async void DeleteGroup()
+	{
+		var (confirmed, deletelAllContent) = await _confirmGroupDeleteDialog.ShowDialogAsync();
+
+		if(!confirmed) return;
+
+		var deletedGroup = GroupService.Delete(Group.Id, deletelAllContent);
+
+		if (deletedGroup)
+		{
+			UpdatedGroup.InvokeAsync();
 		}
 	}
 

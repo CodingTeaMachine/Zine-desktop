@@ -1,10 +1,15 @@
+using Microsoft.Data.Sqlite;
+using Zine.App.Domain.ComicBook;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.Group;
 
-public class GroupService(IGroupRepository groupRepository, ILoggerService logger) : IGroupService
+public class GroupService(
+	IGroupRepository groupRepository,
+	IComicBookRepository comicBookService,
+	ILoggerService logger) : IGroupService
 {
 	public IEnumerable<Group> GetAllByParentId(int? parentId = null)
 	{
@@ -48,5 +53,32 @@ public class GroupService(IGroupRepository groupRepository, ILoggerService logge
 	public bool AddToGroup(int? newParentGroupId, int groupId)
 	{
 		return groupRepository.AddToGroup(newParentGroupId, groupId);
+	}
+
+	public void MoveAll(int? currentParentGroupId, int? newParentGroupId)
+	{
+		groupRepository.MoveAll(currentParentGroupId, newParentGroupId);
+	}
+
+	public bool Delete(int groupId, bool deleteAllContent)
+	{
+		var currentGroup = groupRepository.GetByIdWithChildGroups(groupId);
+
+		if (deleteAllContent)
+		{
+			comicBookService.DeleteAllFromGroup(groupId);
+			var childGroups = currentGroup!
+				.ChildGroups
+				.ToList();
+
+			childGroups.ForEach(g => Delete(g.Id, true));
+		}
+		else
+		{
+			comicBookService.MoveAll(groupId, currentGroup!.ParentGroupId);
+			MoveAll(groupId, currentGroup!.ParentGroupId);
+		}
+
+		return groupRepository.Delete(groupId);
 	}
 }

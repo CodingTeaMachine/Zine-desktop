@@ -15,6 +15,6 @@ public class Group
 	public int? ParentGroupId { get; set; }
 	public Group? ParentGroup { get; init; }
 
-	public ICollection<Group> ChildGroups { get; set; } = [];
+	public ICollection<Group> ChildGroups { get; set; }
 	public ICollection<ComicBook.ComicBook> ComicBooks { get; set; } = [];
 }

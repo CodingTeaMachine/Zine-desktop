@@ -17,7 +17,7 @@ public class ZipFormatHandler(string filePath, string coverImageDirectory): Gene
 		ZipArchiveEntry coverImage = comicBookZip.Entries.First(cI => IsCoverImage(cI, namingFormatName));
 		var filename = GetFilename(coverImage);
 
-		coverImage.ExtractToFile(Path.Join(coverImageDirectory, filename));
+		coverImage.ExtractToFile(Path.Join(CoverImageDirectory, filename));
 		return filename;
 	}
 }

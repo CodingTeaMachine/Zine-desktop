@@ -1,0 +1,22 @@
+<MudMessageBox @ref="_messageBox" Title="Warning" CancelText="Cancel" YesText="Confirm">
+	<MessageContent>
+		Are you sure you want to delete: @GroupName ? <br/>
+		<MudCheckBox T="bool"  @bind-value="DeleteAllContent" Label="Delete all content?"></MudCheckBox>
+	</MessageContent>
+</MudMessageBox>
+
+@code {
+	[Parameter]
+    public required string GroupName { get; set; }
+
+	private bool DeleteAllContent { get; set; } = false;
+
+	private MudMessageBox _messageBox = null!;
+
+	public async Task<(bool, bool)> ShowDialogAsync()
+	{
+		var result = await _messageBox.Show();
+
+		return (result != null,  DeleteAllContent);
+	}
+}

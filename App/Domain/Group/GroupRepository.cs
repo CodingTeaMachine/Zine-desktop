@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Zine.App.Database;
+using Zine.App.Logger;
 
 namespace Zine.App.Domain.Group;
 
-public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
+public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
 	: Repository(contextFactory), IGroupRepository
 {
 	public IEnumerable<Group> GetAllByParentId(int? parentId = null)
@@ -19,6 +20,11 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 	public Group? GetById(int groupId)
 	{
 		return GetDbContext().Groups.FirstOrDefault(g => g.Id == groupId);
+	}
+
+	public Group? GetByIdWithChildGroups(int groupId)
+	{
+		return GetDbContext().Groups.Include(g => g.ChildGroups).FirstOrDefault(g => g.Id == groupId);
 	}
 
 	public Group Create(string newGroupName, int? parentId = null)
@@ -43,6 +49,36 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory)
 		var group = GetById(groupId);
 		group!.ParentGroupId = newParentGroupId;
 		var updatedLines = GetDbContext().SaveChanges();
+		return updatedLines == 1;
+	}
+
+	public void MoveAll(int? currentParentGroupId, int? newParentGroupId)
+	{
+		var context = GetDbContext();
+		context.Groups
+			.Where(g => g.ParentGroupId == currentParentGroupId)
+			.ToList()
+			.ForEach(g => g.ParentGroupId = newParentGroupId);
+
+		var updatedLines = context.SaveChanges();
+		var newParent = newParentGroupId == null ? "root" : newParentGroupId.ToString();
+		logger.Information($"ComicBookRepository.MoveAll: Moved {updatedLines} comic books  from: {currentParentGroupId} to: {newParent}");
+	}
+
+	public bool Delete(int groupId)
+	{
+		var context = GetDbContext();
+		var group = GetById(groupId);
+
+		if (group == null)
+		{
+			logger.Warning($"Could not find group by id: {groupId}");
+			return false;
+		}
+
+		context.Groups.Remove(group);
+		var updatedLines = context.SaveChanges();
+
 		return updatedLines == 1;
 	}
 }

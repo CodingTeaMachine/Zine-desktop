@@ -59,8 +59,18 @@ public class ComicBookService(
 
     }
 
+    public void MoveAll(int currentGroupId, int? newGroupId)
+    {
+        comicBookRepository.MoveAll(currentGroupId, newGroupId);
+    }
+
     public bool Rename(int comicBookId, string newName)
     {
         return comicBookRepository.Rename(comicBookId, newName);
+    }
+
+    public void DeleteAllFromGroup(int groupId)
+    {
+        comicBookRepository.DeleteAllFromGroup(groupId);
     }
 }
