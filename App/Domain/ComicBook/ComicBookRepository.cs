@@ -99,4 +99,20 @@ public class ComicBookRepository(
 		var updatedLines = GetDbContext().ComicBooks.Where(cb => cb.GroupId == groupId).ExecuteDelete();
 		logger.Information($"ComicBookRepository.DeleteAllFromGroup: deleted {updatedLines} comic books");
 	}
+
+	public bool Delete(int comicId)
+	{
+		var context = GetDbContext();
+		var comicToDelete = context.ComicBooks.First(cb => cb.Id == comicId);
+		context.ComicBooks.Remove(comicToDelete);
+		var updatedLines = context.SaveChanges();
+		var updateSuccessful = updatedLines == 1;
+
+		if (updateSuccessful)
+			logger.Information($"ComicBookRepository.Delete: Deleted comic book: {comicId}");
+		else
+			logger.Error($"ComicBookRepository.Delete: Failed to delete comic book: {comicId}");
+
+		return updateSuccessful;
+	}
 }

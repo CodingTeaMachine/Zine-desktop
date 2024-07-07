@@ -10,4 +10,5 @@ public interface IComicBookRepository
 	public void MoveAll(int currentGroupId, int? newGroupId);
 	public bool Rename(int comicBookId, string newName);
 	public void DeleteAllFromGroup(int groupId);
+	public bool Delete(int comicId);
 }

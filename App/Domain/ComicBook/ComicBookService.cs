@@ -69,8 +69,14 @@ public class ComicBookService(
         return comicBookRepository.Rename(comicBookId, newName);
     }
 
+
     public void DeleteAllFromGroup(int groupId)
     {
         comicBookRepository.DeleteAllFromGroup(groupId);
+    }
+
+    public bool Delete(int comicId)
+    {
+        return comicBookRepository.Delete(comicId);
     }
 }

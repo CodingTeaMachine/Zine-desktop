@@ -51,11 +51,17 @@
 
 		@* Remove comic book from current group *@
 		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
+
+		@* Delete comic book *@
+		<MudMenuItem Icon="@Icons.Material.Filled.Delete" OnClick="DeleteComicBook">Delete comic book</MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
 
 @code {
+
+	[Inject]
+	private IDialogService DialogService { get; set; } = null!;
 
 	[Inject]
 	private ISnackbar Snackbar { get; set; } = null!;
@@ -125,6 +131,18 @@
 		}
 	}
 
+	private async void DeleteComicBook()
+	{
+		var confirmed = await DialogService.ShowMessageBox(
+			"Warning",
+			(MarkupString)$"Are you sure you want to delete the following comic book: <br /> {ComicBook.Name}",
+			yesText: "Confirm", noText: "Cancel");
+
+		if (!confirmed!.Value) return;
+
+		ComicBookService.Delete(ComicBook.Id);
+		UpdatedComicBook.InvokeAsync();
+	}
 
 
 
