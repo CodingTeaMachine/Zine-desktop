@@ -12,9 +12,16 @@ public class ComicBook
 	[MaxLength(255)]
 	public required string Name { get; set; }
 
+	/**
+	 * Max path length limit per os:
+	 *
+	 * Windows: 32_767
+	 * OSX / Linux: 4096
+	 *
+	 */
 	[Required]
-	[MaxLength(255)]
-	public required string FileName { get; init; }
+	[MaxLength(32_767)]
+	public required string FileUri { get; init; }
 
 	public int? GroupId { get; set; }
 

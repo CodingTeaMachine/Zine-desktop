@@ -26,8 +26,6 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 	{
 		try
 		{
-			SymlinkCreator.CreateComicBookLink(pathOnDisk);
-
 			var format = ComicBookFormatFactory.GetFromFilePathOrName(pathOnDisk);
 
 			ComicBookInformationFactory comicBookInformationFactory = new(logger);
@@ -41,7 +39,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 
 			comicBookRepository.Create(
 				Path.GetFileNameWithoutExtension(pathOnDisk),
-				Path.GetFileName(pathOnDisk),
+				pathOnDisk,
 				cbInfo,
 				groupId
 			);
@@ -62,24 +60,24 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			.Where(filePath => ComicBookFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
 			.Select(filePath =>
 			{
-				SymlinkCreator.CreateComicBookLink(filePath);
 				var format = ComicBookFormatFactory.GetFromFilePathOrName(filePath);
 				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath, format);
 
 				var cbInfo = new ComicBookInformation.ComicBookInformation
 				{
-					CoverImage = coverImageName,
-					PageNamingFormat = (int)format
+					PageNamingFormat = (int)format,
+					CoverImage = coverImageName
 				};
 
-				return (filePath, cbInfo);
-			})
-			.Select(cbData => new ComicBook
-			{
-				Name = Path.GetFileNameWithoutExtension(cbData.filePath),
-				FileName = Path.GetFileName(cbData.filePath),
-				GroupId = groupId,
-				Information = cbData.cbInfo
+				var cb = new ComicBook
+				{
+					Name = Path.GetFileNameWithoutExtension(filePath),
+					FileUri = filePath,
+					GroupId = groupId,
+					Information = cbInfo
+				};
+
+				return cb;
 			})
 			.ToList();
 

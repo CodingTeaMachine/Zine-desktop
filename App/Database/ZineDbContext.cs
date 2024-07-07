@@ -42,7 +42,8 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
         modelBuilder.Entity<ComicBook>()
             .HasOne(cb => cb.Information)
             .WithOne(info => info.ComicBook)
-            .HasForeignKey<ComicBookInformation>(info => info.ComicBookId);
+            .HasForeignKey<ComicBookInformation>(info => info.ComicBookId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         base.OnModelCreating(modelBuilder);

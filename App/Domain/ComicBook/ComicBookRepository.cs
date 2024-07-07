@@ -23,14 +23,14 @@ public class ComicBookRepository(
 	/// 		Creates a comicboob in the database
 	///  </summary>
 	///  <param name="name"></param>
-	///  <param name="fileName"></param>
+	///  <param name="fileUri"></param>
 	///  <param name="cbInfo"></param>
 	///  <param name="groupId"></param>
 	///  <exception cref="DbUpdateException">Throws when the new comic book could not be inserted to the db</exception>
 	///  <returns></returns>
-	public ComicBook Create(string name, string fileName, ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null )
+	public ComicBook Create(string name, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null )
 	{
-		var comicBookToCreate = new ComicBook { Name = name, FileName = fileName, GroupId = groupId, Information = cbInfo};
+		var comicBookToCreate = new ComicBook { Name = name, FileUri = fileUri, GroupId = groupId, Information = cbInfo};
 
 		var dbContext = GetDbContext();
 		var createdComicBook = dbContext.ComicBooks.Add(comicBookToCreate);

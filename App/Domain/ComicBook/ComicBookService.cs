@@ -23,8 +23,7 @@ public class ComicBookService(
                 if (!File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
                 {
                     logger.Warning($"Regenerating cover image for: {cb.Name}");
-                    new ComicBookInformationFactory().GetCoverImage(Path.Join(DataPath.ComicBookLinkDirectory, cb.FileName),
-                        cb.Information.CompressionFormat);
+                    new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
                 }
 
                 return cb;
