@@ -67,8 +67,10 @@
 					<MudMenuItem OnClick="() => AddToGroup(group.Id)">@group.Name</MudMenuItem>
 				}
 			</ChildContent>
-
 		</MudMenu>
+
+		@* Remove group  from current group *@
+		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="Group.ParentGroupId == null">Remove from group</MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
@@ -126,6 +128,17 @@
 			_menuRef.CloseMenuAsync();
 		} else
 			Snackbar.Add("Error adding group to group", Severity.Error);
+	}
+
+	private void RemoveFromGroup()
+	{
+		if (Group.ParentGroupId == null) return;
+
+		var groupParentGroup = GroupService.GetById(Group.ParentGroupId.Value);
+		if (groupParentGroup != null)
+		{
+			AddToGroup(groupParentGroup.ParentGroupId);
+		}
 	}
 
 
