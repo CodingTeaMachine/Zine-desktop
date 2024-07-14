@@ -1,4 +1,4 @@
-namespace Zine.App.Window;
+namespace Zine.App.Helpers;
 
 public static class PageTitleManager
 {
