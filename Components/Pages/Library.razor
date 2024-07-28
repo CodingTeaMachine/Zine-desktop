@@ -18,7 +18,7 @@
 
 
 @* Action row with import, create directory and search *@
-<div class="flex justify-between items-center mb-4 mx-5">
+<div class="grid grid-cols-3 items-center mb-4 mx-5">
 
 	<div class="flex items-center gap-3">
 		<CreateGroupButton CreateGroup="@CreateGroup" />
@@ -26,9 +26,13 @@
 	</div>
 
 
+	<h2 class="text-2xl font-bold justify-self-center tracking-wider">
+		@_currentGroupName
+	</h2>
+
 	<MudTextField
 		@bind-Value="@SearchWord"
-		class="max-w-xs"
+		class="max-w-xs justify-self-end"
 		Label="Search"
 		Variant="Variant.Outlined"
 		Clearable="true"
@@ -123,6 +127,9 @@
 
 	string SearchWord { get; set; } = "";
 	bool _editingInProgress = false;
+
+	private string? _currentGroupName;
+
 	List<DropItem> OriginalComicsList { get; set; } = [];
 	List<DropItem> FilteredComicsList { get; set; } = [];
 	List<Group> OriginalGroupList { get; set; } = [];
@@ -191,6 +198,7 @@
 		OriginalComicsList = [];
 		LoadGroups();
 		LoadComics();
+		LoadGroupName();
 	}
 
 	private void LoadGroups()
@@ -220,6 +228,14 @@
 	{
 		if(!_editingInProgress)
 			NavigationManager.NavigateTo(GetGroupLink(groupId), true);
+	}
+
+	private void LoadGroupName()
+	{
+		_currentGroupName =
+			GroupId != null
+				? GroupService!.GetById(GroupId.Value)!.Name
+				: "Library";
 	}
 
 

@@ -81,4 +81,9 @@ public class GroupService(
 
 		return groupRepository.Delete(groupId);
 	}
+
+	public string GetName(int groupId)
+	{
+		return groupRepository.GetById(groupId)?.Name ?? "";
+	}
 }

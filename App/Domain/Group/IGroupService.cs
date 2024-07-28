@@ -9,4 +9,7 @@ public interface IGroupService
 	public bool AddToGroup(int? newParentGroupId, int groupId);
 	public void MoveAll(int? currentParentGroupId, int? newParentGroupId);
 	public bool Delete(int groupId, bool deleteAllContent);
+
+	//More specific ones
+	public string GetName(int groupId);
 }
