@@ -7,8 +7,8 @@
 <MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
 	<ActivatorContent>
 		<MudItem>
-			<div class="md:max-w-60 max-w-44 hover:cursor-pointer">
-				<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg" />
+			<div class="md:w-60 w-44 hover:cursor-pointer">
+				<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg h-full" />
 				@if (_renaming)
 				{
 					<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">

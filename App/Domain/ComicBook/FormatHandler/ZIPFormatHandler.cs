@@ -22,17 +22,19 @@ public class ZipFormatHandler(string filePath, string coverImageDirectory): Gene
 
 		try
 		{
-			var resizedImageData = Image.GetResizedImage(coverImage,  240, 176);
+			var resizedImageData = Image.GetResizedImage(coverImage, 369, 240);
 			File.WriteAllBytes(outputPath, resizedImageData);
 		}
-		catch (Exception e) when(e is DataException or NotSupportedException)
+		catch (NotSupportedException)
 		{
 			//Simply save the original image
 			coverImage.ExtractToFile(outputPath);
-			Console.WriteLine("Error: " + e.Message);
 		}
-
-
+		catch (DataException)
+		{
+			//Simply save the original image
+			coverImage.ExtractToFile(outputPath);
+		}
 
 		return filename;
 	}

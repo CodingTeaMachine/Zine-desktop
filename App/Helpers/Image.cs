@@ -12,17 +12,30 @@ public static class Image
 	/// </summary>
 	/// <param name="entry"></param>
 	/// <param name="height"></param>
-	/// <param name="weight"></param>
+	/// <param name="width"></param>
 	/// <param name="quality"></param>
 	/// <param name="filterQuality"></param>
 	/// <returns></returns>
 	/// <exception cref="DataException"></exception>
 	/// <exception cref="NotSupportedException"></exception>
-	public static byte[] GetResizedImage(ZipArchiveEntry entry, int height, int weight, int quality = 100, SKFilterQuality filterQuality = SKFilterQuality.High)
+	public static byte[] GetResizedImage(ZipArchiveEntry entry, int height, int width, int quality = 100, SKFilterQuality filterQuality = SKFilterQuality.High)
 	{
 		using var entryStream = entry.Open();
-		using var originalImage = SKBitmap.Decode(entryStream);
-		using var resizedImage = originalImage.Resize(new SKImageInfo(weight, height), filterQuality);
+
+		using var memoryStream = new MemoryStream();
+		entryStream.CopyTo(memoryStream);
+		var imageBytes = memoryStream.ToArray();
+
+		//entryStream.Seek(0, SeekOrigin.Begin);
+
+		using var originalImage = SKBitmap.Decode(imageBytes);
+
+		if (originalImage == null)
+		{
+			throw new DataException("Could not decode image");
+		}
+
+		using var resizedImage = originalImage.Resize(new SKImageInfo(width, height), filterQuality);
 
 		if (resizedImage == null)
 		{
@@ -40,7 +53,6 @@ public static class Image
 	private static SKEncodedImageFormat GetImageFormat(ZipArchiveEntry entry)
 	{
 		using var entryStream = entry.Open();
-
 		var codec = SKCodec.Create(entryStream);
 		if (codec != null)
 		{

@@ -73,10 +73,12 @@ public class ComicBookService(
     public void DeleteAllFromGroup(int groupId)
     {
         comicBookRepository.DeleteAllFromGroup(groupId);
+        //TODO: Delete images as well
     }
 
     public bool Delete(int comicId)
     {
+        //TODO: Delete images as well
         return comicBookRepository.Delete(comicId);
     }
 }

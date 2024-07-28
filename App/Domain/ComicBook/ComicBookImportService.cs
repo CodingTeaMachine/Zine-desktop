@@ -9,14 +9,14 @@ namespace Zine.App.Domain.ComicBook;
 public class ComicBookImportService(IComicBookRepository comicBookRepository, ILoggerService logger) : IComicBookImportService
 {
 
-	public bool ImportFromDisk(ImportType importType ,string pathOnDisk, int? groupId)
+	public bool ImportFromDisk(ImportType importType ,string pathOnDisk, int? groupId, bool recursiveImport = false)
 	{
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
 
 		return importType switch
 		{
 			ImportType.File => ImportFileFromDisk(pathOnDisk, groupId),
-			ImportType.Directory => ImportDirectoryFromDisk(pathOnDisk, groupId),
+			ImportType.Directory => ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport),
 			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, null)
 		};
 	}
@@ -52,11 +52,15 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 		}
 	}
 
-	private bool ImportDirectoryFromDisk(string pathOnDisk, int? groupId)
+	private bool ImportDirectoryFromDisk(string pathOnDisk, int? groupId, bool recursiveImport)
 	{
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
 
-		List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", SearchOption.AllDirectories)
+		SearchOption searchDepth = recursiveImport
+			? SearchOption.AllDirectories
+			: SearchOption.TopDirectoryOnly;
+
+		List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", searchDepth)
 			.Where(filePath => ComicBookFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
 			.Select(filePath =>
 			{

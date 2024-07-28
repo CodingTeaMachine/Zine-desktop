@@ -136,11 +136,11 @@
 		ReloadDropzone();
 	}
 
-	private void Import((ImportType importType, string path) args)
+	private void Import((ImportType importType, string path, bool recursiveImport) args)
 	{
 		try
 		{
-			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId);
+			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId, args.recursiveImport);
 
 			if (importSuccessful)
 			{

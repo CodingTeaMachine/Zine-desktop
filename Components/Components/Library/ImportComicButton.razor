@@ -11,14 +11,14 @@
 	<MudMenuItem
 		Icon="@Icons.Custom.FileFormats.FileDocument"
 		IconSize="Size.Small"
-		OnClick="() => FileImportAction(ImportType.File)">
+		OnClick="() => FileImportAction()">
 		File
 	</MudMenuItem>
 
 	<MudMenuItem
 		Icon="@Icons.Material.Filled.Folder"
 		IconSize="Size.Small"
-		OnClick="() => FileImportAction(ImportType.Directory)">
+		OnClick="() => DirectoryImportAction()">
 		Directory
 	</MudMenuItem>
 
@@ -26,23 +26,33 @@
 
 @code {
 
+	[Inject]
+	private IDialogService DialogService { get; set; }
+
 	[Parameter]
-	public EventCallback<(ImportType, string)> Import { get; set; }
+	public EventCallback<(ImportType, string, bool)> Import { get; set; }
 
 
-	private async void FileImportAction(ImportType importType)
+	private async void FileImportAction()
 	{
-		string? selectedPath = importType switch
-		{
-			ImportType.File => await FileSelector.GetFilePathFromFileDialog(),
-			ImportType.Directory => await FileSelector.GetDirectoryPathFromFileDialog(),
-			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, null)
-		};
+		string? selectedPath = await FileSelector.GetFilePathFromFileDialog();
 
 		if (string.IsNullOrEmpty(selectedPath))
 			return;
 
-		_ = Import.InvokeAsync((importType, selectedPath));
+		Import.InvokeAsync((ImportType.File, selectedPath, false));
+	}
+
+	private async void DirectoryImportAction()
+	{
+		bool? result = await DialogService.ShowMessageBox("Directory Import", "Would you like to import all comic books from sub folders too?", "Yes", "No");
+
+		string? selectedPath = await FileSelector.GetDirectoryPathFromFileDialog();
+
+		if (string.IsNullOrEmpty(selectedPath))
+			return;
+
+		Import.InvokeAsync((ImportType.Directory, selectedPath, result != null));
 	}
 
 }
