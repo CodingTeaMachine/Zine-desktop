@@ -70,7 +70,7 @@
 				{
 					@foreach (var dropItem in FilteredComicsList)
 					{
-						<MudDynamicDropItem T="DropItem" Item="dropItem">
+						<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted">
 							<ComicBookCard
 								GroupService="GroupService"
 								ComicBookService="ComicBookService"

@@ -2,13 +2,23 @@
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
-<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
+<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
 	<ActivatorContent>
-		<MudItem>
+		<MudItem Class="h-full">
 			<div class="md:w-60 w-44 hover:cursor-pointer">
-				<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg h-full" />
+				@if (!ComicBook.Information.MovedOrDeleted)
+				{
+					<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg h-full" />
+				}
+				else
+				{
+					<MudPaper class="h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
+						<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
+						Moved / Deleted
+					</MudPaper>
+				}
 				@if (_renaming)
 				{
 					<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
@@ -17,8 +27,7 @@
 							class="h-full"
 							Label="Comic book name..."
 							Variant="Variant.Outlined"
-							@onkeyup="HandleRenameKeypress"
-						/>
+							@onkeyup="HandleRenameKeypress" />
 					</MudFocusTrap>
 				}
 				else
@@ -31,12 +40,12 @@
 
 	<ChildContent>
 		@* Rename comic book *@
-		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" OnClick="RenameComicBook">Rename</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Disabled="IsComicMovedOrDeleted" OnClick="RenameComicBook">Rename</MudMenuItem>
 
 		@* Add comic book to a group *@
-		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Dense>
+		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Disabled="IsComicMovedOrDeleted" Dense>
 			<ActivatorContent>
-				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
+				<MudMenuItem Disabled="IsComicMovedOrDeleted" Icon="@Icons.Material.Filled.Folder">
 					Add To Group
 					<MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
 				</MudMenuItem>
@@ -50,10 +59,10 @@
 		</MudMenu>
 
 		@* Remove comic book from current group *@
-		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null">Remove from group</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == null || IsComicMovedOrDeleted">Remove from group</MudMenuItem>
 
 		@* Delete comic book *@
-		<MudMenuItem Icon="@Icons.Material.Filled.Delete" OnClick="DeleteComicBook">Delete comic book</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="DeleteComicBook">Delete comic book</MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
@@ -89,6 +98,8 @@
 
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
+
+	private bool IsComicMovedOrDeleted => _renaming || ComicBook.Information.MovedOrDeleted;
 
 	private bool _renaming = false;
 	private string _newComicBookName = "";
@@ -170,7 +181,7 @@
 		if (firstRender)
 		{
 			_currentComponentRef = DotNetObjectReference.Create(this);
-			await JSRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-{ComicBook.Id}", _currentComponentRef);
+			await JsRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-{ComicBook.Id}", _currentComponentRef);
 		}
 	}
 
