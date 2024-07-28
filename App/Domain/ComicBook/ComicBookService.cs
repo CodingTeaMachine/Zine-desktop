@@ -26,6 +26,11 @@ public class ComicBookService(
                     new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
                 }
 
+                if (cb.Information.MovedOrDeleted)
+                {
+                    logger.Warning($"{cb.Name} moved/deleted ({cb.FileUri})");
+                }
+
                 return cb;
             });
     }

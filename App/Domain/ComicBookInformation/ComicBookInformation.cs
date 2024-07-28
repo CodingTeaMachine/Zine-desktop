@@ -31,4 +31,7 @@ public class ComicBookInformation
 			return ComicBookFormatFactory.GetFromFileExtension(fileExtension);
 		}
 	}
+
+	[NotMapped]
+	public bool MovedOrDeleted => !File.Exists(ComicBook.FileUri);
 }
