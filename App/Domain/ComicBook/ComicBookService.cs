@@ -18,18 +18,18 @@ public class ComicBookService(
             .GetAllByGroupId(groupId)
             .Select(cb =>
             {
+                if (cb.Information.MovedOrDeleted)
+                {
+                    logger.Warning($"{cb.FileUri} moved/deleted");
+                }
 
                 //Check if the cover image exists, and if not, regenerate it.
-                if (!File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
+                if (!cb.Information.MovedOrDeleted && !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
                 {
                     logger.Warning($"Regenerating cover image for: {cb.Name}");
                     new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
                 }
 
-                if (cb.Information.MovedOrDeleted)
-                {
-                    logger.Warning($"{cb.Name} moved/deleted ({cb.FileUri})");
-                }
 
                 return cb;
             });
