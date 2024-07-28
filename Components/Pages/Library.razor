@@ -173,6 +173,9 @@
 
 	private void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
 	{
+		if(dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
+			return;
+
 		dropItem.Item!.Identifier = dropItem.DropzoneIdentifier;
 		var isAddedToGroup = ComicBookService!.AddToGroup(int.Parse(dropItem.DropzoneIdentifier), dropItem.Item!.ComicBook.Id);
 

@@ -74,16 +74,19 @@ public class ComicBookService(
         return comicBookRepository.Rename(comicBookId, newName);
     }
 
-
-    public void DeleteAllFromGroup(int groupId)
-    {
-        comicBookRepository.DeleteAllFromGroup(groupId);
-        //TODO: Delete images as well
-    }
-
     public bool Delete(int comicId)
     {
-        //TODO: Delete images as well
-        return comicBookRepository.Delete(comicId);
+        var imageName = comicBookRepository.GetById(comicId)!.Information.CoverImage;
+        var deleteResult =  comicBookRepository.Delete(comicId);
+
+        //Delete the corresponding cover image for the comic book
+        if (deleteResult)
+        {
+            var pathToDeleteFileFrom = Path.Join(DataPath.ComicBookCoverDirectory, imageName);
+            logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicId} at {pathToDeleteFileFrom}");
+            File.Delete(pathToDeleteFileFrom);
+        }
+
+        return deleteResult;
     }
 }

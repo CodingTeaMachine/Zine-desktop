@@ -8,7 +8,7 @@ namespace Zine.App.Domain.Group;
 
 public class GroupService(
 	IGroupRepository groupRepository,
-	IComicBookRepository comicBookService,
+	IComicBookRepository comicBookRepository, //Would be nice to use the service, but that would result in circular dependency
 	ILoggerService logger) : IGroupService
 {
 	public IEnumerable<Group> GetAllByParentId(int? parentId = null)
@@ -66,16 +66,28 @@ public class GroupService(
 
 		if (deleteAllContent)
 		{
-			comicBookService.DeleteAllFromGroup(groupId);
-			var childGroups = currentGroup!
-				.ChildGroups
-				.ToList();
 
-			childGroups.ForEach(g => Delete(g.Id, true));
+			//Delete the corresponding cover images for the comic books
+			comicBookRepository
+				.GetAllByGroupId(groupId)
+				.ToList()
+				.ForEach(comicBook =>
+			{
+				var pathToDeleteFileFrom =
+					Path.Join(DataPath.ComicBookCoverDirectory, comicBook.Information.CoverImage);
+				logger.Information($"ComicBookService.DeleteAllFromGroup: Deleting cover image for: {comicBook.Id} at {pathToDeleteFileFrom}");
+				File.Delete(pathToDeleteFileFrom);
+			});
+
+			comicBookRepository.DeleteAllFromGroup(groupId);
+			currentGroup!
+				.ChildGroups
+				.ToList()
+				.ForEach(g => Delete(g.Id, true));
 		}
 		else
 		{
-			comicBookService.MoveAll(groupId, currentGroup!.ParentGroupId);
+			comicBookRepository.MoveAll(groupId, currentGroup!.ParentGroupId);
 			MoveAll(groupId, currentGroup!.ParentGroupId);
 		}
 

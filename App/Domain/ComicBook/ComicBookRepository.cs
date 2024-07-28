@@ -97,7 +97,7 @@ public class ComicBookRepository(
 	public void DeleteAllFromGroup(int groupId)
 	{
 		var updatedLines = GetDbContext().ComicBooks.Where(cb => cb.GroupId == groupId).ExecuteDelete();
-		logger.Information($"ComicBookRepository.DeleteAllFromGroup: deleted {updatedLines} comic books");
+		logger.Information($"ComicBookRepository.DeleteAllFromGroup: deleted {updatedLines / 2} comic books");
 	}
 
 	public bool Delete(int comicId)
@@ -106,7 +106,7 @@ public class ComicBookRepository(
 		var comicToDelete = context.ComicBooks.First(cb => cb.Id == comicId);
 		context.ComicBooks.Remove(comicToDelete);
 		var updatedLines = context.SaveChanges();
-		var updateSuccessful = updatedLines == 1;
+		var updateSuccessful = updatedLines != 0 ;
 
 		if (updateSuccessful)
 			logger.Information($"ComicBookRepository.Delete: Deleted comic book: {comicId}");
