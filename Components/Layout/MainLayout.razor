@@ -11,7 +11,11 @@
 
 <MudLayout>
     <MudAppBar>
-        <h1 class="font-bold text-2xl">Zine <span class="px-1"> - </span> @PageTitleManager.PageTitle</h1>
+        <h1 class="font-bold text-2xl flex items-center gap-3">
+            Zine
+            <span> - </span>
+            @PageManager.PageTitle
+        </h1>
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen" Elevation="1" Variant="@DrawerVariant.Mini" ClipMode="DrawerClipMode.Always" OpenMiniOnHover="true">
         <MudNavMenu>

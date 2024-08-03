@@ -1,5 +1,5 @@
 @page "/Library/{GroupId:int?}"
-@using System.Text
+
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
@@ -9,6 +9,10 @@
 @using Page = Zine.App.Enums.Page
 
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IComicBookService ComicBookService
+@inject IComicBookImportService ComicBookImportService
+@inject IGroupService GroupService
 
 
 <MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == null" OnClick="NavigateToParentGroup">
@@ -31,7 +35,7 @@
 	</h2>
 
 	<MudTextField
-		@bind-Value="@SearchWord"
+		@bind-Value="@_searchWord"
 		class="max-w-xs justify-self-end"
 		Label="Search"
 		Variant="Variant.Outlined"
@@ -75,16 +79,18 @@
 				{
 					@foreach (var dropItem in FilteredComicsList)
 					{
-						<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
-							<ComicBookCard
-								GroupService="GroupService"
-								ComicBookService="ComicBookService"
-								ComicBook="@dropItem.ComicBook"
-								Groups="OriginalGroupList"
-								ContextMenuDisabled="_editingInProgress"
-								UpdatedComicBook="@UpdatedComicBookOrGroup"
-								EditStateChanged="newState => _editingInProgress = newState" />
-						</MudDynamicDropItem>
+						<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
+							<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
+								<ComicBookCard
+									GroupService="GroupService"
+									ComicBookService="ComicBookService"
+									ComicBook="@dropItem.ComicBook"
+									Groups="OriginalGroupList"
+									ContextMenuDisabled="_editingInProgress"
+									UpdatedComicBook="@UpdatedComicBookOrGroup"
+									EditStateChanged="newState => _editingInProgress = newState" />
+							</MudDynamicDropItem>
+						</a>
 					}
 				}
 				else
@@ -109,17 +115,6 @@
 	[Parameter]
 	public int? GroupId { get; set; }
 
-	[Inject]
-	private ISnackbar Snackbar { get; set; } = null!;
-
-	[Inject]
-	private IComicBookService? ComicBookService { get; set; }
-
-	[Inject]
-	private IComicBookImportService? ComicBookImportService { get; set; }
-
-	[Inject]
-	private IGroupService? GroupService { get; set; }
 
 	private class DropItem
 	{
@@ -129,10 +124,10 @@
 
 	MudDropContainer<DropItem>? _dropContainer;
 
-	string SearchWord { get; set; } = "";
+	string _searchWord = string.Empty;
 	bool _editingInProgress = false;
 
-	private string? _currentGroupName;
+	string? _currentGroupName;
 
 	List<DropItem> OriginalComicsList { get; set; } = [];
 	List<DropItem> FilteredComicsList { get; set; } = [];
@@ -209,13 +204,13 @@
 
 	private void LoadGroups()
 	{
-		SearchWord = "";
+		_searchWord = "";
 		FilteredGroupList = OriginalGroupList = GroupService!.GetAllByParentId(GroupId).ToList();
 	}
 
 	private void LoadComics()
 	{
-		SearchWord = "";
+		_searchWord = "";
 		FilteredComicsList = OriginalComicsList = ComicBookService!
 			.GetAllByGroupId(GroupId)
 			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook" })
@@ -233,7 +228,7 @@
 	private void NavigateToGroup(int? groupId)
 	{
 		if (!_editingInProgress)
-			NavigationManager.NavigateTo(GetGroupLink(groupId), true);
+			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId), true);
 	}
 
 	private void LoadGroupName()
@@ -255,22 +250,15 @@
 	}
 
 
-	private string GetGroupLink(int? groupId)
+	private string GetComicBookLink(int comicBookId)
 	{
-		var sb = new StringBuilder(Page.Library);
-
-		if (groupId != null)
-			sb.Append("/").Append(groupId);
-
-		Console.WriteLine(sb.ToString());
-
-		return sb.ToString();
+		return PageManager.GetLibraryComicBookLink(comicBookId, GroupId);
 	}
 
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		PageTitleManager.PageTitle = "Library";
+		PageManager.SetPageTitle(Page.Library);
 		LoadPage();
 	}
 }

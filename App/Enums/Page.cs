@@ -4,4 +4,5 @@ public static class Page
 {
     public const string Home = "/";
     public const string Library = "/Library";
+    public const string Reading = "/Reading";
 }

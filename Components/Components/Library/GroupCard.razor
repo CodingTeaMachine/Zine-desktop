@@ -2,7 +2,8 @@
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
 
 <ConfirmGroupDeleteDialog @ref="_confirmGroupDeleteDialog" GroupName="@Group.Name"/>
 
@@ -79,10 +80,6 @@
 </MudMenu>
 
 @code {
-
-	[Inject]
-	private ISnackbar Snackbar { get; set; } = null!;
-
 	[Parameter]
 	public bool ContextMenuDisabled { get; set; } = false;
 
@@ -195,7 +192,7 @@
 		if (firstRender)
 		{
 			_currentComponentRef = DotNetObjectReference.Create(this);
-			await JSRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-G-{Group.Id}", _currentComponentRef);
+			await JsRuntime.InvokeAsync<IJSObjectReference>("JsFunctions.registerClickOutsideHandler", $"Menu-G-{Group.Id}", _currentComponentRef);
 		}
 	}
 

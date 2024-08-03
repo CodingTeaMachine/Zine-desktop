@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Zine.App.Helpers
+@using Page = Zine.App.Enums.Page
 @rendermode InteractiveServer
 
 <h1 class="text-blue-400">Hello, world!</h1>
@@ -11,6 +12,6 @@ Welcome to your new app.
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        PageTitleManager.PageTitle = "Home";
+        PageManager.SetPageTitle(Page.Home);
     }
 }

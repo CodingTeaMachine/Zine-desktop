@@ -1,6 +1,8 @@
 @using Zine.App.Enums
 @using Zine.App.FileHelpers
 
+@inject IDialogService DialogService
+
 <MudMenu
 	Label="Import"
 	AnchorOrigin="Origin.BottomLeft"
@@ -25,10 +27,6 @@
 </MudMenu>
 
 @code {
-
-	[Inject]
-	private IDialogService DialogService { get; set; } = null!;
-
 	[Parameter]
 	public EventCallback<(ImportType, string, bool)> Import { get; set; }
 

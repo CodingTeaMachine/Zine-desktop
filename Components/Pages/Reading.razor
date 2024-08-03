@@ -1,0 +1,76 @@
+@page "/Reading/{ComicBookId:int}/{GroupId:int?}"
+@layout ReadingLayout
+@implements IJsKeyEventListener
+@implements IDisposable
+
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Helpers
+@using Zine.Components.Layout
+
+@inject NavigationManager NavigationManager;
+@inject IComicBookService ComicBookService
+@inject IJSRuntime JsRuntime;
+
+<div>@_currentlyReadingInfo.ComicBook.Name - Page: @_currentlyReadingInfo.CurrentPage</div>
+
+@code {
+
+	[Parameter]
+	public int ComicBookId { get; set; }
+
+	[Parameter]
+	public int? GroupId { get; set; }
+
+	readonly CurrentlyReadingInfo _currentlyReadingInfo = new();
+
+	DotNetObjectReference<Reading>? _componentRef;
+
+	void LoadComic()
+	{
+		var loadedComicBook = ComicBookService.GetById(ComicBookId);
+
+		if (loadedComicBook == null)
+			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(GroupId));
+		else
+			_currentlyReadingInfo.ComicBook = loadedComicBook;
+	}
+
+	[JSInvokable]
+	public void JsOnKeyDown(KeyboardEventArgs eventArgs)
+	{
+		Console.WriteLine(eventArgs.Key);
+		switch (eventArgs.Key)
+		{
+			case "ArrowLeft":
+				_currentlyReadingInfo.PrevPage();
+				StateHasChanged();
+				break;
+			case "ArrowRight":
+				_currentlyReadingInfo.NextPage();
+				StateHasChanged();
+				break;
+		}
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		LoadComic();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_componentRef = DotNetObjectReference.Create(this);
+			await JsRuntime.InvokeVoidAsync("JsFunctions.registerKeyDownEventListener", _componentRef);
+		}
+	}
+
+
+	public void Dispose()
+	{
+		_componentRef?.Dispose();
+	}
+}

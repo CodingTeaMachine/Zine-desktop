@@ -1,0 +1,47 @@
+﻿@inherits LayoutComponentBase
+@using Zine.App.Helpers
+@using Page = Zine.App.Enums.Page
+
+<MudThemeProvider IsDarkMode="true" />
+<MudDialogProvider  />
+<MudSnackbarProvider />
+<MudPopoverProvider/>
+
+@inject NavigationManager NavigationManager
+
+<PageTitle>Zine</PageTitle>
+
+<MudLayout>
+    <MudAppBar>
+        <h1 class="font-bold text-2xl flex items-center gap-3">
+            <a href="@GetBackLocation()" class="flex items-center">
+                <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Primary"/>
+            </a>
+            Zine
+        </h1>
+    </MudAppBar>
+    <MudMainContent>
+        <div class="p-10">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private string GetBackLocation()
+    {
+        var currentPage = Page.Reading.Replace("/", "");
+        var urlParams = NavigationManager.Uri.Replace($"{NavigationManager.BaseUri}{currentPage}/", "").Split('/');
+
+        if (urlParams.Length != 2)
+        {
+            return PageManager.GetLibraryGroupLink(null);
+        }
+
+        var retVal = int.TryParse(urlParams[1], out var groupId)
+            ? PageManager.GetLibraryGroupLink(groupId)
+            : PageManager.GetLibraryGroupLink(null);
+
+        return retVal;
+    }
+}

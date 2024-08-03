@@ -3,6 +3,8 @@
 @using Zine.App.Enums
 
 @inject IJSRuntime JsRuntime
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
 	<ActivatorContent>
@@ -72,13 +74,6 @@
 
 
 @code {
-
-	[Inject]
-	private IDialogService DialogService { get; set; } = null!;
-
-	[Inject]
-	private ISnackbar Snackbar { get; set; } = null!;
-
 	[Parameter]
 	public bool ContextMenuDisabled { get; set; } = false;
 
@@ -100,15 +95,15 @@
 	[Parameter]
 	public EventCallback<bool> EditStateChanged { get; set; }
 
-	private MudMenu _menuRef = null!;
-	private DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
+	MudMenu _menuRef = null!;
+	DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
 
-	private bool IsComicMovedOrDeleted => _renaming || ComicBook.Information.MovedOrDeleted;
+	bool IsComicMovedOrDeleted => _renaming || ComicBook.Information.MovedOrDeleted;
 
-	private bool _renaming = false;
-	private string _newComicBookName = "";
+	bool _renaming = false;
+	string _newComicBookName = "";
 
-	private void RenameComicBook()
+	void RenameComicBook()
 	{
 		_renaming = true;
 		_newComicBookName = ComicBook.Name;
@@ -116,7 +111,7 @@
 
 	}
 
-	private void ConfirmRename()
+	void ConfirmRename()
 	{
 		_renaming = false;
 		ComicBookService.Rename(ComicBook.Id, _newComicBookName);
@@ -124,7 +119,7 @@
 
 	}
 
-	private void AddToGroup(int? groupId)
+	void AddToGroup(int? groupId)
 	{
 		var isAddedToGroup = ComicBookService.AddToGroup(groupId, ComicBook.Id);
 		if (isAddedToGroup)
@@ -135,7 +130,7 @@
 			Snackbar.Add("Error adding comic to group", Severity.Error);
 	}
 
-	private void RemoveFromGroup()
+	void RemoveFromGroup()
 	{
 		if (ComicBook.GroupId == null) return;
 
@@ -146,7 +141,7 @@
 		}
 	}
 
-	private async void DeleteComicBook()
+	async void DeleteComicBook()
 	{
 		var confirmed = await DialogService.ShowMessageBox(
 			"Warning",
@@ -163,7 +158,7 @@
 
 
 
-	private string GetCoverImage()
+	string GetCoverImage()
 	{
 		return Path.Join(DataPath.ComicBookCoverDirectory, ComicBook.Information.CoverImage).Replace("wwwroot", "");
 	}
@@ -185,7 +180,7 @@
 		if (firstRender)
 		{
 			_currentComponentRef = DotNetObjectReference.Create(this);
-			await JsRuntime.InvokeAsync<IJSObjectReference>("registerClickOutsideHandler", $"Menu-{ComicBook.Id}", _currentComponentRef);
+			await JsRuntime.InvokeAsync<IJSObjectReference>("JsFunctions.registerClickOutsideHandler", $"Menu-{ComicBook.Id}", _currentComponentRef);
 		}
 	}
 
