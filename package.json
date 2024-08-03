@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=development ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css",
-    "watch-tailwind": "cross-env NODE_ENV=development ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css --watch",
-    "release": "cross-env NODE_ENV=production ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css --minify"
+    "build:tailwind": "cross-env NODE_ENV=development ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css --minify",
+    "watch:tailwind": "cross-env NODE_ENV=development ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css --watch",
+    "electron:watch": "electronize start /watch",
+    "release": "cross-env NODE_ENV=production ./node_modules/tailwindcss/lib/cli.js -i ./Assets/Styles/app.css -o ./wwwroot/css/app.css --minify",
+    "start:watch": "concurrently \"npm run watch:tailwind\" \"npm run electron:watch\""
   },
   "keywords": [],
   "author": "",
@@ -14,5 +16,8 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "tailwindcss": "^3.4.3"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
   }
 }
