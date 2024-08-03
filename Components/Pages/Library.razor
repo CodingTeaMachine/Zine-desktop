@@ -42,7 +42,13 @@
 		OnDebounceIntervalElapsed="SearchByTitle" />
 </div>
 
-<MudDropContainer @ref="_dropContainer" T="DropItem" Items="FilteredComicsList" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ComicBookDropEnd">
+<MudDropContainer
+	@ref="_dropContainer"
+	T="DropItem"
+	Items="FilteredComicsList"
+	ItemsSelector="(item, dropzone) => item.Identifier == dropzone"
+	ItemDropped="ComicBookDropEnd">
+
 	<ChildContent>
 		<MudListSubheader class="text-xl mb-3">Groups</MudListSubheader>
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
@@ -56,21 +62,20 @@
 							Groups="OriginalGroupList"
 							ContextMenuDisabled="_editingInProgress"
 							UpdatedGroup="@UpdatedComicBookOrGroup"
-							EditStateChanged="newState => _editingInProgress = newState"
-						/>
+							EditStateChanged="newState => _editingInProgress = newState" />
 					</div>
 				</MudDropZone>
 			}
 		</MudGrid>
 
-		<MudListSubheader class="text-xl mt-10 ">Comic Books</MudListSubheader>
+		<MudListSubheader class="text-xl mt-10">Comic Books</MudListSubheader>
 		<MudDropZone T="DropItem" Identifier="ComicBook" class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
 			<ChildContent>
 				@if (FilteredComicsList.Any())
 				{
 					@foreach (var dropItem in FilteredComicsList)
 					{
-						<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted">
+						<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
 							<ComicBookCard
 								GroupService="GroupService"
 								ComicBookService="ComicBookService"
@@ -78,8 +83,7 @@
 								Groups="OriginalGroupList"
 								ContextMenuDisabled="_editingInProgress"
 								UpdatedComicBook="@UpdatedComicBookOrGroup"
-								EditStateChanged="newState => _editingInProgress = newState"
-							/>
+								EditStateChanged="newState => _editingInProgress = newState" />
 						</MudDynamicDropItem>
 					}
 				}
@@ -173,7 +177,7 @@
 
 	private void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
 	{
-		if(dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
+		if (dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
 			return;
 
 		dropItem.Item!.Identifier = dropItem.DropzoneIdentifier;
@@ -186,7 +190,6 @@
 		}
 		else
 			Snackbar.Add("Error adding comic to group", Severity.Error);
-
 	}
 
 	private void UpdatedComicBookOrGroup()
@@ -229,7 +232,7 @@
 
 	private void NavigateToGroup(int? groupId)
 	{
-		if(!_editingInProgress)
+		if (!_editingInProgress)
 			NavigationManager.NavigateTo(GetGroupLink(groupId), true);
 	}
 

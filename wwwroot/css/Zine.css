@@ -1,3 +1,31 @@
 body {
 	font-size: 16px !important;
 }
+
+/* Animation of dragging a comic book */
+.dragging-item .cover-image {
+	/* shake the cover image from left to right */
+	animation-name: shaking;
+	animation-iteration-count: infinite;
+	animation-duration: 100ms;
+	animation-direction: alternate;
+	animation-timing-function: ease-in-out;
+
+	/* scale the cover image down so it fits better*/
+	scale: 90%;
+	transition-duration: 100ms;
+}
+
+@keyframes shaking {
+	from {rotate: -0.5deg}
+	to {rotate: +0.5deg}
+}
+
+.dragging-item, .dragging-item .overlay {
+	transition-duration: 100ms;
+	transition-timing-function: ease-out;
+}
+
+.dragging-item .overlay {
+	display: block !important;
+}

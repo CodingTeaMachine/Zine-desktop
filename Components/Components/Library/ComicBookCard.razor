@@ -7,14 +7,18 @@
 <MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
 	<ActivatorContent>
 		<MudItem Class="h-full">
+
+			@* Overlay when dargging *@
+			<div class="overlay hidden absolute inset-0 bg-white opacity-15 w-[107%] -left-[3.5%] h-[103.8%] -top-[2%] rounded-2xl"></div>
+
 			<div class="md:w-60 w-44 hover:cursor-pointer">
 				@if (!ComicBook.Information.MovedOrDeleted)
 				{
-					<MudImage Src="@GetCoverImage()" Elevation="25" Class="rounded-lg h-full" />
+					<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" />
 				}
 				else
 				{
-					<MudPaper class="h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
+					<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
 						<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
 						Moved / Deleted
 					</MudPaper>
