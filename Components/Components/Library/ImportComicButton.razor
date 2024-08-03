@@ -27,7 +27,7 @@
 @code {
 
 	[Inject]
-	private IDialogService DialogService { get; set; }
+	private IDialogService DialogService { get; set; } = null!;
 
 	[Parameter]
 	public EventCallback<(ImportType, string, bool)> Import { get; set; }
@@ -40,7 +40,7 @@
 		if (string.IsNullOrEmpty(selectedPath))
 			return;
 
-		Import.InvokeAsync((ImportType.File, selectedPath, false));
+		await Import.InvokeAsync((ImportType.File, selectedPath, false));
 	}
 
 	private async void DirectoryImportAction()
@@ -52,7 +52,7 @@
 		if (string.IsNullOrEmpty(selectedPath))
 			return;
 
-		Import.InvokeAsync((ImportType.Directory, selectedPath, result != null));
+		await Import.InvokeAsync((ImportType.Directory, selectedPath, result != null));
 	}
 
 }

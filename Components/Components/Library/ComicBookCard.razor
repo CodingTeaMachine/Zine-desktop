@@ -152,7 +152,7 @@
 		if (!confirmed!.Value) return;
 
 		ComicBookService.Delete(ComicBook.Id);
-		UpdatedComicBook.InvokeAsync();
+		await UpdatedComicBook.InvokeAsync();
 	}
 
 
