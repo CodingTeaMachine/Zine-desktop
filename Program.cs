@@ -7,6 +7,7 @@ using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.Group;
 using Zine.App.Domain.Settings;
 using Zine.App.Enums;
+using Zine.App.Helpers;
 using Zine.App.Logger;
 
 
@@ -65,6 +66,8 @@ if (HybridSupport.IsElectronActive)
     var window = await Electron.WindowManager.CreateWindowAsync();
     window.OnClosed += () => Electron.App.Quit();
 }
+
+ConfigurationHelper.Initialize(builder.Configuration);
 
 IComicBookService.CleanReadingDirectory();
 
