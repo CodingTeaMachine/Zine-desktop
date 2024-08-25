@@ -34,7 +34,8 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			var cbInfo = new ComicBookInformation.ComicBookInformation
 			{
 				CoverImage = coverImageName,
-				PageNamingFormat = (int)format
+				PageNamingFormat = (int)format,
+				NumberOfPages = comicBookInformationFactory.GetNumberOfPages(pathOnDisk)
 			};
 
 			comicBookRepository.Create(
@@ -70,7 +71,8 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 				var cbInfo = new ComicBookInformation.ComicBookInformation
 				{
 					PageNamingFormat = (int)format,
-					CoverImage = coverImageName
+					CoverImage = coverImageName,
+					NumberOfPages = comicBookInformationFactory.GetNumberOfPages(pathOnDisk)
 				};
 
 				var cb = new ComicBook

@@ -66,4 +66,6 @@ if (HybridSupport.IsElectronActive)
     window.OnClosed += () => Electron.App.Quit();
 }
 
+IComicBookService.CleanReadingDirectory();
+
 app.WaitForShutdown();

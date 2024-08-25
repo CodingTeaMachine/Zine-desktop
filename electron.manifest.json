@@ -31,5 +31,9 @@
       },
       "**/*"
     ]
+  },
+  "watchOptions": {
+    "includes": [ "**/*" ],
+    "excludes": [ "wwwroot/images/Reading/**/*" ]
   }
 }

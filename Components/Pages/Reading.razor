@@ -1,18 +1,54 @@
 @page "/Reading/{ComicBookId:int}/{GroupId:int?}"
 @layout ReadingLayout
 @implements IJsKeyEventListener
+@implements IJsScrollEventListener
 @implements IDisposable
 
+@using ElectronNET.API.Entities
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Enums
 @using Zine.App.Helpers
+@using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
 
 @inject NavigationManager NavigationManager;
 @inject IComicBookService ComicBookService
 @inject IJSRuntime JsRuntime;
 
-<div>@_currentlyReadingInfo.ComicBook.Name - Page: @_currentlyReadingInfo.CurrentPage</div>
+<script src="js/Reading.js"></script>
+
+<MudContainer Class="py-5 h-[calc(100vh-64px)]">
+	<div class="relative">
+		<MudDrawer Open="PageExplorerOpen" Variant="DrawerVariant.Persistent" ClipMode="DrawerClipMode.Always">
+			<div>
+				@foreach (var (pageIndex, image) in _images.Select((image, index) => (index, image)))
+				{
+					<div id="image-@pageIndex" class="mb-2 mx-2 first:mt-2 last:mb-2 cursor-pointer @(_readingPageHandler.CurrentPageIndex == pageIndex ? "outline outline-offset-1 outline-primary" : "outline-0")">
+						<MudImage
+							Src="@image"
+							@onclick="() => GoToPage(pageIndex)" />
+					</div>
+				}
+			</div>
+		</MudDrawer>
+	</div>
+
+	<main class="h-full flex flex-col gap-3">
+		<div class="grow flex items-center justify-center">
+			<MudImage Id="CurrentPage" Class="max-w-full max-h-[calc(100vh-130px)]" Src="@_images[_readingPageHandler.CurrentPageIndex]" />
+			@* <MudImage Class="max-w-full max-h-full" Src="@_images[_currentlyReadingInfo.CurrentPageIndex]"/> *@
+		</div>
+		<div class="h-14 w-full flex flex-row items-center justify-center gap-3 select-none">
+			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="FirstPage" />
+			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="PrevPage" />
+			<div>@(_readingPageHandler.CurrentPageIndex + 1) / @_readingPageHandler.ComicBook.Information.NumberOfPages</div>
+			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="NextPage" />
+			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="LastPage" />
+		</div>
+	</main>
+
+</MudContainer>
 
 @code {
 
@@ -22,7 +58,11 @@
 	[Parameter]
 	public int? GroupId { get; set; }
 
-	readonly CurrentlyReadingInfo _currentlyReadingInfo = new();
+	readonly ReadingPageHandler _readingPageHandler = new();
+
+	string[] _images = [];
+
+	private const bool PageExplorerOpen = true;
 
 	DotNetObjectReference<Reading>? _componentRef;
 
@@ -33,30 +73,89 @@
 		if (loadedComicBook == null)
 			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(GroupId));
 		else
-			_currentlyReadingInfo.ComicBook = loadedComicBook;
+			_readingPageHandler.ComicBook = loadedComicBook;
 	}
 
 	[JSInvokable]
 	public void JsOnKeyDown(KeyboardEventArgs eventArgs)
 	{
-		Console.WriteLine(eventArgs.Key);
 		switch (eventArgs.Key)
 		{
 			case "ArrowLeft":
-				_currentlyReadingInfo.PrevPage();
-				StateHasChanged();
+				PrevPage();
 				break;
 			case "ArrowRight":
-				_currentlyReadingInfo.NextPage();
-				StateHasChanged();
+				NextPage();
 				break;
 		}
 	}
 
+	[JSInvokable]
+	public void ElementScrolled(ScrollDirection direction)
+	{
+		switch (direction)
+		{
+			case ScrollDirection.Down:
+				NextPage();
+				break;
+			case ScrollDirection.Up:
+				PrevPage();
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+		}
+
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
+	}
+
+	void GoToPage(int pageIndex)
+	{
+		_readingPageHandler.GoToPage(pageIndex);
+		StateHasChanged();
+	}
+
+	void FirstPage()
+	{
+		_readingPageHandler.GoToFirstPage();
+		StateHasChanged();
+	}
+
+	void PrevPage()
+	{
+		_readingPageHandler.PrevPage();
+		StateHasChanged();
+	}
+
+	void LastPage()
+	{
+		_readingPageHandler.GoToLastPage();
+		StateHasChanged();
+	}
+
+	void NextPage()
+	{
+		_readingPageHandler.NextPage();
+		StateHasChanged();
+	}
+
+	void LoadImages()
+	{
+		ComicBookService.ExtractImagesForComicBook(_readingPageHandler.ComicBook.Id);
+
+		_images = Directory
+			.GetFiles(DataPath.ComicBookReadingDirectory, "*.*", SearchOption.TopDirectoryOnly)
+			.Select(path => path.Remove(0, 7))
+			.Order()
+			.ToArray();
+	}
+
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
+
 		LoadComic();
+		LoadImages();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -65,12 +164,14 @@
 		{
 			_componentRef = DotNetObjectReference.Create(this);
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerKeyDownEventListener", _componentRef);
+			await JsRuntime.InvokeVoidAsync("JsFunctions.registerOnScrollListener", "CurrentPage", _componentRef);
 		}
 	}
-
 
 	public void Dispose()
 	{
 		_componentRef?.Dispose();
 	}
+
+
 }

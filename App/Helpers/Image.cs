@@ -7,6 +7,19 @@ namespace Zine.App.Helpers;
 
 public static class Image
 {
+	
+	public static readonly string[] DotExtensions =
+	[
+		".bmp",
+		".gif",
+		".jpg", ".jpeg",
+		".png",
+		".tif", ".tiff",
+		".webp"
+	];
+
+	public static string[] Extensions => DotExtensions.Select(extension => extension.Remove(0, 1)).ToArray();
+	
 	/// <summary>
 	///
 	/// </summary>

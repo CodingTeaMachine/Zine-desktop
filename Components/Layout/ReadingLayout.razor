@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using Zine.App.Domain.ComicBook
 @using Zine.App.Helpers
 @using Page = Zine.App.Enums.Page
 
@@ -14,16 +15,14 @@
 <MudLayout>
     <MudAppBar>
         <h1 class="font-bold text-2xl flex items-center gap-3">
-            <a href="@GetBackLocation()" class="flex items-center">
+            <a href="@GetBackLocation()" class="flex items-center" @onclick="IComicBookService.CleanReadingDirectory">
                 <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Primary"/>
             </a>
             Zine
         </h1>
     </MudAppBar>
     <MudMainContent>
-        <div class="p-10">
-            @Body
-        </div>
+        @Body
     </MudMainContent>
 </MudLayout>
 

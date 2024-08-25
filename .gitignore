@@ -8,6 +8,7 @@ packages-microsoft-prod.deb
 appsettings.json
 wwwroot/css/app.css
 wwwroot/images/ComicBookCovers/
+wwwroot/images/Reading/
 
 
 ### DotnetCore template

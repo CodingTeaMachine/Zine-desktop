@@ -26,7 +26,6 @@ window.JsFunctions = {
 		}
 	},
 
-
 	registerKeyDownEventListener: (dotNetHelper) => {
 		let serializeEvent = function (e) {
 			if (e) {
@@ -44,16 +43,42 @@ window.JsFunctions = {
 			}
 		};
 
-		// window.document.addEventListener('onkeydown', function (e) { // Original error
-		window.document.addEventListener('keydown', function (e) {
+		window.document.addEventListener('keydown', (e) =>
 			dotNetHelper.invokeMethodAsync('JsOnKeyDown', serializeEvent(e))
-		});
+		);
 
 		return {
 			dispose: () => {
 				document.removeEventListener('keydown', serializeEvent);
 			}
 		}
-	}
+	},
 
+	registerOnScrollListener: (elementId, dotNetHelper) => {
+		const element = document.getElementById(elementId);
+		if (!element) {
+			console.error(`Could not find element with id: ${elementId}`)
+			return;
+		}
+
+		/**
+		 * @param {WheelEvent} event
+		 */
+		const invokeScrollMethod = (event) => {
+			dotNetHelper.invokeMethodAsync('ElementScrolled', event.deltaY > 0 ? scrollDirection.Down : scrollDirection.Up);
+		}
+
+		element.addEventListener("wheel", invokeScrollMethod);
+
+		return {
+			dispose: () => {
+				element.removeEventListener('wheel', invokeScrollMethod);
+			}
+		}
+	}
 };
+
+const scrollDirection = {
+	Down: 0,
+	Up: 1,
+}

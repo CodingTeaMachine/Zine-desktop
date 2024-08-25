@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
+    <RootNamespace>Zine</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
   
   <ItemGroup>
@@ -32,19 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="wwwroot\Fonts\Roboto\LICENSE.txt" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Black.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-BlackItalic.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Bold.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-BoldItalic.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Italic.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Light.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-LightItalic.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Medium.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-MediumItalic.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Regular.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-Thin.ttf" />
-    <None Include="wwwroot\Fonts\Roboto\Roboto-ThinItalic.ttf" />
+    <None Include="wwwroot\Fonts\Roboto\*" />
   </ItemGroup>
   
   <ItemGroup>
@@ -54,8 +44,13 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="logs\" />
-    <Folder Include="wwwroot\images\ComicBookCovers\" />
+    <Folder Remove="wwwroot\images\ComicBookCovers\" />
+    <Folder Remove="wwwroot\images\Reading\" />
   </ItemGroup>
   
-  
+  <ItemGroup>
+    <Watch Remove="wwwroot/images/Reading/**" />
+  </ItemGroup>
+
+
 </Project>

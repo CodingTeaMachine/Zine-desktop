@@ -7,7 +7,8 @@ module.exports = {
 				'group-card': '150px'
 			},
 			colors: {
-				primary: '#776be7' // mud-theme-primary
+				primary: '#776be7', // mud-theme-primary
+				light: '#383843' // mud-theme-light
 			}
 		},
 	},

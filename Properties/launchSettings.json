@@ -1,18 +1,19 @@
 {
 	"$schema": "http://json.schemastore.org/launchsettings.json",
 	"profiles": {
-		"Electron.NET App": {
+		"Electron": {
 			"commandName": "Executable",
-			"executablePath": "dotnet electronize",
-			"commandLineArgs": "start",
-			"workingDirectory": "."
-		},
-		"Electron.NET App Watch": {
-			"commandName": "Executable",
-			"executablePath": "dotnet electronize",
+			"executablePath": "electronize",
 			"commandLineArgs": "start /watch",
-			"workingDirectory": "../"
+			"workingDirectory": "$(ProjectDir)",
+			"launchBrowser": false,
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development",
+				"PATH": "/home/markd/.nvm/versions/node/v22.0.0/bin:$(PATH)"
+			}
 		},
+
+
 		"http": {
 			"commandName": "Project",
 			"dotnetRunMessages": true,

@@ -16,7 +16,7 @@ public class ComicBookRepository(
 
 	public ComicBook? GetById(int comicId)
 	{
-		return GetDbContext().ComicBooks.FirstOrDefault(c => c.Id == comicId);
+		return GetDbContext().ComicBooks.Include(c => c.Information).FirstOrDefault(c => c.Id == comicId);
 	}
 
 	public ComicBook Create(string name, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int? groupId = null )

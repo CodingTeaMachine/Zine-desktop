@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Zine.App.Domain.ComicBookInformation;
+using Zine.App.Helpers;
 using static System.Text.RegularExpressions.Regex;
 
 namespace Zine.App.Domain.ComicBook.FormatHandler;
@@ -10,16 +11,6 @@ public partial class GeneralFormatHandler
 	{
 		CoverImageDirectory = coverImageDirectory;
 	}
-
-	private readonly string[] _allowedImageExtensions =
-	[
-		".bmp",
-		".gif",
-		".jpg", ".jpeg",
-		".png",
-		".tif", ".tiff",
-		".webp"
-	];
 
 	private const string FileNumberingRegex = "((0{2,4})|(0{1,3}1))$";
 	
@@ -48,7 +39,7 @@ public partial class GeneralFormatHandler
 
 	protected bool IsCoverImage(ZipArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
 	{
-		if (!_allowedImageExtensions.Contains(Path.GetExtension(potentialCoverImage.Name)))
+		if (!Image.DotExtensions.Contains(Path.GetExtension(potentialCoverImage.Name)))
 			return false;
 
 		var imageName = Path.GetFileNameWithoutExtension(potentialCoverImage.Name).ToLower();

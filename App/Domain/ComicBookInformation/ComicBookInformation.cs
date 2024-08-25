@@ -15,6 +15,8 @@ public class ComicBookInformation
 
 	public int PageNamingFormat { get; init; }
 
+	public int NumberOfPages { get; set; }
+
 	[Required]
 	[MaxLength(255)]
 	public required string CoverImage { get; init; }
