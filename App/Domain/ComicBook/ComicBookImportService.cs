@@ -9,7 +9,7 @@ namespace Zine.App.Domain.ComicBook;
 public class ComicBookImportService(IComicBookRepository comicBookRepository, ILoggerService logger) : IComicBookImportService
 {
 
-	public bool ImportFromDisk(ImportType importType ,string pathOnDisk, int? groupId, bool recursiveImport = false)
+	public bool ImportFromDisk(ImportType importType ,string pathOnDisk, int groupId, bool recursiveImport = false)
 	{
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
 
@@ -22,7 +22,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 	}
 
 
-	private bool ImportFileFromDisk(string pathOnDisk, int? groupId)
+	private bool ImportFileFromDisk(string pathOnDisk, int groupId)
 	{
 		try
 		{
@@ -53,7 +53,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 		}
 	}
 
-	private bool ImportDirectoryFromDisk(string pathOnDisk, int? groupId, bool recursiveImport)
+	private bool ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
 	{
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
 

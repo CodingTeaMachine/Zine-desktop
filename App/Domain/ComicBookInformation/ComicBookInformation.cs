@@ -15,7 +15,7 @@ public class ComicBookInformation
 
 	public int PageNamingFormat { get; init; }
 
-	public int NumberOfPages { get; set; }
+	public int NumberOfPages { get; init; }
 
 	[Required]
 	[MaxLength(255)]

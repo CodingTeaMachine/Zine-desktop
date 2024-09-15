@@ -1,5 +1,4 @@
 using System.Text;
-using Microsoft.Extensions.Primitives;
 using Zine.App.Enums;
 
 namespace Zine.App.Helpers;
@@ -22,25 +21,21 @@ public static class PageManager
             : "Home";
     }
 
-    public static string GetLibraryGroupLink(int? groupId)
+    public static string GetLibraryGroupLink(int groupId)
     {
-        var sb = new StringBuilder(Page.Library);
-
-        if (groupId != null)
-            sb.Append('/').Append(groupId);
-
-        return sb.ToString();
+        return new StringBuilder(Page.Library)
+            .Append('/')
+            .Append(groupId)
+            .ToString();
     }
 
-    public static string GetLibraryComicBookLink(int comicBookId, int? groupId)
+    public static string GetLibraryComicBookLink(int comicBookId, int groupId)
     {
-        var sb = new StringBuilder(Page.Reading)
+        return new StringBuilder(Page.Reading)
             .Append('/')
-            .Append(comicBookId);
-
-        if (groupId != null)
-            sb.Append('/').Append(groupId);
-
-        return sb.ToString();
+            .Append(comicBookId)
+            .Append('/')
+            .Append(groupId)
+            .ToString();
     }
 }

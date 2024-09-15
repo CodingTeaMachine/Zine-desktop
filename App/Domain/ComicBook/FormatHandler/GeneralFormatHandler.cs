@@ -60,12 +60,14 @@ public partial class GeneralFormatHandler
 	{
 		var filenames = comicBookArchive.Entries.Select(comicBookImage => Path.GetFileNameWithoutExtension(comicBookImage.Name)).ToList();
 
-		foreach (var regexToPageFormat in ComicBookPageNamingFormat.PageFromatToRegexDic)
+		foreach (var regexToPageFormat
+		         in
+		         ComicBookPageNamingFormat
+			         .PageFromatToRegexDic
+			         .Where(regexToPageFormat => filenames.Any(filename => IsMatch(filename.ToLower(), regexToPageFormat.Value)))
+		         )
 		{
-			if (filenames.Any(filename => IsMatch(filename.ToLower(), regexToPageFormat.Value)))
-			{
-				return regexToPageFormat.Key;
-			}
+			return regexToPageFormat.Key;
 		}
 
 		return ComicBookPageNamingFormatName.Enumeration;

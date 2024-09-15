@@ -1,6 +1,6 @@
 namespace Zine.App.Domain.ComicBook.Reading;
 
-public class ReadingPageHandler()
+public class ReadingPageHandler
 {
 	public ComicBook ComicBook { get; set; } = null!;
 	public int CurrentPageIndex { get; set; } = 0;

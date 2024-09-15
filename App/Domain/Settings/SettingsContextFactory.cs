@@ -4,7 +4,7 @@ using Zine.App.Database;
 
 namespace Zine.App.Domain.Settings;
 
-public class SettingsRepository(IDbContextFactory<ZineDbContext> contextFactory) : Repository(contextFactory), ISettingsRepository
+public class SettingsContextFactory(IDbContextFactory<ZineDbContext> contextFactory) : Repository(contextFactory), ISettingsRepository
 {
     public IEnumerable<Setting> GetAll()
     {

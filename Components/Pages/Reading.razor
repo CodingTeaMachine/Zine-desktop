@@ -1,10 +1,9 @@
-@page "/Reading/{ComicBookId:int}/{GroupId:int?}"
+@page "/Reading/{ComicBookId:int}/{GroupId:int}"
 @layout ReadingLayout
 @implements IJsKeyEventListener
 @implements IJsScrollEventListener
 @implements IDisposable
 
-@using ElectronNET.API.Entities
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
 @using Zine.App.Enums
@@ -56,7 +55,7 @@
 	public int ComicBookId { get; set; }
 
 	[Parameter]
-	public int? GroupId { get; set; }
+	public int GroupId { get; set; }
 
 	readonly ReadingPageHandler _readingPageHandler = new();
 

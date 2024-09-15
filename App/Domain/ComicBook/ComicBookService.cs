@@ -14,22 +14,22 @@ public class ComicBookService(
     ): IComicBookService
 {
 
-    public IEnumerable<ComicBook> GetAllByGroupId(int? groupId = null)
+    public IEnumerable<ComicBook> GetAllByGroupId(int groupId)
     {
         return comicBookRepository
             .GetAllByGroupId(groupId)
             .Select(cb =>
             {
-                if (cb.Information.MovedOrDeleted)
+                switch (cb.Information.MovedOrDeleted)
                 {
-                    logger.Warning($"{cb.FileUri} moved/deleted");
-                }
-
-                //Check if the cover image exists, and if not, regenerate it.
-                if (!cb.Information.MovedOrDeleted && !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
-                {
-                    logger.Warning($"Regenerating cover image for: {cb.Name}");
-                    new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
+                    case true:
+                        logger.Warning($"{cb.FileUri} moved/deleted");
+                        break;
+                    //Check if the cover image exists, and if not, regenerate it.
+                    case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)):
+                        logger.Warning($"Regenerating cover image for: {cb.Name}");
+                        new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
+                        break;
                 }
 
 
@@ -42,7 +42,7 @@ public class ComicBookService(
         return comicBookRepository.GetById(comicId);
     }
 
-    public bool AddToGroup(int? groupId, int comicBookId)
+    public bool AddToGroup(int groupId, int comicBookId)
     {
         var comicBook = GetById(comicBookId);
         if (comicBook == null)
@@ -51,22 +51,17 @@ public class ComicBookService(
             return false;
         }
 
-        if (groupId == null)
-        {
-            return comicBookRepository.AddToGroup(null, comicBookId);
-        }
 
-        var group = groupService.GetById(groupId.Value);
+        var group = groupService.GetById(groupId);
 
         if (group != null)
             return comicBookRepository.AddToGroup(groupId, comicBookId);
 
         logger.Warning($"Could not find group with id: {groupId}");
         return false;
-
     }
 
-    public void MoveAll(int currentGroupId, int? newGroupId)
+    public void MoveAll(int currentGroupId, int newGroupId)
     {
         comicBookRepository.MoveAll(currentGroupId, newGroupId);
     }
@@ -81,15 +76,14 @@ public class ComicBookService(
         var imageName = comicBookRepository.GetById(comicId)!.Information.CoverImage;
         var deleteResult =  comicBookRepository.Delete(comicId);
 
-        //Delete the corresponding cover image for the comic book
-        if (deleteResult)
-        {
-            var pathToDeleteFileFrom = Path.Join(DataPath.ComicBookCoverDirectory, imageName);
-            logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicId} at {pathToDeleteFileFrom}");
-            File.Delete(pathToDeleteFileFrom);
-        }
+        if (!deleteResult) return false;
 
-        return deleteResult;
+        //Delete the corresponding cover image for the comic book
+        var pathToDeleteFileFrom = Path.Join(DataPath.ComicBookCoverDirectory, imageName);
+        logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicId} at {pathToDeleteFileFrom}");
+        File.Delete(pathToDeleteFileFrom);
+
+        return true;
     }
 
     public void ExtractImagesForComicBook(int comicBookId)

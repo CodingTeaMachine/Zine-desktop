@@ -7,31 +7,31 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.Group;
 
-public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
+public class GroupContextFactory(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
 	: Repository(contextFactory), IGroupRepository
 {
-	/// <summary>
-	///	Load groups under a specific parent
-	/// </summary>
-	/// <param name="parentId"></param>
-	/// <returns></returns>
-	/// <exception cref="HandledAppException">Thrown when the db is not accessible</exception>
-	public IEnumerable<Group> GetAllByParentId(int? parentId = null)
+	///  <summary>
+	/// 	Load groups under a specific parent
+	///  </summary>
+	///  <param name="groupId"></param>
+	///  <returns></returns>
+	///  <exception cref="HandledAppException">Thrown when the db is not accessible</exception>
+	public Group? LoadForLibraryPage(int groupId)
 	{
 		try
 		{
 			return GetDbContext().Groups
-				.Where(g => g.ParentGroupId == parentId)
-				.OrderBy(g => g.Name)
+				.Include(g => g.ChildGroups.OrderBy(gOrder => gOrder.Name))
+				.ThenInclude(childGroup => childGroup.ComicBooks)
+				.ThenInclude(cb => cb.Information)
 				.Include(g => g.ComicBooks)
 				.ThenInclude(cb => cb.Information)
-				.ToList();
+				.FirstOrDefault(g => g.Id == groupId);
 		}
 		catch (DbException e)
 		{
 			throw new HandledAppException("Error loading group", Severity.Error, e);
 		}
-
 	}
 
 	/// <summary>
@@ -64,7 +64,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		{
 			return GetDbContext().Groups.Include(g => g.ChildGroups).FirstOrDefault(g => g.Id == groupId);
 		}
-		catch(DbException e)
+		catch (DbException e)
 		{
 			throw new HandledAppException("Error loading group", Severity.Error, e);
 		}
@@ -77,7 +77,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <param name="parentId"></param>
 	/// <returns></returns>
 	/// <exception cref="HandledAppException">Thrown when the group could not be created</exception>
-	public Group Create(string newGroupName, int? parentId = null)
+	public Group Create(string newGroupName, int parentId)
 	{
 		var groupToCreate = new Group { Name = newGroupName, ParentGroupId = parentId};
 		try
@@ -89,7 +89,11 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		}
 		catch (DbUpdateException e)
 		{
-			throw new HandledAppException(e.Message, Severity.Error, e);
+			throw new HandledAppException("Error creating group", Severity.Error, e);
+		}
+		finally
+		{
+			DisposeDbContext();
 		}
 
 	}
@@ -104,16 +108,28 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	public bool Rename(int groupId, string newName)
 	{
 		var group = GetById(groupId);
-		group!.Name = newName;
-		
+		var oldGroupName = group!.Name;
+		group.Name = newName;
 		try
 		{
 			var updatedLines = GetDbContext().SaveChanges();
-			return updatedLines == 1;
+			var updateSuccessful = updatedLines == 1;
+
+			if (updateSuccessful)
+				logger.Information(
+					$"GroupRepository.Rename: Renamed group from: {oldGroupName} to: {newName} (id: {groupId})");
+			else
+				throw new DbUpdateException($"Error renaming group from: {oldGroupName} to: {newName} ({groupId} updatedLines:{updatedLines})");
+
+			return updateSuccessful;
 		}
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not rename group", Severity.Warning, e);
+		}
+		finally
+		{
+			DisposeDbContext();
 		}
 	}
 
@@ -124,7 +140,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <param name="groupId"></param>
 	/// <returns></returns>
 	/// <exception cref="HandledAppException">Thrown when the group could not be moved</exception>
-	public bool AddToGroup(int? newParentGroupId, int groupId)
+	public bool AddToGroup(int newParentGroupId, int groupId)
 	{
 		var group = GetById(groupId);
 		group!.ParentGroupId = newParentGroupId;
@@ -137,6 +153,10 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		{
 			throw new HandledAppException("Could not add to group", Severity.Warning, e);
 		}
+		finally
+		{
+			DisposeDbContext();
+		}
 	}
 
 	/// <summary>
@@ -145,7 +165,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <param name="currentParentGroupId"></param>
 	/// <param name="newParentGroupId"></param>
 	/// <exception cref="HandledAppException">Thrown when the content of the group could not be moved</exception>
-	public void MoveAll(int? currentParentGroupId, int? newParentGroupId)
+	public void MoveAll(int currentParentGroupId, int newParentGroupId)
 	{
 		var context = GetDbContext();
 		context.Groups
@@ -156,12 +176,16 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		try
 		{
 			var updatedLines = context.SaveChanges();
-			var newParent = newParentGroupId == null ? "root" : newParentGroupId.ToString();
-			logger.Information($"ComicBookRepository.MoveAll: Moved {updatedLines} comic books  from: {currentParentGroupId} to: {newParent}");
+			logger.Information(
+				$"ComicBookRepository.MoveAll: Moved {updatedLines} comic books  from: {currentParentGroupId} to: {newParentGroupId.ToString()}");
 		}
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not move group content to new group", Severity.Warning, e);
+		}
+		finally
+		{
+			DisposeDbContext();
 		}
 	}
 
@@ -180,12 +204,15 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 			var context = GetDbContext();
 			context.Groups.Remove(group);
 			var updatedLines = context.SaveChanges();
-
 			return updatedLines == 1; // TODO: Itt hibát kell dobni, ha nem 1 az updated lines
 		}
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not delete group", Severity.Error, e);
+		}
+		finally
+		{
+			DisposeDbContext();
 		}
 	}
 }

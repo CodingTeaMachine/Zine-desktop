@@ -1,4 +1,3 @@
-using Microsoft.Data.Sqlite;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
@@ -11,10 +10,15 @@ public class GroupService(
 	IComicBookRepository comicBookRepository, //Would be nice to use the service, but that would result in circular dependency
 	ILoggerService logger) : IGroupService
 {
-	public IEnumerable<Group> GetAllByParentId(int? parentId = null)
+	public Group? LoadForLibraryPage(int parentId)
 	{
+		var loadedGroup = groupRepository.LoadForLibraryPage(parentId);
+
+		if (loadedGroup == null)
+			return null;
+
 		// Return only the first 4 comic books from the group
-		return groupRepository.GetAllByParentId(parentId)
+		loadedGroup.ChildGroups = loadedGroup.ChildGroups
 			.Select(g =>
 			{
 				g.ComicBooks = g.ComicBooks.Take(4).ToList();
@@ -22,16 +26,19 @@ public class GroupService(
 				//Check if the cover image exists, and if not, regenerate it.
 				foreach (var cb in g.ComicBooks)
 				{
-					if (!File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)))
-					{
-						logger.Warning($"Regenerating cover image for: {cb.Name}");
-						new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
-					}
+					var comicBookCoverImagePath = Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage);
+					if (File.Exists(comicBookCoverImagePath))
+						continue;
+
+					logger.Warning($"Regenerating cover image for: {cb.Name}");
+					new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
 				}
 
 				return g;
 			})
 			.ToList();
+
+		return loadedGroup;
 	}
 
 	public Group? GetById(int groupId)
@@ -40,7 +47,7 @@ public class GroupService(
 	}
 
 
-	public Group Create(string newGroupName, int? parentId = null)
+	public Group Create(string newGroupName, int parentId)
 	{
 		return groupRepository.Create(newGroupName, parentId);
 	}
@@ -50,12 +57,12 @@ public class GroupService(
 		return groupRepository.Rename(groupId, newName);
 	}
 
-	public bool AddToGroup(int? newParentGroupId, int groupId)
+	public bool AddToGroup(int newParentGroupId, int groupId)
 	{
 		return groupRepository.AddToGroup(newParentGroupId, groupId);
 	}
 
-	public void MoveAll(int? currentParentGroupId, int? newParentGroupId)
+	public void MoveAll(int currentParentGroupId, int newParentGroupId)
 	{
 		groupRepository.MoveAll(currentParentGroupId, newParentGroupId);
 	}
@@ -87,8 +94,8 @@ public class GroupService(
 		}
 		else
 		{
-			comicBookRepository.MoveAll(groupId, currentGroup!.ParentGroupId);
-			MoveAll(groupId, currentGroup!.ParentGroupId);
+			comicBookRepository.MoveAll(groupId, currentGroup!.ParentGroupId!.Value);
+			MoveAll(groupId, currentGroup.ParentGroupId.Value);
 		}
 
 		return groupRepository.Delete(groupId);

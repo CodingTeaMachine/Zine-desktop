@@ -1,5 +1,6 @@
-@page "/Library/{GroupId:int?}"
+@page "/Library/{GroupId:int}"
 
+@using Zine.App
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
@@ -12,11 +13,11 @@
 @inject ISnackbar Snackbar
 @inject IComicBookService ComicBookService
 @inject IComicBookImportService ComicBookImportService
-@inject IGroupService GroupService
 
 
-<MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == null" OnClick="NavigateToParentGroup">
-	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == null ? Color.Surface : Color.Primary" />
+
+<MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
+	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
 	<p class="pt-0.5">Back</p>
 </MudLink>
 
@@ -29,9 +30,8 @@
 		<ImportComicButton Import="@Import" />
 	</div>
 
-
 	<h2 class="text-2xl font-bold justify-self-center tracking-wider">
-		@_currentGroupName
+		@(_currentGroup != null ? _currentGroup.Name : "Library")
 	</h2>
 
 	<MudTextField
@@ -54,7 +54,9 @@
 	ItemDropped="ComicBookDropEnd">
 
 	<ChildContent>
-		<MudListSubheader class="text-xl mb-3">Groups</MudListSubheader>
+		<MudListSubheader class="text-xl mb-3">
+			Groups
+		</MudListSubheader>
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
 			@foreach (var group in FilteredGroupList)
 			{
@@ -72,7 +74,9 @@
 			}
 		</MudGrid>
 
-		<MudListSubheader class="text-xl mt-10">Comic Books</MudListSubheader>
+		<MudListSubheader class="text-xl mt-10">
+			Comic Books
+		</MudListSubheader>
 		<MudDropZone T="DropItem" Identifier="ComicBook" class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
 			<ChildContent>
 				@if (FilteredComicsList.Any())
@@ -113,8 +117,10 @@
 @code
 {
 	[Parameter]
-	public int? GroupId { get; set; }
+	public int GroupId { get; set; }
 
+	[Inject]
+	IGroupService GroupService { get; set; } = null!;
 
 	private class DropItem
 	{
@@ -127,7 +133,7 @@
 	string _searchWord = string.Empty;
 	bool _editingInProgress = false;
 
-	string? _currentGroupName;
+	Group? _currentGroup;
 
 	List<DropItem> OriginalComicsList { get; set; } = [];
 	List<DropItem> FilteredComicsList { get; set; } = [];
@@ -151,7 +157,7 @@
 			if (importSuccessful)
 			{
 				Snackbar.Add("Successfully imported comic books.", Severity.Success);
-				LoadComics();
+				LoadCurrentGroup();
 				ReloadDropzone();
 			}
 			else
@@ -166,7 +172,7 @@
 	private void CreateGroup(string newGroupName)
 	{
 		GroupService!.Create(newGroupName, GroupId);
-		LoadGroups();
+		LoadCurrentGroup();
 	}
 
 
@@ -180,7 +186,7 @@
 
 		if (isAddedToGroup)
 		{
-			LoadPage();
+			LoadCurrentGroup();
 			ReloadDropzone();
 		}
 		else
@@ -189,55 +195,40 @@
 
 	private void UpdatedComicBookOrGroup()
 	{
-		LoadPage();
+		LoadCurrentGroup();
 		ReloadDropzone();
 	}
 
-	private void LoadPage()
-	{
-		OriginalGroupList = [];
-		OriginalComicsList = [];
-		LoadGroups();
-		LoadComics();
-		LoadGroupName();
-	}
-
-	private void LoadGroups()
-	{
-		_searchWord = "";
-		FilteredGroupList = OriginalGroupList = GroupService!.GetAllByParentId(GroupId).ToList();
-	}
-
-	private void LoadComics()
-	{
-		_searchWord = "";
-		FilteredComicsList = OriginalComicsList = ComicBookService!
-			.GetAllByGroupId(GroupId)
-			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook" })
-			.ToList();
-	}
 
 	private void NavigateToParentGroup()
 	{
-		if (GroupId == null) return;
+		var parentGroupId = GroupService.GetById(GroupId)?.ParentGroupId;
 
-		var parentGroupId = GroupService!.GetById(GroupId.Value)?.ParentGroupId;
-		NavigateToGroup(parentGroupId);
+		if(parentGroupId != null)
+			NavigateToGroup(parentGroupId.Value);
 	}
 
-	private void NavigateToGroup(int? groupId)
+	private void NavigateToGroup(int groupId)
 	{
 		if (!_editingInProgress)
 			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId), true);
 	}
 
-	private void LoadGroupName()
+	private void LoadCurrentGroup()
 	{
-		_currentGroupName =
-			GroupId != null
-				? GroupService!.GetById(GroupId.Value)!.Name
-				: "Library";
+		var loadedGroup = GroupService.LoadForLibraryPage(GroupId);
+
+		if(loadedGroup == null)
+			return;
+
+		_searchWord = "";
+		_currentGroup = loadedGroup;
+		FilteredGroupList = OriginalGroupList = _currentGroup.ChildGroups.ToList();
+		FilteredComicsList = OriginalComicsList = _currentGroup.ComicBooks
+			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook" })
+			.ToList();
 	}
+
 
 
 	/// <summary>
@@ -259,6 +250,6 @@
 	{
 		base.OnInitialized();
 		PageManager.SetPageTitle(Page.Library);
-		LoadPage();
+		LoadCurrentGroup();
 	}
 }

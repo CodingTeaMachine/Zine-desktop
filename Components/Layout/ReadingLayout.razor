@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using Zine.App
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Helpers
 @using Page = Zine.App.Enums.Page
@@ -34,13 +35,11 @@
 
         if (urlParams.Length != 2)
         {
-            return PageManager.GetLibraryGroupLink(null);
+            return PageManager.GetLibraryGroupLink(AppConstants.MainGroupId);
         }
 
-        var retVal = int.TryParse(urlParams[1], out var groupId)
+        return int.TryParse(urlParams[1], out var groupId)
             ? PageManager.GetLibraryGroupLink(groupId)
-            : PageManager.GetLibraryGroupLink(null);
-
-        return retVal;
+            : PageManager.GetLibraryGroupLink(AppConstants.MainGroupId);
     }
 }

@@ -23,9 +23,9 @@ public class ComicBook
 	[MaxLength(32_767)]
 	public required string FileUri { get; init; }
 
-	public int? GroupId { get; set; }
+	public int GroupId { get; set; }
 
-	public Group.Group? Group { get; init; }
+	public Group.Group Group { get; init; } = null!;
 
 	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
 }

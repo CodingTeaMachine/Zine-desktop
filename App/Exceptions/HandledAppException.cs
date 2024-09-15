@@ -32,11 +32,15 @@ public class HandledAppException : Exception
 
 		if (stackTrace.FrameCount <= 0) return;
 
-		StackFrame frame = stackTrace.GetFrame(0)!;
+		var exceptionMessage = $"{severity}: {message}";
 
-		string messageToLog = $"HandledAppException: {message}" + Environment.NewLine
-		                                                        + $"At: {frame.GetFileName()}:{frame.GetFileLineNumber()} @ {frame.GetMethod()}";
+		StackFrame? frame = stackTrace.GetFrames()
+			.FirstOrDefault(frame => frame.GetFileName() != null && !frame.GetFileName()!.EndsWith(GetType().Name + ".cs"));
 
-		SerilogLogger.Instance().FromSeverity(messageToLog, severity);
+		if (frame != null)
+			exceptionMessage += Environment.NewLine
+			                    + $"\t At: {frame.GetFileName()}:{frame.GetFileLineNumber()} {frame.GetMethod()}";
+
+		SerilogLogger.Instance().FromSeverity(exceptionMessage, severity);
 	}
 }
