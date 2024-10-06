@@ -26,7 +26,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 	{
 		try
 		{
-			var format = ComicBookCompressionFormatFactory.GetFromFilePathOrName(pathOnDisk);
+			var format = ComicBookCompressionFormatFactory.GetFromFile(pathOnDisk);
 
 			ComicBookInformationFactory comicBookInformationFactory = new(logger);
 			var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk, format);
@@ -65,7 +65,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			.Where(filePath => ComicBookCompressionFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
 			.Select(filePath =>
 			{
-				var format = ComicBookCompressionFormatFactory.GetFromFilePathOrName(filePath);
+				var format = ComicBookCompressionFormatFactory.GetFromFile(filePath);
 				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath, format);
 
 				var cbInfo = new ComicBookInformation.ComicBookInformation

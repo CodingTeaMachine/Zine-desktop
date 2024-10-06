@@ -30,7 +30,7 @@ public class ComicBookInformation
 		get
 		{
 			var fileExtension = Path.GetExtension(ComicBook.FileUri);
-			return ComicBookCompressionFormatFactory.GetFromFileExtension(fileExtension);
+			return ComicBookCompressionFormatFactory.GetFromFile(fileExtension);
 		}
 	}
 
