@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Zine.App.Domain.ComicBook.FormatHandler;
+using Zine.App.Domain.ComicBook.CompressionFormatHandler;
 
 namespace Zine.App.Domain.ComicBookInformation;
 
@@ -25,12 +25,12 @@ public class ComicBookInformation
 	///	This field is not stored in the DB, because it can just be calculated at runtime
 	/// </summary>
 	[NotMapped]
-	public ComicBookFormat CompressionFormat
+	public ComicBookCompressionFormat CompressionCompressionFormat
 	{
 		get
 		{
 			var fileExtension = Path.GetExtension(ComicBook.FileUri);
-			return ComicBookFormatFactory.GetFromFileExtension(fileExtension);
+			return ComicBookCompressionFormatFactory.GetFromFileExtension(fileExtension);
 		}
 	}
 

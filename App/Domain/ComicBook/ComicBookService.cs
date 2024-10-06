@@ -28,7 +28,7 @@ public class ComicBookService(
                     //Check if the cover image exists, and if not, regenerate it.
                     case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)):
                         logger.Warning($"Regenerating cover image for: {cb.Name}");
-                        new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
+                        new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionCompressionFormat);
                         break;
                 }
 

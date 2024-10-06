@@ -3,19 +3,13 @@ using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Helpers;
 using static System.Text.RegularExpressions.Regex;
 
-namespace Zine.App.Domain.ComicBook.FormatHandler;
+namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
 
-public partial class GeneralFormatHandler
+public partial class GeneralCompressionFormatHandler(string coverImageDirectory)
 {
-	public GeneralFormatHandler(string coverImageDirectory)
-	{
-		CoverImageDirectory = coverImageDirectory;
-	}
-
 	private const string FileNumberingRegex = "((0{2,4})|(0{1,3}1))$";
 	
-	protected readonly string CoverImageDirectory;
-
+	protected readonly string CoverImageDirectory = coverImageDirectory;
 
 	[System.Text.RegularExpressions.GeneratedRegex(FileNumberingRegex)]
 	private static partial System.Text.RegularExpressions.Regex PageFormatRegex();
@@ -28,6 +22,7 @@ public partial class GeneralFormatHandler
 		var fileExtension = Path.GetExtension(filename);
 		var fileCounter = 1;
 
+		//TODO: Refactor
 		while (Path.Exists(Path.Join(CoverImageDirectory, filename)))
 		{
 			filename = Path.GetFileNameWithoutExtension(filename) + $"-{fileCounter}" + fileExtension;

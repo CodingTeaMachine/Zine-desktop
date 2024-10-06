@@ -1,5 +1,5 @@
 using System.Data;
-using Zine.App.Domain.ComicBook.FormatHandler;
+using Zine.App.Domain.ComicBook.CompressionFormatHandler;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
@@ -26,7 +26,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 	{
 		try
 		{
-			var format = ComicBookFormatFactory.GetFromFilePathOrName(pathOnDisk);
+			var format = ComicBookCompressionFormatFactory.GetFromFilePathOrName(pathOnDisk);
 
 			ComicBookInformationFactory comicBookInformationFactory = new(logger);
 			var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk, format);
@@ -62,10 +62,10 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			: SearchOption.TopDirectoryOnly;
 
 		List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", searchDepth)
-			.Where(filePath => ComicBookFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
+			.Where(filePath => ComicBookCompressionFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
 			.Select(filePath =>
 			{
-				var format = ComicBookFormatFactory.GetFromFilePathOrName(filePath);
+				var format = ComicBookCompressionFormatFactory.GetFromFilePathOrName(filePath);
 				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath, format);
 
 				var cbInfo = new ComicBookInformation.ComicBookInformation

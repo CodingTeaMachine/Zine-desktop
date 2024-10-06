@@ -3,9 +3,9 @@ using System.IO.Compression;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Helpers;
 
-namespace Zine.App.Domain.ComicBook.FormatHandler;
+namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
 
-public class ZipFormatHandler(string filePath, string coverImageDirectory): GeneralFormatHandler(coverImageDirectory), IComicBookFormatHandler
+public class ZipCompressionCompressionFormatHandler(string filePath, string coverImageDirectory): GeneralCompressionFormatHandler(coverImageDirectory), IComicBookCompressionFormatHandler
 {
 
 	public string ExtractCoverImage()

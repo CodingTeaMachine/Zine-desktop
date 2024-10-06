@@ -31,7 +31,7 @@ public class GroupService(
 						continue;
 
 					logger.Warning($"Regenerating cover image for: {cb.Name}");
-					new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionFormat);
+					new ComicBookInformationFactory().GetCoverImage(cb.FileUri, cb.Information.CompressionCompressionFormat);
 				}
 
 				return g;
