@@ -2,7 +2,7 @@ using System.IO.Compression;
 using Zine.App.Helpers;
 using static System.Text.RegularExpressions.Regex;
 
-namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler.Handlers;
 
 public partial class GeneralCompressionFormatHandler(string coverImageDirectory)
 {

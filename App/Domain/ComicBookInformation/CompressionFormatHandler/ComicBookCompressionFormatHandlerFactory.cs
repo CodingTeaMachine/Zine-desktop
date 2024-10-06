@@ -1,4 +1,4 @@
-using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler.Specific;
+using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler.Handlers;
 
 namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 
