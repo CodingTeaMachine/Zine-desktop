@@ -1,6 +1,8 @@
-namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
+using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler.Specific;
 
-public class ComicBookFormatHandlerFactory(string filePath, string coverImageDirectory)
+namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+
+public class ComicBookCompressionFormatHandlerFactory(string filePath, string coverImageDirectory)
 {
 	public IComicBookCompressionFormatHandler GetFromFormat(ComicBookCompressionFormat compressionFormat)
 	{

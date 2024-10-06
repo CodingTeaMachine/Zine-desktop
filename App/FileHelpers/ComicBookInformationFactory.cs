@@ -1,5 +1,5 @@
 using System.IO.Compression;
-using Zine.App.Domain.ComicBook.CompressionFormatHandler;
+using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Logger;
@@ -15,7 +15,7 @@ public class ComicBookInformationFactory(ILoggerService? logger = null)
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
 
 
-		var formatHandler = new ComicBookFormatHandlerFactory(pathOnDisk, DataPath.ComicBookCoverDirectory).GetFromFormat(compressionFormat);
+		var formatHandler = new ComicBookCompressionFormatHandlerFactory(pathOnDisk, DataPath.ComicBookCoverDirectory).GetFromFormat(compressionFormat);
 		var coverImageName  = formatHandler.ExtractCoverImage();
 
 		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");

@@ -1,4 +1,4 @@
-namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
+namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 
 public interface IComicBookCompressionFormatHandler
 {

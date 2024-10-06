@@ -1,9 +1,8 @@
 using System.Data;
 using System.IO.Compression;
-using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Helpers;
 
-namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
+namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler.Specific;
 
 public class ZipCompressionCompressionFormatHandler(string filePath, string coverImageDirectory): GeneralCompressionFormatHandler(coverImageDirectory), IComicBookCompressionFormatHandler
 {

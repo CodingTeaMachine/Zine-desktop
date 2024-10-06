@@ -1,5 +1,5 @@
 using System.Data;
-using Zine.App.Domain.ComicBook.CompressionFormatHandler;
+using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;

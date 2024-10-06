@@ -1,9 +1,8 @@
 using System.IO.Compression;
-using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Helpers;
 using static System.Text.RegularExpressions.Regex;
 
-namespace Zine.App.Domain.ComicBook.CompressionFormatHandler;
+namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 
 public partial class GeneralCompressionFormatHandler(string coverImageDirectory)
 {
