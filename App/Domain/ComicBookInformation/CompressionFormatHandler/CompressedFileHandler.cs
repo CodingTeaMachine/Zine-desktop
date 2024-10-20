@@ -46,7 +46,6 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		var fileExtension = Path.GetExtension(originalFilename);
 		var fileCounter = 0;
 
-		//TODO: Refactor
 		while (Path.Exists(Path.Join(outputCoverImageDirectory, Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension)))
 		{
 			fileCounter++;
