@@ -89,7 +89,7 @@ public class ComicBookService(
 
     public void ExtractImagesOfComicBook(int comicBookId)
     {
-        IComicBookService.CleanReadingDirectory();
+        CleanReadingDirectory();
 
         Console.WriteLine("Extracting images");
 
@@ -103,11 +103,22 @@ public class ComicBookService(
         if (!Directory.Exists(DataPath.ComicBookReadingDirectory))
             Directory.CreateDirectory(DataPath.ComicBookReadingDirectory);
 
-        using IArchive comicBookZip = ArchiveFactory.Open(comicBook.FileUri);
+        using IArchive comicBookFile = ArchiveFactory.Open(comicBook.FileUri);
 
-        comicBookZip
+        comicBookFile
             .Entries
             .Where(entry => Image.Extensions.Contains(entry.Key?.Split('.').Last()))
             .ForEach(entry => entry.WriteToDirectory(DataPath.ComicBookReadingDirectory));
+    }
+
+    public static void CleanReadingDirectory()
+    {
+        if(!Directory.Exists(DataPath.ComicBookReadingDirectory))
+            return;
+
+        foreach (var file in Directory.GetFiles(DataPath.ComicBookReadingDirectory))
+        {
+            File.Delete(file);
+        }
     }
 }

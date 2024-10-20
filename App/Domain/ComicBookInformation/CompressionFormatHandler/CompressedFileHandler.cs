@@ -16,12 +16,12 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 
 	public string ExtractCoverImage()
 	{
-		using IArchive comicBookZip = ArchiveFactory.Open(filePath);
-		if (!comicBookZip.Entries.Any()) throw new DataException("Empty comic book file");
+		using IArchive comicBookFile = ArchiveFactory.Open(filePath);
+		if (!comicBookFile.Entries.Any()) throw new DataException("Empty comic book file");
 
 
-		ComicBookPageNamingFormatName namingFormatName = GetPageNamingFormat(comicBookZip);
-		IArchiveEntry coverImage = comicBookZip.Entries.First(cI => IsCoverImage(cI, namingFormatName));
+		ComicBookPageNamingFormatName namingFormatName = GetPageNamingFormat(comicBookFile);
+		IArchiveEntry coverImage = comicBookFile.Entries.First(cI => IsCoverImage(cI, namingFormatName));
 
 		var filename = GetFilename(coverImage);
 		var outputPath = Path.Join(outputCoverImageDirectory, filename);

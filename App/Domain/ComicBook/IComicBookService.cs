@@ -1,4 +1,3 @@
-using Zine.App.Enums;
 
 namespace Zine.App.Domain.ComicBook;
 
@@ -13,15 +12,4 @@ public interface IComicBookService
 
 
     public void ExtractImagesOfComicBook(int comicBookId);
-
-    public static void CleanReadingDirectory()
-    {
-        if(!Directory.Exists(DataPath.ComicBookReadingDirectory))
-            return;
-
-        foreach (var file in Directory.GetFiles(DataPath.ComicBookReadingDirectory))
-        {
-            File.Delete(file);
-        }
-    }
 }

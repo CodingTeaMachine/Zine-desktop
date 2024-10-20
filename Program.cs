@@ -69,6 +69,6 @@ if (HybridSupport.IsElectronActive)
 
 ConfigurationHelper.Initialize(builder.Configuration);
 
-IComicBookService.CleanReadingDirectory();
+ComicBookService.CleanReadingDirectory();
 
 app.WaitForShutdown();

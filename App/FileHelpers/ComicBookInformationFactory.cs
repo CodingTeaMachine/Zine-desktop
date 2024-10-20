@@ -27,8 +27,8 @@ public class ComicBookInformationFactory(ILoggerService? logger = null)
 
 	public int GetNumberOfPages(string pathOnDisk)
 	{
-		using IArchive comicBookZip = ArchiveFactory.Open(pathOnDisk);
+		using IArchive comicBookFile = ArchiveFactory.Open(pathOnDisk);
 
-		return comicBookZip.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last())).ToList().Count;
+		return comicBookFile.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last())).ToList().Count;
 	}
 }
