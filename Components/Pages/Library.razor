@@ -152,18 +152,12 @@
 	{
 		try
 		{
-			bool importSuccessful = ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId, args.recursiveImport);
-
-			if (importSuccessful)
-			{
-				Snackbar.Add("Successfully imported comic books.", Severity.Success);
-				LoadCurrentGroup();
-				ReloadDropzone();
-			}
-			else
-				Snackbar.Add("An error occured during importing...", Severity.Error);
+			ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId, args.recursiveImport);
+			Snackbar.Add("Successfully imported comic books.", Severity.Success);
+			LoadCurrentGroup();
+			ReloadDropzone();
 		}
-		catch (ArgumentOutOfRangeException e)
+		catch (Exception e) when(e is ArgumentOutOfRangeException or FormatException)
 		{
 			Snackbar.Add(e.Message, Severity.Error);
 		}

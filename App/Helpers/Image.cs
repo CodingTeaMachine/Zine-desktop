@@ -1,5 +1,6 @@
 using System.Data;
 using System.IO.Compression;
+using SharpCompress.Archives;
 using SkiaSharp;
 
 
@@ -31,9 +32,9 @@ public static class Image
 	/// <returns></returns>
 	/// <exception cref="DataException"></exception>
 	/// <exception cref="NotSupportedException"></exception>
-	public static byte[] GetResizedImage(ZipArchiveEntry entry, int height, int width, int quality = 100, SKFilterQuality filterQuality = SKFilterQuality.High)
+	public static byte[] GetResizedImage(IArchiveEntry entry, int height, int width, int quality = 100, SKFilterQuality filterQuality = SKFilterQuality.High)
 	{
-		using var entryStream = entry.Open();
+		using var entryStream = entry.OpenEntryStream();
 
 		using var memoryStream = new MemoryStream();
 		entryStream.CopyTo(memoryStream);
@@ -63,9 +64,9 @@ public static class Image
 
 
 
-	private static SKEncodedImageFormat GetImageFormat(ZipArchiveEntry entry)
+	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)
 	{
-		using var entryStream = entry.Open();
+		using var entryStream = entry.OpenEntryStream();
 		var codec = SKCodec.Create(entryStream);
 		if (codec != null)
 		{
@@ -73,9 +74,10 @@ public static class Image
 		}
 
 		//If we couldn't create the codec from the entry
-		var filename = entry.Name.Replace("#", "_");
+		var filename = entry.Key!.Replace("#", "_");
 		var fileExtension = Path.GetExtension(filename).Remove(0, 1).ToLower();
 
+		//TODO: Get file type for images from magic number, like with the compression format
 		return fileExtension switch
 		{
 			"jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,

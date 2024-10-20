@@ -1,6 +1,6 @@
 namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 
-public enum ComicBookCompressionFormat
+public enum CompressionFormat
 {
    _7Z = 0,
    Ace = 1,

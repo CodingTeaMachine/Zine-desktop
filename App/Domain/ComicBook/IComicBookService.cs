@@ -12,7 +12,7 @@ public interface IComicBookService
     public bool Delete(int comicId);
 
 
-    public void ExtractImagesForComicBook(int comicBookId);
+    public void ExtractImagesOfComicBook(int comicBookId);
 
     public static void CleanReadingDirectory()
     {

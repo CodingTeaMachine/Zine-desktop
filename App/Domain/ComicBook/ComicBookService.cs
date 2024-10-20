@@ -1,4 +1,5 @@
-using System.IO.Compression;
+using SharpCompress;
+using SharpCompress.Archives;
 using Zine.App.Domain.Group;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
@@ -86,7 +87,7 @@ public class ComicBookService(
         return true;
     }
 
-    public void ExtractImagesForComicBook(int comicBookId)
+    public void ExtractImagesOfComicBook(int comicBookId)
     {
         IComicBookService.CleanReadingDirectory();
 
@@ -102,15 +103,11 @@ public class ComicBookService(
         if (!Directory.Exists(DataPath.ComicBookReadingDirectory))
             Directory.CreateDirectory(DataPath.ComicBookReadingDirectory);
 
-        using ZipArchive comicBookZip = ZipFile.OpenRead(comicBook.FileUri);
+        using IArchive comicBookZip = ArchiveFactory.Open(comicBook.FileUri);
 
-        var entriesToSave = comicBookZip
+        comicBookZip
             .Entries
-            .Where(entry => Image.Extensions.Contains(entry.Name.Split('.').Last()));
-
-        foreach (var entry in entriesToSave)
-        {
-            entry.ExtractToFile(Path.Join(DataPath.ComicBookReadingDirectory, entry.Name));
-        }
+            .Where(entry => Image.Extensions.Contains(entry.Key?.Split('.').Last()))
+            .ForEach(entry => entry.WriteToDirectory(DataPath.ComicBookReadingDirectory));
     }
 }

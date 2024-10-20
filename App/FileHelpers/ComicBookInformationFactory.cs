@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using SharpCompress.Archives;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
 using Zine.App.Helpers;
@@ -9,13 +10,14 @@ namespace Zine.App.FileHelpers;
 public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
 
-	public string GetCoverImage(string pathOnDisk, ComicBookCompressionFormat compressionFormat)
+	//TODO: Remove the format parameter
+	public string GetCoverImage(string pathOnDisk, CompressionFormat compressionFormat)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
 
 
-		var formatHandler = new ComicBookCompressionFormatHandlerFactory(pathOnDisk, DataPath.ComicBookCoverDirectory).GetFromFormat(compressionFormat);
+		var formatHandler = new CompressedFileHandler(pathOnDisk, DataPath.ComicBookCoverDirectory);
 		var coverImageName  = formatHandler.ExtractCoverImage();
 
 		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");
@@ -25,8 +27,8 @@ public class ComicBookInformationFactory(ILoggerService? logger = null)
 
 	public int GetNumberOfPages(string pathOnDisk)
 	{
-		using ZipArchive comicBookZip = ZipFile.OpenRead(pathOnDisk);
+		using IArchive comicBookZip = ArchiveFactory.Open(pathOnDisk);
 
-		return comicBookZip.Entries.Where(file => Image.Extensions.Contains(file.Name.Split('.').Last())).ToList().Count;
+		return comicBookZip.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last())).ToList().Count;
 	}
 }

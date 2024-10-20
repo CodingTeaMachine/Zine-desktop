@@ -139,7 +139,7 @@
 
 	void LoadImages()
 	{
-		ComicBookService.ExtractImagesForComicBook(_readingPageHandler.ComicBook.Id);
+		ComicBookService.ExtractImagesOfComicBook(_readingPageHandler.ComicBook.Id);
 
 		_images = Directory
 			.GetFiles(DataPath.ComicBookReadingDirectory, "*.*", SearchOption.TopDirectoryOnly)

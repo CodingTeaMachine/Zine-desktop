@@ -25,12 +25,12 @@ public class ComicBookInformation
 	///	This field is not stored in the DB, because it can just be calculated at runtime
 	/// </summary>
 	[NotMapped]
-	public ComicBookCompressionFormat CompressionCompressionFormat
+	public CompressionFormat CompressionCompressionFormat
 	{
 		get
 		{
 			var fileExtension = Path.GetExtension(ComicBook.FileUri);
-			return ComicBookCompressionFormatFactory.GetFromFile(fileExtension);
+			return CompressionFormatFactory.GetFromFile(fileExtension);
 		}
 	}
 
