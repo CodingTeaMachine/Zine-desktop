@@ -51,6 +51,7 @@
   
   <ItemGroup>
     <Watch Remove="wwwroot/images/Reading/**" />
+    <Watch Remove="wwwroot/images/Reading/*" />
   </ItemGroup>
 
 

@@ -17,7 +17,15 @@
 			<div class="md:w-60 w-44 hover:cursor-pointer">
 				@if (!ComicBook.Information.MovedOrDeleted)
 				{
-					<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" />
+					<div class="relative">
+						<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true"/>
+						@if (_openingComicBookForReading)
+						{
+						<div class="absolute inset-0 w-full h-full rounded-lg bg-light/95 flex items-center justify-center">
+							<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium"/>
+						</div>
+						}
+					</div>
 				}
 				else
 				{
@@ -103,6 +111,7 @@
 
 	bool _renaming = false;
 	string _renamingComicBookName = "";
+	bool _openingComicBookForReading = false;
 
 	void StartRenamingComicBook()
 	{

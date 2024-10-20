@@ -10,6 +10,11 @@
 			"environmentVariables": {
 				"ASPNETCORE_ENVIRONMENT": "Development",
 				"PATH": "/home/markd/.nvm/versions/node/v22.0.0/bin:$(PATH)"
+			},
+			"watch": {
+				"ignore": [
+					"wwwroot/images/Reading/**/*"
+				]
 			}
 		},
 
