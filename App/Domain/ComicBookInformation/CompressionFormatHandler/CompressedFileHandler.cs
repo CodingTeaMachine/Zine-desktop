@@ -44,17 +44,15 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 	{
 		var originalFilename = Path.GetFileName(coverImage.Key!).Replace("#", "_");
 		var fileExtension = Path.GetExtension(originalFilename);
-		var fileCounter = 1;
-		var filename = originalFilename;
+		var fileCounter = 0;
 
 		//TODO: Refactor
-		while (Path.Exists(Path.Join(outputCoverImageDirectory, filename)))
+		while (Path.Exists(Path.Join(outputCoverImageDirectory, Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension)))
 		{
-			filename = Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension;
 			fileCounter++;
 		}
 
-		return filename;
+		return Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension;
 	}
 
 	private bool IsCoverImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
