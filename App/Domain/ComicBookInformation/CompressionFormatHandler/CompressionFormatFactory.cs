@@ -50,27 +50,26 @@ public static class CompressionFormatFactory
     public static CompressionFormat GetFromFile(string filePath)
     {
         var fileBuffer = File.ReadAllBytes(filePath);
-
-        if(IsZip(fileBuffer))
-            return CompressionFormat.Zip;
-        if(IsRar(fileBuffer))
-            return CompressionFormat.Rar;
-        if(Is7Z(fileBuffer))
-            return CompressionFormat._7Z;
-        if(IsTar(fileBuffer))
-            return CompressionFormat.Tar;
-        // ReSharper disable once ConvertIfStatementToReturnStatement
-        if(IsAce(fileBuffer))
-            return CompressionFormat.Ace;
-
-        return CompressionFormat.Unknown;
+        return GetFormatFromBytes(fileBuffer);
     }
 
-    private static bool Is7Z(byte[] buffer) => IsFromFormat(buffer, CompressionFormat._7Z);
-    private static bool IsAce(byte[] buffer) => IsFromFormat(buffer, CompressionFormat.Ace);
-    private static bool IsRar(byte[] buffer) => IsFromFormat(buffer, CompressionFormat.Rar);
-    private static bool IsTar(byte[] buffer) => IsFromFormat(buffer, CompressionFormat.Tar);
-    private static bool IsZip(byte[] buffer) => IsFromFormat(buffer, CompressionFormat.Zip);
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private static CompressionFormat GetFormatFromBytes(byte[] buffer)
+    {
+        try
+        {
+            return CompressionFormatMagicBytesMap.First(pair => IsFromFormat(buffer, pair.Key)).Key;
+        }
+        catch (InvalidOperationException)
+        {
+            return CompressionFormat.Unknown;
+        }
+    }
 
     private static bool IsFromFormat(byte[] buffer, CompressionFormat format)
     {

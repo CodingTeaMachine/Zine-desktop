@@ -68,28 +68,9 @@ public static class Image
 	{
 		using var entryStream = entry.OpenEntryStream();
 		var codec = SKCodec.Create(entryStream);
-		if (codec != null)
-		{
-			return codec.EncodedFormat;
-		}
-
-		//If we couldn't create the codec from the entry
-		var filename = entry.Key!.Replace("#", "_");
-		var fileExtension = Path.GetExtension(filename).Remove(0, 1).ToLower();
-
-		//TODO: Get file type for images from magic number, like with the compression format
-		return fileExtension switch
-		{
-			"jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,
-			"png" => SKEncodedImageFormat.Png,
-			"bmp" => SKEncodedImageFormat.Bmp,
-			"gif" => SKEncodedImageFormat.Gif,
-			"webp" => SKEncodedImageFormat.Webp,
-			"ico" => SKEncodedImageFormat.Ico,
-			"wbmp" => SKEncodedImageFormat.Wbmp,
-			_ => throw new NotSupportedException($"Unsupported file extension: {fileExtension}")
-		};
+		return
+			codec?.EncodedFormat
+			?? ImageFormatFactory.Get(entryStream);
 	}
-
 
 }
