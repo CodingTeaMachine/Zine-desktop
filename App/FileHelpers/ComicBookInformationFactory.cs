@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using SharpCompress.Archives;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
@@ -9,9 +8,7 @@ namespace Zine.App.FileHelpers;
 
 public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
-
-	//TODO: Remove the format parameter
-	public string GetCoverImage(string pathOnDisk, CompressionFormat compressionFormat)
+	public string GetCoverImage(string pathOnDisk)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);

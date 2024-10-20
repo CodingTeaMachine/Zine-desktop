@@ -44,11 +44,10 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 	/// <param name="groupId"></param>
 	private void ImportFileFromDisk(string pathOnDisk, int groupId)
 	{
-
 		var format = CompressionFormatFactory.GetFromFile(pathOnDisk);
 
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk, format);
+		var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk);
 
 		var cbInfo = new ComicBookInformation.ComicBookInformation
 		{
@@ -79,7 +78,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 			.Select(filePath =>
 			{
 				var format = CompressionFormatFactory.GetFromFile(filePath);
-				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath, format);
+				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath);
 
 				var cbInfo = new ComicBookInformation.ComicBookInformation
 				{
