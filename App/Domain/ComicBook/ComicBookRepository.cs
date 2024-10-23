@@ -6,7 +6,7 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook;
 
-public class ComicBookContextFactory(
+public class ComicBookRepository(
 	IDbContextFactory<ZineDbContext> contextFactory,
 	ILoggerService logger)
 	: Repository(contextFactory), IComicBookRepository
@@ -21,6 +21,7 @@ public class ComicBookContextFactory(
 	{
 		try
 		{
+			logger.Information($"Getting all comic books by groupId \"{groupId}\"");
 			return GetDbContext().ComicBooks.Where(c => c.GroupId == groupId).Include(cb => cb.Information).ToList();
 		}
 		catch (Exception e)
@@ -50,16 +51,16 @@ public class ComicBookContextFactory(
 /// <summary>
 ///
 /// </summary>
-/// <param name="name"></param>
+/// <param name="title"></param>
 /// <param name="fileUri"></param>
 /// <param name="cbInfo"></param>
 /// <param name="groupId"></param>
 /// <returns></returns>
-	public ComicBook Create(string name, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int groupId)
+	public ComicBook Create(string title, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int groupId)
 	{
 
 		var comicBookToCreate = new ComicBook
-			{ Name = name, FileUri = fileUri, GroupId = groupId, Information = cbInfo };
+			{ Title = title, FileUri = fileUri, GroupId = groupId, Information = cbInfo };
 
 		var dbContext = GetDbContext();
 		var createdComicBook = dbContext.ComicBooks.Add(comicBookToCreate);
@@ -67,6 +68,7 @@ public class ComicBookContextFactory(
 		try
 		{
 			dbContext.SaveChanges();
+			logger.Information($"Created comic book: \"{title}\"");
 			return createdComicBook.Entity;
 		}
 		catch (DbUpdateException e)
@@ -112,22 +114,23 @@ public class ComicBookContextFactory(
 /// <param name="comicBookId"></param>
 /// <returns></returns>
 /// <exception cref="HandledAppException"></exception>
-	public bool AddToGroup(int groupId, int comicBookId)
+	public void AddToGroup(int groupId, int comicBookId)
 	{
+
+		var dbContext = GetDbContext();
 		try
 		{
-			var comicBook = GetById(comicBookId);
-			comicBook!.GroupId = groupId;
-			var updatedLines = GetDbContext().SaveChanges();
-			var updateSuccessful = updatedLines == 1;
+			var comicBook = dbContext.ComicBooks.Include(cb => cb.Group).First(cb => cb.Id == comicBookId);
+			var group = dbContext.Groups.First(g => g.Id == groupId);
 
-			if (updateSuccessful)
-				logger.Information($"ComicBookRepository.AddToGroup: Added {comicBookId} - {comicBook.Name} to {groupId}");
+			comicBook.Group = group;
+
+			var updatedLines = dbContext.SaveChanges();
+
+			if (updatedLines == 1)
+				logger.Information($"ComicBookRepository.AddToGroup: Added {comicBookId} - {comicBook.Title} to {groupId}");
 			else
-				logger.Error(
-					$"ComicBookRepository.AddToGroup: Failed to add comic book ({comicBookId} - {comicBook.Name}) to {groupId}");
-
-			return updateSuccessful;
+				throw new HandledAppException($"Failed to add comic book ({comicBookId} - {comicBook.Title}) to {groupId}");
 		}
 		catch (DbUpdateException e)
 		{
@@ -179,8 +182,8 @@ public class ComicBookContextFactory(
 	public bool Rename(int comicBookId, string newName)
 	{
 		var comicBook = GetById(comicBookId);
-		var oldComicBookName = comicBook!.Name;
-		comicBook.Name = newName;
+		var oldComicBookName = comicBook!.Title;
+		comicBook.Title = newName;
 		try
 		{
 			var updatedLines = GetDbContext().SaveChanges();
@@ -254,6 +257,30 @@ public class ComicBookContextFactory(
 		catch (Exception e)
 		{
 			throw new HandledAppException("Error delete comic book", Severity.Warning, e);
+		}
+		finally
+		{
+			DisposeDbContext();
+		}
+	}
+
+	public IEnumerable<ComicBook> SearchByTitle(string searchTerm)
+	{
+		searchTerm = searchTerm.ToLower();
+		logger.Information($"ComicBookRepository.SearchByTitle: Searching for comic books by title: \"{searchTerm}\"");
+
+		try
+		{
+			var context = GetDbContext();
+			var comicBooksFoundByTitle =  context.ComicBooks.Where(cb => cb.Title.ToLower().Contains(searchTerm));
+
+			logger.Information($"ComicBookRepository.SearchByTitle: Found {comicBooksFoundByTitle.Count()} comic books for term \"{searchTerm}\"");
+
+			return comicBooksFoundByTitle;
+		}
+		catch (Exception e)
+		{
+			throw new HandledAppException($"Error searching comic books by title: \"{searchTerm}\"", Severity.Error, e);
 		}
 		finally
 		{

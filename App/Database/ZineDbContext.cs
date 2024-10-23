@@ -29,14 +29,14 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
             .HasOne(g => g.ParentGroup)
             .WithMany(g => g.ChildGroups)
             .HasForeignKey(g => g.ParentGroupId)
-            .OnDelete(DeleteBehavior.ClientNoAction);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // ComicBook group relationship
         modelBuilder.Entity<ComicBook>()
             .HasOne(cb => cb.Group)
             .WithMany(g => g.ComicBooks)
             .HasForeignKey(cb => cb.GroupId)
-            .OnDelete(DeleteBehavior.ClientNoAction);
+            .OnDelete(DeleteBehavior.Cascade);
 
         // ComicBook information relationship
         modelBuilder.Entity<ComicBook>()

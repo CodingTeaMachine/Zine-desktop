@@ -4,6 +4,7 @@ public interface IGroupRepository
 {
 	public Group? LoadForLibraryPage(int groupId);
 	public Group? GetByIdWithChildGroups(int groupId);
+	public IEnumerable<Group> SearchByName(string searchTerm);
 
 
 	public Group? GetById(int groupId);

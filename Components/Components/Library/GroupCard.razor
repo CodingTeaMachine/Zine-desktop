@@ -100,14 +100,14 @@
 	[Parameter]
 	public EventCallback<bool> EditStateChanged { get; set; }
 
-	private List<ComicBook> _comicBooks = [];
-
 	private bool _renaming = false;
 	private string _renamingGroupName = "";
 
 	private MudMenu _menuRef = null!;
 	private DotNetObjectReference<GroupCard> _currentComponentRef = null!;
 	private ConfirmGroupDeleteDialog _confirmGroupDeleteDialog = null!;
+
+	private int _updateCount = 0;
 
 	void StartRenamingGroup()
 	{
@@ -179,8 +179,8 @@
 
 	string GetCoverImage(int comicBookIndex)
 	{
-		return comicBookIndex < _comicBooks.Count
-			? Path.Join(DataPath.ComicBookCoverDirectory, _comicBooks[comicBookIndex].Information.CoverImage).Replace("wwwroot", "")
+		return comicBookIndex < Group.ComicBooks.Count
+			? Path.Join(DataPath.ComicBookCoverDirectory, Group.ComicBooks.ToArray()[comicBookIndex].Information.CoverImage).Replace("wwwroot", "")
 			: "";
 	}
 
@@ -189,12 +189,6 @@
 	{
 		if (eventArgs.Key.Equals("Enter"))
 			ConfirmRenamingGroup();
-	}
-
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-		_comicBooks = Group.ComicBooks.ToList();
 	}
 
 	[JSInvokable]
@@ -216,4 +210,11 @@
 	{
 		_currentComponentRef.Dispose();
 	}
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+		_updateCount++;
+	}
+
 }

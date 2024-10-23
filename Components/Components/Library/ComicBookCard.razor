@@ -2,6 +2,7 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
+@using Zine.App.Exceptions
 
 @inject IJSRuntime JsRuntime
 @inject IDialogService DialogService
@@ -34,6 +35,7 @@
 						Moved / Deleted
 					</MudPaper>
 				}
+
 				@if (_renaming)
 				{
 					<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
@@ -47,7 +49,7 @@
 				}
 				else
 				{
-					<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Name</p>
+					<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title - @ComicBook.Id</p>
 				}
 			</div>
 		</MudItem>
@@ -116,7 +118,7 @@
 	void StartRenamingComicBook()
 	{
 		_renaming = true;
-		_renamingComicBookName = ComicBook.Name;
+		_renamingComicBookName = ComicBook.Title;
 		EditStateChanged.InvokeAsync(true);
 	}
 
@@ -124,7 +126,7 @@
 	{
 		_renaming = false;
 
-		if(ComicBook.Name.Equals(_renamingComicBookName))
+		if(ComicBook.Title.Equals(_renamingComicBookName))
 			return;
 
 		var renameSuccessful = ComicBookService.Rename(ComicBook.Id, _renamingComicBookName);
@@ -140,15 +142,27 @@
 		}
 	}
 
-	void AddToGroup(int groupId)
+	void AddToGroup(int groupId, bool isMovingToParentAction = false)
 	{
-		var isAddedToGroup = ComicBookService.AddToGroup(groupId, ComicBook.Id);
-		if (isAddedToGroup)
+
+		try
 		{
+			ComicBookService.AddToGroup(groupId, ComicBook.Id);
 			UpdatedComicBook.InvokeAsync();
 			_menuRef.CloseMenuAsync();
-		} else
-			Snackbar.Add("Error adding comic to group", Severity.Error);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception e)
+		{
+			string message = isMovingToParentAction
+				? "Error removing comic book from group:" + e.Message
+				: "Error adding comic book to group";
+
+			Snackbar.Add(message, Severity.Error);
+		}
 	}
 
 	void RemoveFromGroup()
@@ -156,7 +170,7 @@
 		var comicBookParentGroup = GroupService.GetById(ComicBook.GroupId);
 		if (comicBookParentGroup!.ParentGroupId != null)
 		{
-			AddToGroup(comicBookParentGroup.ParentGroupId!.Value);
+			AddToGroup(comicBookParentGroup.ParentGroupId!.Value, true);
 		}
 	}
 
@@ -164,7 +178,7 @@
 	{
 		var confirmed = await DialogService.ShowMessageBox(
 			"Warning",
-			(MarkupString)$"Are you sure you want to delete the following comic book: <br /> {ComicBook.Name}",
+			(MarkupString)$"Are you sure you want to delete the following comic book: <br /> {ComicBook.Title}",
 			yesText: "Confirm", noText: "Cancel");
 
 		if (!confirmed!.Value) return;

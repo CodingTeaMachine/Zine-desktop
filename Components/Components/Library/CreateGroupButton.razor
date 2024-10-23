@@ -11,23 +11,28 @@
 			<MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Secondary" OnClick="@ToggleOpenState"/>
 		</div>
 		<div class="flex gap-3 h-16 p-3 items-center">
-			<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
-				<MudTextField
-					@bind-Value="@_newGroupName"
-					class="h-full"
-					Label="Group name..."
-					Variant="Variant.Outlined"
-					Margin="Margin.Dense"
-					@onkeyup="HandleKeyPress"
-					/>
-			</MudFocusTrap>
+			<MudForm @ref="_form" @bind-IsValid="@_validationPassed">
+				<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+					<MudTextField
+						@bind-Value="@_newGroupName"
+						class="h-full"
+						Label="Group name..."
+						Variant="Variant.Outlined"
+						Margin="Margin.Dense"
+						Required="true"
+						RequiredError="The group name is required"
+						@onkeyup="HandleKeyPress" />
+				</MudFocusTrap>
+			</MudForm>
+
 
 			<MudIconButton
 				Variant="Variant.Filled"
 				Color="Color.Primary"
 				Icon="@Icons.Material.Filled.Add"
 				Size="Size.Medium"
-				OnClick="ConfirmCreateGroup"/>
+				OnClick="ConfirmCreateGroup"
+				Disabled="@(!_validationPassed)" />
 		</div>
 	</MudPopover>
 </div>
@@ -39,23 +44,29 @@
 	private bool _isOpen = false;
 	private string _newGroupName = "";
 
+	private MudForm? _form;
+	private bool _validationPassed = false;
+
 	private void ToggleOpenState()
 	{
 		_isOpen = !_isOpen;
 		_newGroupName = "";
 	}
 
-	private void ConfirmCreateGroup()
+	private async void ConfirmCreateGroup()
 	{
-		CreateGroup.InvokeAsync(_newGroupName);
+		await _form!.Validate();
+
+		if(!_validationPassed)
+			return;
+
+		await CreateGroup.InvokeAsync(_newGroupName);
 		ToggleOpenState();
 	}
 
 	private void HandleKeyPress(KeyboardEventArgs eventArgs)
 	{
 		if (eventArgs.Key == "Enter")
-		{
 			ConfirmCreateGroup();
-		}
 	}
 }

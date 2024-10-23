@@ -7,7 +7,7 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.Group;
 
-public class GroupContextFactory(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
+public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
 	: Repository(contextFactory), IGroupRepository
 {
 	///  <summary>
@@ -20,6 +20,7 @@ public class GroupContextFactory(IDbContextFactory<ZineDbContext> contextFactory
 	{
 		try
 		{
+			logger.Information($"Getting all groups for library page by groupId \"{groupId}\"");
 			return GetDbContext().Groups
 				.Include(g => g.ChildGroups.OrderBy(gOrder => gOrder.Name))
 				.ThenInclude(childGroup => childGroup.ComicBooks)
@@ -209,6 +210,30 @@ public class GroupContextFactory(IDbContextFactory<ZineDbContext> contextFactory
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not delete group", Severity.Error, e);
+		}
+		finally
+		{
+			DisposeDbContext();
+		}
+	}
+
+	public IEnumerable<Group> SearchByName(string searchTerm)
+	{
+		searchTerm = searchTerm.ToLower();
+		logger.Information($"GroupRepository.SearchByName: Searching for group by name: \"{searchTerm}\"");
+
+		try
+		{
+			var context = GetDbContext();
+			var groupsFoundByName = context.Groups
+				.Where(cb => cb.Name.ToLower().Contains(searchTerm));
+			logger.Information($"GroupRepository.SearchByName: Found {groupsFoundByName.Count()} groups for term: \"{searchTerm}\"");
+
+			return groupsFoundByName;
+		}
+		catch (Exception e)
+		{
+			throw new HandledAppException($"Error searching groups by name: \"{searchTerm}\"", Severity.Error, e);
 		}
 		finally
 		{

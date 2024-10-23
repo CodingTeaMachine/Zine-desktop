@@ -14,7 +14,6 @@ public static class StaticContextFactory
 
     public static void DisposeDbContext()
     {
-        Console.WriteLine($"{DateTime.Now:HH:mm:ss:fff} Disposed DBContext");
         Context?.Dispose();
         Context = null;
     }

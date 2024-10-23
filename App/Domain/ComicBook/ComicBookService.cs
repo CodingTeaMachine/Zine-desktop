@@ -2,6 +2,7 @@ using SharpCompress;
 using SharpCompress.Archives;
 using Zine.App.Domain.Group;
 using Zine.App.Enums;
+using Zine.App.Exceptions;
 using Zine.App.FileHelpers;
 using Zine.App.Helpers;
 using Zine.App.Logger;
@@ -28,7 +29,7 @@ public class ComicBookService(
                         break;
                     //Check if the cover image exists, and if not, regenerate it.
                     case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)):
-                        logger.Warning($"Regenerating cover image for: {cb.Name}");
+                        logger.Warning($"Regenerating cover image for: {cb.Title}");
                         new ComicBookInformationFactory().GetCoverImage(cb.FileUri);
                         break;
                 }
@@ -43,23 +44,20 @@ public class ComicBookService(
         return comicBookRepository.GetById(comicId);
     }
 
-    public bool AddToGroup(int groupId, int comicBookId)
+    public void AddToGroup(int groupId, int comicBookId)
     {
         var comicBook = GetById(comicBookId);
         if (comicBook == null)
         {
-            logger.Warning($"Could not find comic with id: {comicBookId}");
-            return false;
+            throw new HandledAppException($"Could not find comic with id: {comicBookId}");
         }
-
 
         var group = groupService.GetById(groupId);
 
-        if (group != null)
-            return comicBookRepository.AddToGroup(groupId, comicBookId);
+        if(group == null)
+            throw new HandledAppException($"Could not find group with id: {groupId}");
 
-        logger.Warning($"Could not find group with id: {groupId}");
-        return false;
+        comicBookRepository.AddToGroup(groupId, comicBookId);
     }
 
     public void MoveAll(int currentGroupId, int newGroupId)
@@ -120,5 +118,16 @@ public class ComicBookService(
         {
             File.Delete(file);
         }
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="searchTerm"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public IEnumerable<ComicBook> SearchByTitle(string searchTerm)
+    {
+        return comicBookRepository.SearchByTitle(searchTerm);
     }
 }

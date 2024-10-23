@@ -19,23 +19,7 @@ public class GroupService(
 
 		// Return only the first 4 comic books from the group
 		loadedGroup.ChildGroups = loadedGroup.ChildGroups
-			.Select(g =>
-			{
-				g.ComicBooks = g.ComicBooks.Take(4).ToList();
-
-				//Check if the cover image exists, and if not, regenerate it.
-				foreach (var cb in g.ComicBooks)
-				{
-					var comicBookCoverImagePath = Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage);
-					if (File.Exists(comicBookCoverImagePath))
-						continue;
-
-					logger.Warning($"Regenerating cover image for: {cb.Name}");
-					new ComicBookInformationFactory().GetCoverImage(cb.FileUri);
-				}
-
-				return g;
-			})
+			.Select(LoadCoverImagesForComicBooksInGroupCover)
 			.ToList();
 
 		return loadedGroup;
@@ -104,5 +88,30 @@ public class GroupService(
 	public string GetName(int groupId)
 	{
 		return groupRepository.GetById(groupId)?.Name ?? "";
+	}
+
+	public IEnumerable<Group> SearchByName(string searchTerm)
+	{
+		var loadedGroups = groupRepository.SearchByName(searchTerm);
+
+		return loadedGroups.Select(LoadCoverImagesForComicBooksInGroupCover);
+	}
+
+	private Group LoadCoverImagesForComicBooksInGroupCover(Group g)
+	{
+		g.ComicBooks = g.ComicBooks.Take(4).ToList();
+
+		//Check if the cover image exists, and if not, regenerate it.
+		foreach (var cb in g.ComicBooks)
+		{
+			var comicBookCoverImagePath = Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage);
+			if (File.Exists(comicBookCoverImagePath))
+				continue;
+
+			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");
+			new ComicBookInformationFactory().GetCoverImage(cb.FileUri);
+		}
+
+		return g;
 	}
 }

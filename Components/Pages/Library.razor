@@ -4,12 +4,14 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
+@using Zine.App.Exceptions
 @using Zine.App.Helpers
 @using Zine.Assets.Icons
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
 
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IComicBookService ComicBookService
 @inject IComicBookImportService ComicBookImportService
@@ -37,7 +39,7 @@
 	<MudTextField
 		@bind-Value="@_searchWord"
 		class="max-w-xs justify-self-end"
-		Label="Search"
+		Label="Search everywhere"
 		Variant="Variant.Outlined"
 		Clearable="true"
 		Adornment="Adornment.Start"
@@ -49,7 +51,7 @@
 <MudDropContainer
 	@ref="_dropContainer"
 	T="DropItem"
-	Items="FilteredComicsList"
+	Items="ComicBookList"
 	ItemsSelector="(item, dropzone) => item.Identifier == dropzone"
 	ItemDropped="ComicBookDropEnd">
 
@@ -58,16 +60,16 @@
 			Groups
 		</MudListSubheader>
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
-			@foreach (var group in FilteredGroupList)
+			@foreach (var group in GroupList)
 			{
-				<MudDropZone T="DropItem" OnlyZone="true" Identifier="@group.Id.ToString()">
+				<MudDropZone T="DropItem" OnlyZone="true" Identifier="@GetGroupIdentifier(group.Id)">
 					<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
 						<GroupCard
 							GroupService="GroupService"
-							Group="@group"
-							Groups="OriginalGroupList"
+							Group="group"
+							Groups="GroupList"
 							ContextMenuDisabled="_editingInProgress"
-							UpdatedGroup="@UpdatedComicBookOrGroup"
+							UpdatedGroup="@LoadCurrentGroup"
 							EditStateChanged="newState => _editingInProgress = newState" />
 					</div>
 				</MudDropZone>
@@ -77,24 +79,28 @@
 		<MudListSubheader class="text-xl mt-10">
 			Comic Books
 		</MudListSubheader>
-		<MudDropZone T="DropItem" Identifier="ComicBook" class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
-			<ChildContent>
-				@if (FilteredComicsList.Any())
+		<div class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
+				@if (ComicBookList.Any())
 				{
-					@foreach (var dropItem in FilteredComicsList)
+					@foreach (var dropItem in ComicBookList)
 					{
-						<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
-							<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
-								<ComicBookCard
-									GroupService="GroupService"
-									ComicBookService="ComicBookService"
-									ComicBook="@dropItem.ComicBook"
-									Groups="OriginalGroupList"
-									ContextMenuDisabled="_editingInProgress"
-									UpdatedComicBook="@UpdatedComicBookOrGroup"
-									EditStateChanged="newState => _editingInProgress = newState" />
-							</MudDynamicDropItem>
-						</a>
+						<MudDropZone T="DropItem" Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
+							<ChildContent>
+								<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
+									<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
+										<ComicBookCard
+											GroupService="GroupService"
+											ComicBookService="ComicBookService"
+											ComicBook="@dropItem.ComicBook"
+											Groups="GroupList"
+											ContextMenuDisabled="_editingInProgress"
+											UpdatedComicBook="@LoadCurrentGroup"
+											EditStateChanged="newState => _editingInProgress = newState" />
+									</MudDynamicDropItem>
+								</a>
+							</ChildContent>
+						</MudDropZone>
+
 					}
 				}
 				else
@@ -107,11 +113,8 @@
 						<ImportComicButton Import="@Import" />
 					</div>
 				}
-
-			</ChildContent>
-		</MudDropZone>
+		</div>
 	</ChildContent>
-
 </MudDropContainer>
 
 @code
@@ -132,19 +135,44 @@
 
 	string _searchWord = string.Empty;
 	bool _editingInProgress = false;
+	private const string ComicBookDropZoneIdentifier = "ComicBook";
 
 	Group? _currentGroup;
 
-	List<DropItem> OriginalComicsList { get; set; } = [];
-	List<DropItem> FilteredComicsList { get; set; } = [];
-	List<Group> OriginalGroupList { get; set; } = [];
-	List<Group> FilteredGroupList { get; set; } = [];
+	List<DropItem> ComicBookList { get; set; } = [];
+	List<Group> GroupList { get; set; } = [];
 
 	private void SearchByTitle(string searchTerm)
 	{
-		var lowerCaseSearchTerm = searchTerm.ToLower();
-		FilteredComicsList = OriginalComicsList.Where(comic => comic.ComicBook.Name.ToLower().Contains(lowerCaseSearchTerm)).ToList();
-		FilteredGroupList = OriginalGroupList.Where(group => group.Name.ToLower().Contains(lowerCaseSearchTerm)).ToList();
+		if (searchTerm.Length == 0)
+		{
+			LoadCurrentGroup();
+		}
+		else
+		{
+			try
+			{
+				ComicBookList = ComicBookService
+					.SearchByTitle(searchTerm)
+					.Select(book => new DropItem { ComicBook = book, Identifier = ComicBookDropZoneIdentifier })
+					.ToList();
+			}
+			catch (HandledAppException e)
+			{
+				Snackbar.Add(e.Message, e.Severity);
+			}
+
+			try
+			{
+				GroupList = GroupService.SearchByName(searchTerm).ToList();
+			}
+			catch (HandledAppException e)
+			{
+				Snackbar.Add(e.Message, e.Severity);
+			}
+
+		}
+
 		ReloadDropzone();
 	}
 
@@ -155,7 +183,6 @@
 			ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId, args.recursiveImport);
 			Snackbar.Add("Successfully imported comic books.", Severity.Success);
 			LoadCurrentGroup();
-			ReloadDropzone();
 		}
 		catch (Exception e) when(e is ArgumentOutOfRangeException or FormatException)
 		{
@@ -170,27 +197,72 @@
 	}
 
 
-	private void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
+	private async void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
 	{
 		if (dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
 			return;
 
-		dropItem.Item!.Identifier = dropItem.DropzoneIdentifier;
-		var isAddedToGroup = ComicBookService!.AddToGroup(int.Parse(dropItem.DropzoneIdentifier), dropItem.Item!.ComicBook.Id);
+		var dropzoneData = dropItem.DropzoneIdentifier.Split(" ");
+		var dropDestinationType = dropzoneData[0];
+		var dropDestinationId = int.Parse(dropzoneData[1]);
 
-		if (isAddedToGroup)
+		var isDroppedToAGroupCard = dropDestinationType.Equals("Group");
+
+
+		if (isDroppedToAGroupCard)
 		{
-			LoadCurrentGroup();
-			ReloadDropzone();
+			DroppedToGroupCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
 		}
 		else
-			Snackbar.Add("Error adding comic to group", Severity.Error);
+			DroppedToComicBookCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
+
 	}
 
-	private void UpdatedComicBookOrGroup()
+	private void DroppedToGroupCardAction(int groupId, int comicBookId)
 	{
-		LoadCurrentGroup();
-		ReloadDropzone();
+		try
+		{
+			ComicBookService.AddToGroup(groupId, comicBookId);
+			LoadCurrentGroup();
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Could not add comic book to group", Severity.Error);
+		}
+	}
+
+	private async void DroppedToComicBookCardAction(int destinationComicBookId, int draggedComicBookId)
+	{
+		var options = new DialogOptions {CloseOnEscapeKey = true};
+		var dialogReference = DialogService.Show<CreateGroupDialog>("Create new group", options);
+		var result = await dialogReference.Result;
+
+
+		if(result.Canceled)
+			return;
+
+		try
+		{
+			var createdGroup = GroupService.Create(result.Data.ToString()!, GroupId);
+			ComicBookService.AddToGroup(createdGroup.Id, destinationComicBookId);
+			ComicBookService.AddToGroup(createdGroup.Id, draggedComicBookId);
+
+			LoadCurrentGroup();
+			StateHasChanged();
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Error creating group from comic books", Severity.Error);
+		}
+
 	}
 
 
@@ -210,23 +282,34 @@
 
 	private void LoadCurrentGroup()
 	{
-		var loadedGroup = GroupService.LoadForLibraryPage(GroupId);
+		_searchWord = string.Empty;
+		_currentGroup = GroupService.LoadForLibraryPage(GroupId);
 
-		if(loadedGroup == null)
-			return;
+		GroupList = [];
+		GroupList = _currentGroup!.ChildGroups.ToList();
 
-		_searchWord = "";
-		_currentGroup = loadedGroup;
-		FilteredGroupList = OriginalGroupList = _currentGroup.ChildGroups.ToList();
-		FilteredComicsList = OriginalComicsList = _currentGroup.ComicBooks
-			.Select(book => new DropItem { ComicBook = book, Identifier = "ComicBook" })
+		ComicBookList = [];
+		ComicBookList = _currentGroup.ComicBooks
+			.Select(book => new DropItem { ComicBook = book, Identifier = GetComicBookIdentifier(book.Id) })
 			.ToList();
+
+		ReloadDropzone();
+	}
+
+	private string GetComicBookIdentifier(int identifier)
+	{
+		return "ComicBook " + identifier;
+	}
+
+	private string GetGroupIdentifier(int identifier)
+	{
+		return "Group " + identifier;
 	}
 
 
 
 	/// <summary>
-	/// The dropzone doesn't automatically update, when <c> FilteredComicsList </c> updates
+	/// The dropzone doesn't automatically update, when data updates
 	/// The delay is needed to make sure the list has already updated
 	/// </summary>
 	private void ReloadDropzone()

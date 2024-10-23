@@ -89,7 +89,7 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 
 				var cb = new ComicBook
 				{
-					Name = Path.GetFileNameWithoutExtension(filePath),
+					Title = Path.GetFileNameWithoutExtension(filePath),
 					FileUri = filePath,
 					GroupId = groupId,
 					Information = cbInfo

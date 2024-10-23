@@ -1,0 +1,49 @@
+<MudDialog>
+	<DialogContent>
+		<MudForm @ref="_form" @bind-IsValid="@_validationPassed">
+			<MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+				<MudTextField
+					@bind-Value="@_newGroupName"
+					T="string"
+					class="h-full"
+					Label="Group name..."
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Required="true"
+					RequiredError="The group name is required"
+					@onkeyup="HandleKeyPress" />
+			</MudFocusTrap>
+		</MudForm>
+	</DialogContent>
+	<DialogActions>
+		<MudButton OnClick="Cancel">Cancel</MudButton>
+		<MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!_validationPassed)">Create</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+
+	[CascadingParameter]
+	private MudDialogInstance MudDialog { get; set; } = null!;
+
+	private string _newGroupName = string.Empty;
+
+	private MudForm? _form;
+	private bool _validationPassed = false;
+
+	private async void Submit()
+	{
+		await _form!.Validate();
+
+		if(_validationPassed)
+			MudDialog.Close(DialogResult.Ok(_newGroupName));
+	}
+
+	private void Cancel() => MudDialog.Cancel();
+
+	private async void HandleKeyPress(KeyboardEventArgs eventArgs)
+	{
+		if (eventArgs.Key == "Enter")
+			Submit();
+	}
+}

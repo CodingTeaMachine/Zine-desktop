@@ -33,11 +33,11 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
 builder.Services.AddScoped<ISettingsRepository, SettingsContextFactory>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
-builder.Services.AddScoped<IComicBookRepository, ComicBookContextFactory>();
+builder.Services.AddScoped<IComicBookRepository, ComicBookRepository>();
 builder.Services.AddScoped<IComicBookService, ComicBookService>();
 builder.Services.AddScoped<IComicBookImportService, ComicBookImportService>();
 
-builder.Services.AddScoped<IGroupRepository, GroupContextFactory>();
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 
 var app = builder.Build();

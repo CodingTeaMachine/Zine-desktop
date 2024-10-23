@@ -41,6 +41,8 @@ public class HandledAppException : Exception
 			exceptionMessage += Environment.NewLine
 			                    + $"\t At: {frame.GetFileName()}:{frame.GetFileLineNumber()} {frame.GetMethod()}";
 
-		SerilogLogger.Instance().FromSeverity(exceptionMessage, severity);
+		SerilogLogger.Instance()
+			.SetIsPreFormattedMessageFroSingleLog(true)
+			.FromSeverity(exceptionMessage, severity);
 	}
 }

@@ -10,7 +10,7 @@ public class ComicBook
 
 	[Required]
 	[MaxLength(255)]
-	public required string Name { get; set; }
+	public required string Title { get; set; }
 
 	/**
 	 * Max path length limit per os:
@@ -25,7 +25,7 @@ public class ComicBook
 
 	public int GroupId { get; set; }
 
-	public Group.Group Group { get; init; } = null!;
+	public Group.Group Group { get; set; } = null!;
 
 	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
 }
