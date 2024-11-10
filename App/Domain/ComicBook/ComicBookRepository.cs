@@ -56,11 +56,11 @@ public class ComicBookRepository(
 /// <param name="cbInfo"></param>
 /// <param name="groupId"></param>
 /// <returns></returns>
-	public ComicBook Create(string title, string fileUri, ComicBookInformation.ComicBookInformation cbInfo, int groupId)
+	public ComicBook Create(string title, string fileUri, int groupId)
 	{
 
 		var comicBookToCreate = new ComicBook
-			{ Title = title, FileUri = fileUri, GroupId = groupId, Information = cbInfo };
+			{ Title = title, FileUri = fileUri, GroupId = groupId };
 
 		var dbContext = GetDbContext();
 		var createdComicBook = dbContext.ComicBooks.Add(comicBookToCreate);

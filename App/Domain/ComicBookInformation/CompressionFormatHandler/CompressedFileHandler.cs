@@ -14,7 +14,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 
 	private readonly string[] _excludedFirstFileEndings = ["101", "100"];
 
-	public string ExtractCoverImage()
+	public string ExtractCoverImage(string outputFileName)
 	{
 		using IArchive comicBookFile = ArchiveFactory.Open(filePath);
 		if (!comicBookFile.Entries.Any()) throw new DataException("Empty comic book file");
@@ -23,8 +23,9 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		ComicBookPageNamingFormatName namingFormatName = GetPageNamingFormat(comicBookFile);
 		IArchiveEntry coverImage = comicBookFile.Entries.First(cI => IsCoverImage(cI, namingFormatName));
 
-		var filename = GetFilename(coverImage);
-		var outputPath = Path.Join(outputCoverImageDirectory, filename);
+		var coverImageExtenstion = Path.GetExtension(coverImage.Key!);
+		var outputFileNameWithExtension = outputFileName + coverImageExtenstion;
+		var outputPath = Path.Join(outputCoverImageDirectory, outputFileNameWithExtension);
 
 		try
 		{
@@ -37,21 +38,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 			coverImage.WriteToFile(outputPath);
 		}
 
-		return filename;
-	}
-
-	private string GetFilename(IArchiveEntry coverImage)
-	{
-		var originalFilename = Path.GetFileName(coverImage.Key!).Replace("#", "_");
-		var fileExtension = Path.GetExtension(originalFilename);
-		var fileCounter = 0;
-
-		while (Path.Exists(Path.Join(outputCoverImageDirectory, Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension)))
-		{
-			fileCounter++;
-		}
-
-		return Path.GetFileNameWithoutExtension(originalFilename) + $"-{fileCounter}" + fileExtension;
+		return outputFileNameWithExtension;
 	}
 
 	private bool IsCoverImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)

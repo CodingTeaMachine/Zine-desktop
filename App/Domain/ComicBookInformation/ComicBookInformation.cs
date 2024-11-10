@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+using Zine.App.Enums;
 
 namespace Zine.App.Domain.ComicBookInformation;
 
@@ -20,6 +21,9 @@ public class ComicBookInformation
 	[Required]
 	[MaxLength(255)]
 	public required string CoverImage { get; init; }
+
+	[NotMapped]
+	public string CoverImageFullPath => Path.Join(DataPath.ComicBookCoverDirectory, CoverImage);
 
 	/// <summary>
 	///	This field is not stored in the DB, because it can just be calculated at runtime

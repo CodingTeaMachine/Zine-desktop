@@ -1,3 +1,5 @@
+using SharpCompress;
+using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
@@ -5,7 +7,7 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook;
 
-public class ComicBookImportService(IComicBookRepository comicBookRepository, ILoggerService logger) : IComicBookImportService
+public class ComicBookImportService(IComicBookRepository comicBookRepository, IComicBookInformationService comicBookInformationService , ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
 	///
@@ -23,83 +25,42 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IL
 
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
 
-		switch(importType)
+		Action importAction = importType switch
 		{
-			case ImportType.File:
-				ImportFileFromDisk(pathOnDisk, groupId);
-				break;
-			case ImportType.Directory:
-				ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport);
-				break;
-			default:
-				throw new ArgumentOutOfRangeException(nameof(importType), importType, "Import type not supported");
+			ImportType.File => () => ImportFileFromDisk(pathOnDisk, groupId),
+			ImportType.Directory => () => ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport),
+			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, "Import type not supported"),
 		};
+		
+		importAction();
 	}
 
 
 	/// <summary>
 	///
 	/// </summary>
-	/// <param name="pathOnDisk"></param>
+	/// <param name="comicBookPathOnDisk"></param>
 	/// <param name="groupId"></param>
-	private void ImportFileFromDisk(string pathOnDisk, int groupId)
+	private void ImportFileFromDisk(string comicBookPathOnDisk, int groupId)
 	{
-		var format = CompressionFormatFactory.GetFromFile(pathOnDisk);
-
-		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var coverImageName = comicBookInformationFactory.GetCoverImage(pathOnDisk);
-
-		var cbInfo = new ComicBookInformation.ComicBookInformation
-		{
-			CoverImage = coverImageName,
-			PageNamingFormat = (int)format,
-			NumberOfPages = comicBookInformationFactory.GetNumberOfPages(pathOnDisk)
-		};
-
-		comicBookRepository.Create(
-			Path.GetFileNameWithoutExtension(pathOnDisk),
-			pathOnDisk,
-			cbInfo,
+		var createdComicBook = comicBookRepository.Create(
+			Path.GetFileNameWithoutExtension(comicBookPathOnDisk),
+			comicBookPathOnDisk,
 			groupId
 		);
 
+		comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id);
 	}
 
 	private void ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
 	{
-		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-
-		SearchOption searchDepth = recursiveImport
+		var searchDepth = recursiveImport
 			? SearchOption.AllDirectories
 			: SearchOption.TopDirectoryOnly;
 
-		List<ComicBook> comicBookFiles = Directory.EnumerateFiles(pathOnDisk, "*.cb?", searchDepth)
+		Directory.EnumerateFiles(pathOnDisk, "*.cb?", searchDepth)
 			.Where(filePath => CompressionFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
-			.Select(filePath =>
-			{
-				var format = CompressionFormatFactory.GetFromFile(filePath);
-				var coverImageName = comicBookInformationFactory.GetCoverImage(filePath);
-
-				var cbInfo = new ComicBookInformation.ComicBookInformation
-				{
-					PageNamingFormat = (int)format,
-					CoverImage = coverImageName,
-					NumberOfPages = comicBookInformationFactory.GetNumberOfPages(pathOnDisk)
-				};
-
-				var cb = new ComicBook
-				{
-					Title = Path.GetFileNameWithoutExtension(filePath),
-					FileUri = filePath,
-					GroupId = groupId,
-					Information = cbInfo
-				};
-
-				return cb;
-			})
-			.ToList();
-
-		comicBookRepository.CreateMany(comicBookFiles);
+			.ForEach(filePath => ImportFileFromDisk(filePath, groupId));
 	}
 
 	/// <summary>

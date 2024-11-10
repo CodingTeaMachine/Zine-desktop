@@ -193,7 +193,7 @@
 
 	string GetCoverImage()
 	{
-		return Path.Join(DataPath.ComicBookCoverDirectory, ComicBook.Information.CoverImage).Replace("wwwroot", "");
+		return ComicBook.Information.CoverImageFullPath.Replace("wwwroot", "");
 	}
 
 	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)

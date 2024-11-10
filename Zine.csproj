@@ -45,8 +45,8 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="logs\" />
-    <Folder Remove="wwwroot\images\ComicBookCovers\" />
     <Folder Remove="wwwroot\images\Reading\" />
+    <Folder Update="wwwroot\images\ComicBookCovers\" />
   </ItemGroup>
   
   <ItemGroup>

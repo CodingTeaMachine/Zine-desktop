@@ -8,14 +8,14 @@ namespace Zine.App.FileHelpers;
 
 public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
-	public string GetCoverImage(string pathOnDisk)
+	public string GetCoverImage(string pathOnDisk, string outputFileName)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
 
 
 		var formatHandler = new CompressedFileHandler(pathOnDisk, DataPath.ComicBookCoverDirectory);
-		var coverImageName  = formatHandler.ExtractCoverImage();
+		var coverImageName  = formatHandler.ExtractCoverImage(outputFileName);
 
 		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");
 
