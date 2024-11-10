@@ -8,7 +8,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<MudMenu @ref="_menuRef" Id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
+<MudMenu @ref="_menuRef" id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
 	<ActivatorContent>
 		<MudItem Class="h-full">
 
@@ -196,10 +196,10 @@
 		return Path.Join(DataPath.ComicBookCoverDirectory, ComicBook.Information.CoverImage).Replace("wwwroot", "");
 	}
 
-	private void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)
 	{
 		if (eventArgs.Key.Equals("Enter"))
-			ConfirmRenamingComicBook();
+			await ConfirmRenamingComicBook();
 	}
 
 	[JSInvokable]

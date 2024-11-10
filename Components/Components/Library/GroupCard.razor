@@ -1,5 +1,4 @@
 @using Zine.App
-@using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 @using Zine.App.Exceptions
@@ -9,7 +8,7 @@
 
 <ConfirmGroupDeleteDialog @ref="_confirmGroupDeleteDialog" GroupName="@Group.Name"/>
 
-<MudMenu @ref="_menuRef" Id="@($"Menu-G-{Group.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
+<MudMenu @ref="_menuRef" id="@($"Menu-G-{Group.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="ContextMenuDisabled">
 	<ActivatorContent>
 		<MudItem>
 			<div class="md:w-60 md:max-w-60 max-w-44">
@@ -185,10 +184,10 @@
 	}
 
 
-	void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	async void HandleRenameKeypress(KeyboardEventArgs eventArgs)
 	{
 		if (eventArgs.Key.Equals("Enter"))
-			ConfirmRenamingGroup();
+			await ConfirmRenamingGroup();
 	}
 
 	[JSInvokable]

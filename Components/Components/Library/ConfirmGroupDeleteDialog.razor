@@ -15,7 +15,7 @@
 
 	public async Task<(bool, bool)> ShowDialogAsync()
 	{
-		var result = await _messageBox.Show();
+		var result = await _messageBox.ShowAsync();
 
 		return (result != null,  DeleteAllContent);
 	}
