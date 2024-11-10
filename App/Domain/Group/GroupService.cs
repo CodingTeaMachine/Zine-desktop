@@ -25,6 +25,11 @@ public class GroupService(
 		return loadedGroup;
 	}
 
+	public IEnumerable<Group> List()
+	{
+		return groupRepository.List();
+	}
+
 	public Group? GetById(int groupId)
 	{
 		return groupRepository.GetById(groupId);

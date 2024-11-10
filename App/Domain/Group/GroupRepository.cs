@@ -35,6 +35,11 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		}
 	}
 
+	public IEnumerable<Group> List()
+	{
+		return GetDbContext().Groups.Where(g => g.ParentGroupId != null).ToList();
+	}
+
 	/// <summary>
 	/// Load specific group
 	/// </summary>

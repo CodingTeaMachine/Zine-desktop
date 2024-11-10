@@ -50,7 +50,7 @@
 <MudDropContainer
 	@ref="_dropContainer"
 	T="DropItem"
-	Items="ComicBookList"
+	Items="_comicBookList"
 	ItemsSelector="(item, dropzone) => item.Identifier == dropzone"
 	ItemDropped="ComicBookDropEnd">
 
@@ -59,14 +59,14 @@
 			Groups
 		</MudListSubheader>
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
-			@foreach (var group in GroupList)
+			@foreach (var group in _groupList)
 			{
 				<MudDropZone T="DropItem" OnlyZone="true" CanDropClass="outline outline-primary outline-offset-4 duration-75" Class="rounded-lg" Identifier="@GetGroupIdentifier(group.Id)">
 					<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
 						<GroupCard
 							GroupService="GroupService"
 							Group="group"
-							Groups="GroupList"
+							Groups="_contextMenuGroups"
 							ContextMenuDisabled="_editingInProgress"
 							UpdatedGroup="@LoadCurrentGroup"
 							EditStateChanged="newState => _editingInProgress = newState" />
@@ -79,9 +79,9 @@
 			Comic Books
 		</MudListSubheader>
 		<div class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
-			@if (ComicBookList.Any())
+			@if (_comicBookList.Any())
 			{
-				@foreach (var dropItem in ComicBookList)
+				@foreach (var dropItem in _comicBookList)
 				{
 					<MudDropZone
 						T="DropItem"
@@ -95,7 +95,7 @@
 										GroupService="GroupService"
 										ComicBookService="ComicBookService"
 										ComicBook="@dropItem.ComicBook"
-										Groups="GroupList"
+										Groups="_contextMenuGroups"
 										ContextMenuDisabled="_editingInProgress"
 										UpdatedComicBook="@LoadCurrentGroup"
 										EditStateChanged="newState => _editingInProgress = newState" />
@@ -141,38 +141,34 @@
 
 	Group? _currentGroup;
 
-	List<DropItem> ComicBookList { get; set; } = [];
-	List<Group> GroupList { get; set; } = [];
+	List<DropItem> _comicBookList = [];
+	List<Group> _groupList = [];
+	List<Group> _contextMenuGroups = [];
 
 	private void SearchByTitle(string searchTerm)
 	{
 		if (searchTerm.Length == 0)
 		{
 			LoadCurrentGroup();
+			ReloadDropzone();
+			return;
 		}
-		else
-		{
-			try
-			{
-				ComicBookList = ComicBookService
-					.SearchByTitle(searchTerm)
-					.Select(book => new DropItem { ComicBook = book, Identifier = ComicBookDropZoneIdentifier })
-					.ToList();
-			}
-			catch (HandledAppException e)
-			{
-				Snackbar.Add(e.Message, e.Severity);
-			}
 
-			try
-			{
-				GroupList = GroupService.SearchByName(searchTerm).ToList();
-			}
-			catch (HandledAppException e)
-			{
-				Snackbar.Add(e.Message, e.Severity);
-			}
+		try
+		{
+			_comicBookList = ComicBookService
+				.SearchByTitle(searchTerm)
+				.Select(book => new DropItem { ComicBook = book, Identifier = ComicBookDropZoneIdentifier })
+				.ToList();
+
+			_groupList = GroupService.SearchByName(searchTerm).ToList();
+			_contextMenuGroups = GroupService.List().ToList();
 		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+
 
 		ReloadDropzone();
 	}
@@ -284,11 +280,12 @@
 		_searchWord = string.Empty;
 		_currentGroup = GroupService.LoadForLibraryPage(GroupId);
 
-		GroupList = [];
-		GroupList = _currentGroup!.ChildGroups.ToList();
+		_groupList = _currentGroup!.ChildGroups.ToList();
+		_contextMenuGroups = _groupList;
 
-		ComicBookList = [];
-		ComicBookList = _currentGroup.ComicBooks
+
+		_comicBookList = [];
+		_comicBookList = _currentGroup.ComicBooks
 			.Select(book => new DropItem { ComicBook = book, Identifier = GetComicBookIdentifier(book.Id) })
 			.ToList();
 
