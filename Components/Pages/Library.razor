@@ -17,7 +17,6 @@
 @inject IComicBookImportService ComicBookImportService
 
 
-
 <MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
 	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
 	<p class="pt-0.5">Back</p>
@@ -62,7 +61,7 @@
 		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
 			@foreach (var group in GroupList)
 			{
-				<MudDropZone T="DropItem" OnlyZone="true" Identifier="@GetGroupIdentifier(group.Id)">
+				<MudDropZone T="DropItem" OnlyZone="true" CanDropClass="outline outline-primary outline-offset-4 duration-75" Class="rounded-lg" Identifier="@GetGroupIdentifier(group.Id)">
 					<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
 						<GroupCard
 							GroupService="GroupService"
@@ -80,39 +79,42 @@
 			Comic Books
 		</MudListSubheader>
 		<div class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
-				@if (ComicBookList.Any())
+			@if (ComicBookList.Any())
+			{
+				@foreach (var dropItem in ComicBookList)
 				{
-					@foreach (var dropItem in ComicBookList)
-					{
-						<MudDropZone T="DropItem" Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
-							<ChildContent>
-								<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
-									<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
-										<ComicBookCard
-											GroupService="GroupService"
-											ComicBookService="ComicBookService"
-											ComicBook="@dropItem.ComicBook"
-											Groups="GroupList"
-											ContextMenuDisabled="_editingInProgress"
-											UpdatedComicBook="@LoadCurrentGroup"
-											EditStateChanged="newState => _editingInProgress = newState" />
-									</MudDynamicDropItem>
-								</a>
-							</ChildContent>
-						</MudDropZone>
-
-					}
+					<MudDropZone
+						T="DropItem"
+						CanDropClass="outline outline-primary outline-offset-4 duration-75"
+						Class="rounded-lg" CanDrop="@((item) => !item.Identifier.Equals(GetComicBookIdentifier(dropItem.ComicBook.Id)))"
+						Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
+						<ChildContent>
+							<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
+								<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.MovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
+									<ComicBookCard
+										GroupService="GroupService"
+										ComicBookService="ComicBookService"
+										ComicBook="@dropItem.ComicBook"
+										Groups="GroupList"
+										ContextMenuDisabled="_editingInProgress"
+										UpdatedComicBook="@LoadCurrentGroup"
+										EditStateChanged="newState => _editingInProgress = newState" />
+								</MudDynamicDropItem>
+							</a>
+						</ChildContent>
+					</MudDropZone>
 				}
-				else
-				{
-					<div class="flex flex-col justify-center align-center gap-5 mx-auto">
-						<div class="flex justify-center align-center gap-3">
-							<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary" />
-							<span> No comic books found</span>
-						</div>
-						<ImportComicButton Import="@Import" />
+			}
+			else
+			{
+				<div class="flex flex-col justify-center align-center gap-5 mx-auto">
+					<div class="flex justify-center align-center gap-3">
+						<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary" />
+						<span> No comic books found</span>
 					</div>
-				}
+					<ImportComicButton Import="@Import" />
+				</div>
+			}
 		</div>
 	</ChildContent>
 </MudDropContainer>
@@ -170,7 +172,6 @@
 			{
 				Snackbar.Add(e.Message, e.Severity);
 			}
-
 		}
 
 		ReloadDropzone();
@@ -184,7 +185,7 @@
 			Snackbar.Add("Successfully imported comic books.", Severity.Success);
 			LoadCurrentGroup();
 		}
-		catch (Exception e) when(e is ArgumentOutOfRangeException or FormatException)
+		catch (Exception e) when (e is ArgumentOutOfRangeException or FormatException)
 		{
 			Snackbar.Add(e.Message, Severity.Error);
 		}
@@ -197,7 +198,7 @@
 	}
 
 
-	private async void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
+	private void ComicBookDropEnd(MudItemDropInfo<DropItem> dropItem)
 	{
 		if (dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
 			return;
@@ -215,7 +216,6 @@
 		}
 		else
 			DroppedToComicBookCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
-
 	}
 
 	private void DroppedToGroupCardAction(int groupId, int comicBookId)
@@ -237,12 +237,12 @@
 
 	private async void DroppedToComicBookCardAction(int destinationComicBookId, int draggedComicBookId)
 	{
-		var options = new DialogOptions {CloseOnEscapeKey = true};
+		var options = new DialogOptions { CloseOnEscapeKey = true };
 		var dialogReference = DialogService.Show<CreateGroupDialog>("Create new group", options);
 		var result = await dialogReference.Result;
 
 
-		if(result.Canceled)
+		if (result.Canceled)
 			return;
 
 		try
@@ -262,7 +262,6 @@
 		{
 			Snackbar.Add("Error creating group from comic books", Severity.Error);
 		}
-
 	}
 
 
@@ -270,7 +269,7 @@
 	{
 		var parentGroupId = GroupService.GetById(GroupId)?.ParentGroupId;
 
-		if(parentGroupId != null)
+		if (parentGroupId != null)
 			NavigateToGroup(parentGroupId.Value);
 	}
 
@@ -305,7 +304,6 @@
 	{
 		return "Group " + identifier;
 	}
-
 
 
 	/// <summary>
