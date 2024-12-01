@@ -6,6 +6,13 @@
 </MudMessageBox>
 
 @code {
+
+	public struct DialogResult
+	{
+		public bool Confirmed;
+		public bool DeleteAllContent;
+	}
+
 	[Parameter]
     public required string GroupName { get; set; }
 
@@ -13,10 +20,10 @@
 
 	private MudMessageBox _messageBox = null!;
 
-	public async Task<(bool, bool)> ShowDialogAsync()
+	public async Task<DialogResult> ShowDialogAsync()
 	{
 		var result = await _messageBox.ShowAsync();
 
-		return (result != null,  DeleteAllContent);
+		return new DialogResult {Confirmed = result != null, DeleteAllContent = DeleteAllContent};
 	}
 }

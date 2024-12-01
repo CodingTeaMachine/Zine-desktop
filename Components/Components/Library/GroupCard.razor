@@ -160,13 +160,13 @@
 			Snackbar.Add("Error removing group", Severity.Error);
 	}
 
-	async void DeleteGroup()
+	async Task DeleteGroup()
 	{
-		var (confirmed, deleteAllContent) = await _confirmGroupDeleteDialog.ShowDialogAsync(); //TODO: Refactor to struct
+		var deleteDialogResult = await _confirmGroupDeleteDialog.ShowDialogAsync();
 
-		if(!confirmed) return;
+		if(!deleteDialogResult.Confirmed) return;
 
-		var deletedGroup = GroupService.Delete(Group.Id, deleteAllContent);
+		var deletedGroup = GroupService.Delete(Group.Id, deleteDialogResult.DeleteAllContent);
 
 		if (deletedGroup)
 		{
@@ -184,7 +184,7 @@
 	}
 
 
-	async void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	async Task HandleRenameKeypress(KeyboardEventArgs eventArgs)
 	{
 		if (eventArgs.Key.Equals("Enter"))
 			await ConfirmRenamingGroup();
