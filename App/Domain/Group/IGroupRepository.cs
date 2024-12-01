@@ -8,7 +8,7 @@ public interface IGroupRepository
 
 
 	public IEnumerable<Group> List();
-	public Group? GetById(int groupId);
+	public Group GetById(int groupId);
 	public Group Create(string newGroupName, int parentId);
 	public bool Rename(int groupId, string newName);
 	public bool AddToGroup(int newParentGroupId, int groupId);

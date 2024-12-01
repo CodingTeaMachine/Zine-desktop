@@ -11,7 +11,7 @@ public interface IComicBookRepository
 	public void CreateMany(IEnumerable<ComicBook> comicBooks);
 	public void AddToGroup(int groupId, int comicBookId);
 	public void MoveAll(int currentGroupId, int newGroupId);
-	public bool Rename(int comicBookId, string newName);
+	public void Rename(int comicBookId, string newName);
 	public void DeleteAllFromGroup(int groupId);
 	public bool Delete(int comicId);
 

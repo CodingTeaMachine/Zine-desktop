@@ -49,7 +49,7 @@
 				}
 				else
 				{
-					<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title - @ComicBook.Id</p>
+					<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title</p>
 				}
 			</div>
 		</MudItem>
@@ -129,16 +129,21 @@
 		if(ComicBook.Title.Equals(_renamingComicBookName))
 			return;
 
-		var renameSuccessful = ComicBookService.Rename(ComicBook.Id, _renamingComicBookName);
-		if (renameSuccessful)
+		try
 		{
+			ComicBookService.Rename(ComicBook.Id, _renamingComicBookName);
+			Snackbar.Add("Successfully renamed comic book", Severity.Success);
 			await EditStateChanged.InvokeAsync(false);
 			await UpdatedComicBook.InvokeAsync();
-			Snackbar.Add("Successfully renamed comic book", Severity.Success);
 		}
-		else
+		catch (HandledAppException e)
 		{
-			Snackbar.Add("Error renaming comic book", Severity.Warning);
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Error renaming comic book", Severity.Error);
+
 		}
 	}
 
@@ -168,13 +173,13 @@
 	void RemoveFromGroup()
 	{
 		var comicBookParentGroup = GroupService.GetById(ComicBook.GroupId);
-		if (comicBookParentGroup!.ParentGroupId != null)
+		if (comicBookParentGroup.ParentGroupId != null)
 		{
 			AddToGroup(comicBookParentGroup.ParentGroupId!.Value, true);
 		}
 	}
 
-	async void DeleteComicBook()
+	async Task DeleteComicBook()
 	{
 		var confirmed = await DialogService.ShowMessageBox(
 			"Warning",

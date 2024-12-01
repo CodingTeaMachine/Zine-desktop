@@ -4,16 +4,22 @@ using Zine.App.Database;
 
 namespace Zine.App.Domain.Settings;
 
-public class SettingsContextFactory(IDbContextFactory<ZineDbContext> contextFactory) : Repository(contextFactory), ISettingsRepository
+public class SettingsContextFactory(IDbContextFactory<ZineDbContext> contextFactory) : ISettingsRepository
 {
     public IEnumerable<Setting> GetAll()
     {
-        return GetDbContext().Settings.ToList();
+        //TODO: Error handling
+
+        using var context = contextFactory.CreateDbContext();
+        return context.Settings.ToList();
     }
 
     public Setting? GetByKey(string key)
     {
-        return GetDbContext().Settings.FirstOrDefault(setting => setting.Key.Equals(key));
+        //TODO: Error handling
+
+        using var context = contextFactory.CreateDbContext();
+        return context.Settings.FirstOrDefault(setting => setting.Key.Equals(key));
     }
 
     public bool SetSetting(string key, string value)
@@ -24,8 +30,11 @@ public class SettingsContextFactory(IDbContextFactory<ZineDbContext> contextFact
             throw new DataException($"Key doesn't exist: {key}");
         }
 
+        //TODO: Error handling
+
         setting.Value = value;
-        int changedLines = GetDbContext().SaveChanges();
+        using var context = contextFactory.CreateDbContext();
+        int changedLines = context.SaveChanges();
         return changedLines == 1;
     }
 }

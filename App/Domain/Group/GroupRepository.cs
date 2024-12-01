@@ -8,7 +8,7 @@ using Zine.App.Logger;
 namespace Zine.App.Domain.Group;
 
 public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, ILoggerService logger)
-	: Repository(contextFactory), IGroupRepository
+	: IGroupRepository
 {
 	///  <summary>
 	/// 	Load groups under a specific parent
@@ -20,8 +20,9 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	{
 		try
 		{
+			using var context = contextFactory.CreateDbContext();
 			logger.Information($"Getting all groups for library page by groupId \"{groupId}\"");
-			return GetDbContext().Groups
+			return context.Groups
 				.Include(g => g.ChildGroups.OrderBy(gOrder => gOrder.Name))
 				.ThenInclude(childGroup => childGroup.ComicBooks)
 				.ThenInclude(cb => cb.Information)
@@ -37,7 +38,8 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 
 	public IEnumerable<Group> List()
 	{
-		return GetDbContext().Groups.Where(g => g.ParentGroupId != null).ToList();
+		using var context = contextFactory.CreateDbContext();
+		return context.Groups.Where(g => g.ParentGroupId != null).ToList();
 	}
 
 	/// <summary>
@@ -46,11 +48,18 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <param name="groupId"></param>
 	/// <returns></returns>
 	/// <exception cref="HandledAppException">Thrown when the db is not accessible</exception>
-	public Group? GetById(int groupId)
+	public Group GetById(int groupId)
 	{
 		try
 		{
-			return GetDbContext().Groups.FirstOrDefault(g => g.Id == groupId);
+			using var context = contextFactory.CreateDbContext();
+			var group = context.Groups.FirstOrDefault(g => g.Id == groupId);
+
+			if (group == null)
+				throw new HandledAppException("Group does not exist", Severity.Warning);
+
+			return group;
+
 		}
 		catch (DbException e)
 		{
@@ -68,7 +77,8 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	{
 		try
 		{
-			return GetDbContext().Groups.Include(g => g.ChildGroups).FirstOrDefault(g => g.Id == groupId);
+			using var context = contextFactory.CreateDbContext();
+			return context.Groups.Include(g => g.ChildGroups).FirstOrDefault(g => g.Id == groupId);
 		}
 		catch (DbException e)
 		{
@@ -88,7 +98,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		var groupToCreate = new Group { Name = newGroupName, ParentGroupId = parentId};
 		try
 		{
-			var context = GetDbContext();
+			using var context = contextFactory.CreateDbContext();
 			var createdGroup = context.Groups.Add(groupToCreate);
 			context.SaveChanges();
 			return createdGroup.Entity;
@@ -97,11 +107,6 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		{
 			throw new HandledAppException("Error creating group", Severity.Error, e);
 		}
-		finally
-		{
-			DisposeDbContext();
-		}
-
 	}
 
 	/// <summary>
@@ -118,7 +123,8 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		group.Name = newName;
 		try
 		{
-			var updatedLines = GetDbContext().SaveChanges();
+			using var context = contextFactory.CreateDbContext();
+			var updatedLines = context.SaveChanges();
 			var updateSuccessful = updatedLines == 1;
 
 			if (updateSuccessful)
@@ -132,10 +138,6 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not rename group", Severity.Warning, e);
-		}
-		finally
-		{
-			DisposeDbContext();
 		}
 	}
 
@@ -152,16 +154,13 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		group!.ParentGroupId = newParentGroupId;
 		try
 		{
-			var updatedLines = GetDbContext().SaveChanges();
+			using var context = contextFactory.CreateDbContext();
+			var updatedLines = context.SaveChanges();
 			return updatedLines == 1;
 		}
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not add to group", Severity.Warning, e);
-		}
-		finally
-		{
-			DisposeDbContext();
 		}
 	}
 
@@ -173,7 +172,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <exception cref="HandledAppException">Thrown when the content of the group could not be moved</exception>
 	public void MoveAll(int currentParentGroupId, int newParentGroupId)
 	{
-		var context = GetDbContext();
+		var context = contextFactory.CreateDbContext();
 		context.Groups
 			.Where(g => g.ParentGroupId == currentParentGroupId)
 			.ToList()
@@ -189,10 +188,6 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		{
 			throw new HandledAppException("Could not move group content to new group", Severity.Warning, e);
 		}
-		finally
-		{
-			DisposeDbContext();
-		}
 	}
 
 	/// <summary>
@@ -203,22 +198,20 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	/// <exception cref="HandledAppException">Thrown when the group could not be deleted</exception>
 	public bool Delete(int groupId)
 	{
-		var group = GetById(groupId)!;
-
 		try
 		{
-			var context = GetDbContext();
-			context.Groups.Remove(group);
+			var groupToDelete = GetById(groupId);
+
+			using var context = contextFactory.CreateDbContext();
+			context.Groups.Attach(groupToDelete);
+			context.Groups.Remove(groupToDelete);
 			var updatedLines = context.SaveChanges();
+
 			return updatedLines == 1; // TODO: Itt hibát kell dobni, ha nem 1 az updated lines
 		}
 		catch (DbUpdateException e)
 		{
 			throw new HandledAppException("Could not delete group", Severity.Error, e);
-		}
-		finally
-		{
-			DisposeDbContext();
 		}
 	}
 
@@ -229,7 +222,7 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 
 		try
 		{
-			var context = GetDbContext();
+			using var context = contextFactory.CreateDbContext();
 			var groupsFoundByName = context.Groups
 				.Where(cb => cb.Name.ToLower().Contains(searchTerm));
 			logger.Information($"GroupRepository.SearchByName: Found {groupsFoundByName.Count()} groups for term: \"{searchTerm}\"");
@@ -239,10 +232,6 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 		catch (Exception e)
 		{
 			throw new HandledAppException($"Error searching groups by name: \"{searchTerm}\"", Severity.Error, e);
-		}
-		finally
-		{
-			DisposeDbContext();
 		}
 	}
 }

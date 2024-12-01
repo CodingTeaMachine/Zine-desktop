@@ -4,7 +4,7 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBookInformation;
 
-public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> contextFactory,ILoggerService logger) : Repository(contextFactory), IComicBookInformationRepository
+public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> contextFactory,ILoggerService logger) : IComicBookInformationRepository
 {
 	public ComicBookInformation Create(int comicBookId, string coverImageName, int pageNamingFormat, int numberOfPages)
 	{
@@ -16,24 +16,20 @@ public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> con
 			NumberOfPages = numberOfPages
 		};
 
-		var dbContext = GetDbContext();
-		var savedComicBookInformation = dbContext.ComicBookInformation.Add(cbInfo);
+		using var context = contextFactory.CreateDbContext();
+		var savedComicBookInformation = context.ComicBookInformation.Add(cbInfo);
 
 		try
 		{
-			dbContext.SaveChanges();
+			context.SaveChanges();
 			logger.Information($"Created comic book information: \"{savedComicBookInformation.Entity.Id}\"");
 			return savedComicBookInformation.Entity;
 		}
 		catch (DbUpdateException e)
 		{
+			//TODO: Error handling
 			Console.WriteLine(e);
 			throw;
 		}
-		finally
-		{
-			DisposeDbContext();
-		}
-
 	}
 }

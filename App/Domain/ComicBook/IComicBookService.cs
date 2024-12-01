@@ -11,6 +11,6 @@ public interface IComicBookService
     public ComicBook? GetById(int comicId);
     public void AddToGroup(int groupId, int comicBookId);
     public void MoveAll(int currentGroupId, int newGroupId);
-    public bool Rename(int comicBookId, string newName);
+    public void Rename(int comicBookId, string newName);
     public bool Delete(int comicId);
 }

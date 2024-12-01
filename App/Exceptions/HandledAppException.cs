@@ -8,7 +8,7 @@ public class HandledAppException : Exception
 {
 	public Severity Severity { get; init; }
 
-	public HandledAppException(string message, Severity severity = Severity.Warning) : base(message)
+	public HandledAppException(string message, Severity severity) : base(message)
 	{
 		Severity = severity;
 		LogException(message, severity);
@@ -27,22 +27,22 @@ public class HandledAppException : Exception
 
 	private void LogException(string message, Severity severity)
 	{
+		SerilogLogger.Instance()
+			.SetIsPreFormattedMessageFroSingleLog(true)
+			.FromSeverity($"{severity}: {message} {getCalledLineFromLastFrame()}", severity);
+	}
 
+	private string getCalledLineFromLastFrame()
+	{
 		StackTrace stackTrace = new StackTrace(true);
 
-		if (stackTrace.FrameCount <= 0) return;
-
-		var exceptionMessage = $"{severity}: {message}";
+		if (stackTrace.FrameCount <= 0) return "";
 
 		StackFrame? frame = stackTrace.GetFrames()
 			.FirstOrDefault(frame => frame.GetFileName() != null && !frame.GetFileName()!.EndsWith(GetType().Name + ".cs"));
 
-		if (frame != null)
-			exceptionMessage += Environment.NewLine
-			                    + $"\t At: {frame.GetFileName()}:{frame.GetFileLineNumber()} {frame.GetMethod()}";
+		if(frame == null) return "";
 
-		SerilogLogger.Instance()
-			.SetIsPreFormattedMessageFroSingleLog(true)
-			.FromSeverity(exceptionMessage, severity);
+		return Environment.NewLine  + $"\t At: {frame.GetFileName()}:{frame.GetFileLineNumber()} {frame.GetMethod()}";
 	}
 }

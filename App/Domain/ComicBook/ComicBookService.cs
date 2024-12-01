@@ -1,3 +1,4 @@
+using MudBlazor;
 using SharpCompress;
 using SharpCompress.Archives;
 using Zine.App.Domain.Group;
@@ -49,13 +50,10 @@ public class ComicBookService(
         var comicBook = GetById(comicBookId);
         if (comicBook == null)
         {
-            throw new HandledAppException($"Could not find comic with id: {comicBookId}");
+            throw new HandledAppException($"Could not find comic with id: {comicBookId}", Severity.Warning);
         }
 
-        var group = groupService.GetById(groupId);
-
-        if(group == null)
-            throw new HandledAppException($"Could not find group with id: {groupId}");
+        groupService.GetById(groupId);
 
         comicBookRepository.AddToGroup(groupId, comicBookId);
     }
@@ -65,24 +63,14 @@ public class ComicBookService(
         comicBookRepository.MoveAll(currentGroupId, newGroupId);
     }
 
-    public bool Rename(int comicBookId, string newName)
+    public void Rename(int comicBookId, string newName)
     {
-        return comicBookRepository.Rename(comicBookId, newName);
+        comicBookRepository.Rename(comicBookId, newName);
     }
 
     public bool Delete(int comicId)
     {
-        var imageName = comicBookRepository.GetById(comicId)!.Information.CoverImage;
-        var deleteResult =  comicBookRepository.Delete(comicId);
-
-        if (!deleteResult) return false;
-
-        //Delete the corresponding cover image for the comic book
-        var pathToDeleteFileFrom = Path.Join(DataPath.ComicBookCoverDirectory, imageName);
-        logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicId} at {pathToDeleteFileFrom}");
-        File.Delete(pathToDeleteFileFrom);
-
-        return true;
+        return comicBookRepository.Delete(comicId);
     }
 
     public void ExtractImagesOfComicBook(int comicBookId)

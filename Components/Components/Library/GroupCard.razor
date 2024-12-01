@@ -1,6 +1,5 @@
 @using Zine.App
 @using Zine.App.Domain.Group
-@using Zine.App.Enums
 @using Zine.App.Exceptions
 
 @inject IJSRuntime JsRuntime
@@ -166,11 +165,18 @@
 
 		if(!deleteDialogResult.Confirmed) return;
 
-		var deletedGroup = GroupService.Delete(Group.Id, deleteDialogResult.DeleteAllContent);
-
-		if (deletedGroup)
+		try
 		{
+			GroupService.Delete(Group.Id, deleteDialogResult.DeleteAllContent);
 			await UpdatedGroup.InvokeAsync();
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Error deleting group", Severity.Error);
 		}
 	}
 

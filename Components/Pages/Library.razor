@@ -228,10 +228,10 @@
 		}
 	}
 
-	private async void DroppedToComicBookCardAction(int destinationComicBookId, int draggedComicBookId)
+	private async Task DroppedToComicBookCardAction(int destinationComicBookId, int draggedComicBookId)
 	{
 		var options = new DialogOptions { CloseOnEscapeKey = true };
-		var dialogReference = DialogService.Show<CreateGroupDialog>("Create new group", options);
+		var dialogReference = await DialogService.ShowAsync<CreateGroupDialog>("Create new group", options);
 		var result = await dialogReference.Result;
 
 
@@ -260,7 +260,7 @@
 
 	private void NavigateToParentGroup()
 	{
-		var parentGroupId = GroupService.GetById(GroupId)?.ParentGroupId;
+		var parentGroupId = GroupService.GetById(GroupId).ParentGroupId;
 
 		if (parentGroupId != null)
 			NavigateToGroup(parentGroupId.Value);
