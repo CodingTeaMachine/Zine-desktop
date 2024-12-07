@@ -47,6 +47,11 @@ public static class CompressionFormatFactory
         }
     };
 
+    public static bool IsSupportedFormat(string filePath)
+    {
+        return GetFromFile(filePath) != CompressionFormat.Unknown;
+    }
+
     public static CompressionFormat GetFromFile(string filePath)
     {
         var fileBuffer = File.ReadAllBytes(filePath);

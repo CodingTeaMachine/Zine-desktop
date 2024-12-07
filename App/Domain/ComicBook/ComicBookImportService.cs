@@ -7,7 +7,10 @@ using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook;
 
-public class ComicBookImportService(IComicBookRepository comicBookRepository, IComicBookInformationService comicBookInformationService , ILoggerService logger) : IComicBookImportService
+public class ComicBookImportService(
+	IComicBookRepository comicBookRepository,
+	IComicBookInformationService comicBookInformationService ,
+	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
 	///
@@ -18,21 +21,30 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IC
 	/// <param name="recursiveImport"></param>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <exception cref="FormatException"></exception>
-	public void ImportFromDisk(ImportType importType ,string pathOnDisk, int groupId, bool recursiveImport = false)
+	public List<string>? ImportFromDisk(ImportType importType ,string pathOnDisk, int groupId, bool recursiveImport = false)
 	{
-
-		ValidateInputFormat(pathOnDisk);
-
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
 
-		Action importAction = importType switch
+		switch (importType)
 		{
-			ImportType.File => () => ImportFileFromDisk(pathOnDisk, groupId),
-			ImportType.Directory => () => ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport),
-			_ => throw new ArgumentOutOfRangeException(nameof(importType), importType, "Import type not supported"),
-		};
-		
-		importAction();
+			case ImportType.File:
+				try
+				{
+					ImportFileFromDisk(pathOnDisk, groupId);
+					return null; // No error
+				}
+				catch (FormatException)
+				{
+					return [Path.GetFileNameWithoutExtension(pathOnDisk)];
+				}
+			case ImportType.Directory:
+				var errorList = ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport);
+				return errorList.Count > 0
+					? errorList
+					: null; // No error
+			default:
+				throw new ArgumentOutOfRangeException(nameof(importType), importType, "Unsupported import type");
+		}
 	}
 
 
@@ -41,8 +53,15 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IC
 	/// </summary>
 	/// <param name="comicBookPathOnDisk"></param>
 	/// <param name="groupId"></param>
+	/// <exceptions cref="FormatException"></exceptions>
 	private void ImportFileFromDisk(string comicBookPathOnDisk, int groupId)
 	{
+
+		if (!CompressionFormatFactory.IsSupportedFormat(comicBookPathOnDisk))
+		{
+			throw new FormatException("Unsupported compression format");
+		}
+
 		var createdComicBook = comicBookRepository.Create(
 			Path.GetFileNameWithoutExtension(comicBookPathOnDisk),
 			comicBookPathOnDisk,
@@ -52,28 +71,27 @@ public class ComicBookImportService(IComicBookRepository comicBookRepository, IC
 		comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id);
 	}
 
-	private void ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
+	private List<string> ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
 	{
+		var unsupportedComicBookList = new List<string>();
+
 		var searchDepth = recursiveImport
 			? SearchOption.AllDirectories
 			: SearchOption.TopDirectoryOnly;
 
 		Directory.EnumerateFiles(pathOnDisk, "*.cb?", searchDepth)
-			.Where(filePath => CompressionFormatFactory.ComicFileExtensions.Contains(Path.GetExtension(filePath)))
-			.ForEach(filePath => ImportFileFromDisk(filePath, groupId));
-	}
+			.ForEach(filePath =>
+			{
+				try
+				{
+					ImportFileFromDisk(filePath, groupId);
+				}
+				catch (FormatException)
+				{
+					unsupportedComicBookList.Add(Path.GetFileNameWithoutExtension(filePath));
+				}
+			});
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="pathOnDisk"></param>
-	/// <exception cref="FormatException"></exception>
-	private void ValidateInputFormat(string pathOnDisk)
-	{
-		var compressionFormat = CompressionFormatFactory.GetFromFile(pathOnDisk);
-		if (compressionFormat == CompressionFormat.Unknown)
-		{
-			throw new FormatException($"Unsupported compression format ({compressionFormat})");
-		}
+		return unsupportedComicBookList;
 	}
 }
