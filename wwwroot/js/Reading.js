@@ -13,12 +13,3 @@ function scrollElementIntoView(elementId) {
 
 	element.scrollIntoView(scrollArguments);
 }
-
-function convertStreamToBase64(fileStream){
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onloadend = () => resolve(reader.result);
-		reader.onerror = reject;
-		reader.readAsDataURL(fileStream);
-	});
-}

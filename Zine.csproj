@@ -45,14 +45,18 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="logs\" />
-    <Folder Remove="wwwroot\images\Reading\" />
     <Folder Update="wwwroot\images\ComicBookCovers\" />
+    <Folder Update="wwwroot\images\Reading\" />
   </ItemGroup>
   
   <ItemGroup>
     <Watch Remove="wwwroot/images/Reading/**" />
     <Watch Remove="wwwroot/images/Reading/*" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <ProjectReference Include="..\CanvasAPI\CanvasAPI.csproj" />
+  </ItemGroup>
+  
 
 </Project>

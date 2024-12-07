@@ -1,5 +1,6 @@
 using ElectronNET.API;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using MudBlazor;
 using MudBlazor.Services;
 using Zine.App.Database;
@@ -56,11 +57,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<Zine.Components.App>()
     .AddInteractiveServerRenderMode();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(DataPath.ComicBookReadingDirectory),
+    RequestPath = "/images/Reading", // Maps the directory to this URL path
+    ServeUnknownFileTypes = true
+});
+
+
+app.UseStaticFiles();
 
 await app.StartAsync();
 

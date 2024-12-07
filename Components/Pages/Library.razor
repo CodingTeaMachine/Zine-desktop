@@ -191,7 +191,7 @@
 	}
 
 
-	private void ComicBookDropped(MudItemDropInfo<DropItem> dropItem)
+	private async Task ComicBookDropped(MudItemDropInfo<DropItem> dropItem)
 	{
 		if (dropItem.Item!.Identifier.Equals(dropItem.DropzoneIdentifier))
 			return;
@@ -208,7 +208,7 @@
 			DroppedToGroupCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
 		}
 		else
-			DroppedToComicBookCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
+			await DroppedToComicBookCardAction(dropDestinationId, dropItem.Item.ComicBook.Id);
 	}
 
 	private void DroppedToGroupCardAction(int groupId, int comicBookId)

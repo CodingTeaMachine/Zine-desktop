@@ -1,9 +1,52 @@
+using CanvasAPI;
+using Microsoft.AspNetCore.Components;
+using Zine.App.Enums;
+using Zine.App.Helpers;
+
 namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
+	public ReadingPageHandler(
+		NavigationManager navigationManager,
+		IComicBookService comicBookService,
+		CanvasHandler canvasHandler,
+		int groupId,
+		int comicBookId)
+	{
+		_navigationManager = navigationManager;
+		_comicBookService = comicBookService;
+		_canvasHandler = canvasHandler;
+
+		LoadComic(comicBookId, groupId);
+		LoadImages(comicBookId);
+	}
+
 	public ComicBook ComicBook { get; set; } = null!;
-	public int CurrentPageIndex { get; private set; } = 0;
+
+	private readonly IComicBookService _comicBookService;
+
+	private readonly CanvasHandler _canvasHandler;
+
+	private readonly NavigationManager _navigationManager;
+
+	public int CurrentPageIndex
+	{
+		get => _currentPageIndex;
+		private set
+		{
+			if (value != _currentPageIndex)
+			{
+				_currentPageIndex = value;
+				SetImageOnCanvas(value);
+			}
+		}
+	}
+
+	private int _currentPageIndex = 0;
+
+	public string[] Images = [];
+
 
 	public void GoToPage(int pageIndex)
 	{
@@ -38,4 +81,38 @@ public class ReadingPageHandler
 			CurrentPageIndex--;
 		}
 	}
+
+	public void RefreshCanvasImage()
+	{
+		SetImageOnCanvas(CurrentPageIndex);
+	}
+
+
+	private void LoadComic(int comicBookId, int groupId)
+	{
+		var loadedComicBook = _comicBookService.GetById(comicBookId);
+
+		if (loadedComicBook == null)
+			_navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
+		else
+			ComicBook = loadedComicBook;
+	}
+
+
+	private void LoadImages(int comicBookId)
+	{
+		_comicBookService.ExtractImagesOfComicBook(comicBookId);
+
+		Images = Directory
+			.GetFiles(DataPath.ComicBookReadingDirectory, "*.*", SearchOption.TopDirectoryOnly)
+			.Select(path => "/images/Reading/" + Path.GetFileName(path))
+			.Order()
+			.ToArray();
+	}
+
+	private void SetImageOnCanvas(int imageIndex)
+	{
+		_ = _canvasHandler.DrawImage(Images[imageIndex]);
+	}
+
 }
