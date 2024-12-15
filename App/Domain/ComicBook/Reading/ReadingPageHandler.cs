@@ -1,7 +1,7 @@
-using CanvasAPI;
 using Microsoft.AspNetCore.Components;
 using Zine.App.Enums;
 using Zine.App.Helpers;
+using Zine.App.Helpers.Canvas;
 
 namespace Zine.App.Domain.ComicBook.Reading;
 
@@ -23,6 +23,8 @@ public class ReadingPageHandler
 	}
 
 	public ComicBook ComicBook { get; set; } = null!;
+
+	public int ZoomScale = 100;
 
 	private readonly IComicBookService _comicBookService;
 
@@ -82,9 +84,22 @@ public class ReadingPageHandler
 		}
 	}
 
+
 	public void RefreshCanvasImage()
 	{
 		SetImageOnCanvas(CurrentPageIndex);
+	}
+
+	public async Task ZoomIn()
+	{
+		await _canvasHandler.ZoomIn();
+		ZoomScale = await _canvasHandler.GetZoomScale();
+	}
+
+	public async Task ZoomOut()
+	{
+		await _canvasHandler.ZoomOut();
+		ZoomScale = await _canvasHandler.GetZoomScale();
 	}
 
 

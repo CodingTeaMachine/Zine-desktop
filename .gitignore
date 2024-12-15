@@ -6,7 +6,7 @@ Data/
 start_app.sh
 packages-microsoft-prod.deb
 appsettings.json
-wwwroot/css/app.css
+wwwroot/css/Tailwind.css
 wwwroot/images/ComicBookCovers/
 wwwroot/images/Reading/
 

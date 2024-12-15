@@ -3,10 +3,9 @@
 @implements IJsKeyEventListener
 @implements IJsScrollEventListener
 @implements IDisposable
-
-@using CanvasAPI
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Helpers.Canvas
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
 
@@ -33,15 +32,30 @@
 	</div>
 
 	<main class="h-full flex flex-col gap-3">
-		<div class="grow flex items-center justify-center">
-			<canvas id="CurrentPage" Class="max-w-full max-h-[calc(100vh-130px)]"></canvas>
+
+		<div class="w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8">
+			<MudIcon Icon="@Icons.Material.Filled.ZoomIn" class="toolbar-icon" @onclick="_readingPageHandler.ZoomIn"/>
+			<MudIcon Icon="@Icons.Material.Filled.ZoomOut" class="toolbar-icon" @onclick="_readingPageHandler.ZoomOut"/>
+
+			<div class="ml-2 w-10 text-end">
+				@_readingPageHandler.ZoomScale%
+			</div>
 		</div>
+
+		<div class="w-full h-full flex justify-center items-center overflow-hidden relative">
+			<canvas id="CurrentPage" class="w-full h-full block"></canvas>
+		</div>
+
 		<div class="h-14 w-full flex flex-row items-center justify-center gap-3 select-none">
+
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="FirstPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="PrevPage" />
+
 			<div>@(_readingPageHandler.CurrentPageIndex + 1) / @_readingPageHandler.ComicBook.Information.NumberOfPages</div>
+
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="NextPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="LastPage" />
+
 		</div>
 	</main>
 
@@ -85,17 +99,37 @@
 	{
 		switch (eventArgs.Key)
 		{
+			case "ArrowUp":
 			case "ArrowLeft":
 				PrevPage();
 				break;
 			case "ArrowRight":
+			case "ArrowDown":
 				NextPage();
 				break;
 		}
 	}
 
 	[JSInvokable]
-	public void ElementScrolled(ScrollDirection direction)
+	public async Task ElementScrolledAsync(ScrollEvent scrollEvent)
+	{
+
+		switch (scrollEvent.Modifier)
+		{
+			case KeyModifier.None:
+				HandleScrollPageChange(scrollEvent.Direction);
+				break;
+			case KeyModifier.Ctrl:
+				await HandleScrollZoomChange(scrollEvent.Direction);
+				break;
+			case KeyModifier.Alt:
+			case KeyModifier.Shift:
+			default:
+				break;
+		}
+	}
+
+	void HandleScrollPageChange(ScrollDirection direction)
 	{
 		switch (direction)
 		{
@@ -108,41 +142,59 @@
 			default:
 				throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
 		}
+	}
 
-		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
+	async Task HandleScrollZoomChange(ScrollDirection direction)
+	{
+		switch (direction)
+		{
+			case ScrollDirection.Down:
+				await _readingPageHandler.ZoomOut();
+				break;
+			case ScrollDirection.Up:
+				await _readingPageHandler.ZoomIn();
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+		}
+
+		StateHasChanged();
 	}
 
 	void GoToPage(int pageIndex)
 	{
 		_readingPageHandler.GoToPage(pageIndex);
 		StateHasChanged();
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
 	}
 
 	void FirstPage()
 	{
 		_readingPageHandler.GoToFirstPage();
 		StateHasChanged();
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
 	}
 
 	void PrevPage()
 	{
 		_readingPageHandler.PrevPage();
 		StateHasChanged();
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
 	}
 
 	void LastPage()
 	{
 		_readingPageHandler.GoToLastPage();
 		StateHasChanged();
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
 	}
 
 	void NextPage()
 	{
 		_readingPageHandler.NextPage();
 		StateHasChanged();
+		JsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + _readingPageHandler.CurrentPageIndex);
 	}
-
-
 
 	protected override void OnInitialized()
 	{
@@ -150,7 +202,9 @@
 
 		InitCanvasHandler();
 		InitReadingPageHandler(ComicBookService, _canvasHandler);
+
 	}
+
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -161,7 +215,7 @@
 			_readingPageHandler.RefreshCanvasImage();
 
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerKeyDownEventListener", _componentRef);
-			await JsRuntime.InvokeVoidAsync("JsFunctions.registerOnScrollListener", "CurrentPage", _componentRef);
+			await JsRuntime.InvokeVoidAsync("JsFunctions.registerOnScrollListener", "CurrentPage", _componentRef, HandlerType.Async);
 		}
 	}
 

@@ -8,7 +8,8 @@ module.exports = {
 			},
 			colors: {
 				primary: '#776be7', // mud-theme-primary
-				light: '#383843' // mud-theme-light
+				light: '#383843', // mud-theme-light
+				dark: '#27272f', //mud-theme-dark
 			}
 		},
 	},

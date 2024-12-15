@@ -28,10 +28,10 @@
     <Content Update="electron.manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Styles\app.css">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+<!--    <Content Update="Components\Pages\Reading.razor.css">-->
+<!--      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>-->
+<!--      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>-->
+<!--    </Content>-->
   </ItemGroup>
   
   <ItemGroup>
@@ -55,8 +55,12 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\CanvasAPI\CanvasAPI.csproj" />
+    <Watch Include="./Assets/Styles/Tailwind.css" Exclude="./wwwroot/**/*;obj\**\*;bin\**\*" />
   </ItemGroup>
+  
+  <Target Name="Tailwind" BeforeTargets="Compile">
+    <Exec Command="npx tailwindcss -i ./Assets/Styles/Tailwind.css -o ./wwwroot/css/Tailwind.css" />
+  </Target>
   
 
 </Project>

@@ -1,0 +1,7 @@
+::deep .toolbar-icon:hover {
+	color: var(--mud-palette-primary);
+}
+
+::deep .toolbar-icon {
+	cursor: pointer;
+}
