@@ -1,54 +1,124 @@
-
+/**
+ * @type {{
+ * 		canvasId: null|string,
+ * 		ctx: null|CanvasRenderingContext2D,
+ * 		img: null|HTMLImageElement,
+ * 		translatedMousePosition: null|{x: number, y: number, z:number},
+ * 		scale: number,
+ * 		isDragging: boolean,
+ * 		dragStartPosition: {x: number, y: number}
+ * 		}}
+ */
 const globalState = {
 	canvasId: null,
-	context: null,
-	imgSrc: null,
-	scale: 1
+	img: null,
+	translatedMousePosition: null,
+
+	//Zooming
+	scale: 1,
+
+	//Panning
+	isDragging: false,
+	dragStartPosition: { x: 0, y: 0 },
+	previousX: 0,
+	previousY: 0,
+	viewportTransform: {
+		x: 0,
+		y: 0,
+	}
 };
 
+/**
+ * @type {CanvasRenderingContext2D}
+ */
+let ctx = null;
+
 const ZOOM_SCALE = 0.1;
-const MAX_ZOOM_LEVEL = 3.0;
+const MAX_ZOOM_LEVEL = 3.5;
 const MIN_ZOOM_LEVEL = 0.1;
 
 
 export function initCanvas(canvasId) {
 	globalState.canvasId = canvasId;
-}
 
-
-export function drawImage(imageSrc) {
-	globalState.imgSrc = imageSrc;
-	const ctx = getContextByCanvasId(globalState.canvasId);
-
-	redrawImage(ctx, imageSrc);
+	if (ctx === null) {
+		ctx = getCanvas(globalState.canvasId).getContext('2d');
+	}
 
 	window.addEventListener('resize', resizeWindowEventListener);
+
+	ctx.canvas.addEventListener('mousedown', mouseDownListener);
+
+	ctx.canvas.addEventListener('mouseup', mouseUpListener);
+
+	ctx.canvas.addEventListener('mousemove', mouseMoveListener);
 }
 
-export function zoomInImage() {
 
-	if(globalState.scale >= MAX_ZOOM_LEVEL) {
+/**
+ *
+ * @param {string} imageSrc
+ */
+export function drawImage(imageSrc) {
+	globalState.scale = 1.0;
+
+	const image = new Image();
+	image.src = imageSrc;
+	image.onload = () => drawImageActualSize(image);
+
+	globalState.img = image;
+}
+
+/**
+ * @param {boolean} zoomByMouse
+ */
+export function zoomIn(zoomByMouse = false) {
+
+	if (globalState.scale >= MAX_ZOOM_LEVEL) {
 		return;
 	}
 
-	const ctx = getContextByCanvasId(globalState.canvasId);
 	globalState.scale += ZOOM_SCALE;
-	redrawImage(ctx);
+
+	drawImageActualSize(
+		globalState.img,
+		() => setZoom(zoomByMouse));
 }
 
-export function zoomOutImage() {
+/**
+ * @param {boolean} zoomByMouse
+ */
+export function zoomOut(zoomByMouse = false) {
 
-	if(globalState.scale - ZOOM_SCALE <= MIN_ZOOM_LEVEL) {
+	if (globalState.scale - ZOOM_SCALE <= MIN_ZOOM_LEVEL) {
 		return;
 	}
 
-	const ctx = getContextByCanvasId(globalState.canvasId);
 	globalState.scale -= ZOOM_SCALE;
-	redrawImage(ctx);
+
+	drawImageActualSize(
+		globalState.img,
+		() => setZoom(zoomByMouse));
 }
 
-export function dispose() {
-	window.removeEventListener('resize', resizeWindowEventListener);
+function setZoom(scaleImageByMouse) {
+	let zoomX;
+	let zoomY;
+
+	if (!scaleImageByMouse) {
+		zoomX = ctx.canvas.width / 2;
+		zoomY = ctx.canvas.height / 2;
+	} else {
+		zoomX = globalState.translatedMousePosition.x;
+		zoomY = globalState.translatedMousePosition.y;
+	}
+
+
+	ctx.translate(zoomX, zoomY);
+	ctx.scale(globalState.scale, globalState.scale);
+	ctx.translate(-zoomX, -zoomY);
+
+	ctx.fillStyle = "orange"
 }
 
 /**
@@ -58,70 +128,86 @@ export function getZoomScale() {
 	return globalState.scale;
 }
 
+export function dispose() {
+	window.removeEventListener('resize', resizeWindowEventListener);
+}
 
 /**
- *
- * @param {CanvasRenderingContext2D} ctx
  * @param {HTMLImageElement} image
+ * @param {(() => void)|null} transform
  */
-function drawImageActualSize( ctx, image) {
+function drawImageActualSize(image, transform = null) {
 	const canvas = ctx.canvas;
 	const canvasContainer = canvas.parentElement;
 
 	canvas.width = canvasContainer.clientWidth;
 	canvas.height = canvasContainer.clientHeight;
 
-	const imgAspectRatio = image.width / image.height;
-	const canvasAspectRatio = canvas.width / canvas.height;
+	const hRatio = canvas.width / image.width;
+	const vRatio = canvas.height / image.height;
+	const ratio = Math.min(hRatio, vRatio);
 
-	let drawWidth;
-	let drawHeight;
+	const drawWidth = image.width * ratio;
+	const drawHeight = image.height * ratio;
 
-	if(imgAspectRatio > canvasAspectRatio) {
-		drawWidth = canvas.width;
-		drawHeight = canvas.width / imgAspectRatio;
-	} else {
-		drawHeight = canvas.height;
-		drawWidth = canvas.height * imgAspectRatio;
+
+	if (transform !== null) {
+		transform();
 	}
 
-	drawWidth = drawWidth * globalState.scale;
-	drawHeight = drawHeight * globalState.scale;
-
-	//Center the image on the canvas
-	const offsetX = (canvas.width - drawWidth) / 2;
-	const offsetY = (canvas.height - drawHeight) / 2;
-
-	//Clear the previous img so no artifacts are left behind
+	// Clear the previous img so no artifacts are left behind
+	//ctx.save();
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.setTransform(globalState.scale, 0, 0, globalState.scale, globalState.viewportTransform.x, globalState.viewportTransform.y);
+	//ctx.restore();
+
 
 	//Draw the img
-	ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+	ctx.drawImage(
+		image,
+		0, 0,
+		image.width, image.height,
+		(canvas.width / 2) - (image.width * ratio / 2), 0,
+		drawWidth, drawHeight);
 }
 
-function redrawImage(ctx) {
-	const image = new Image();
-	image.src = globalState.imgSrc;
-
-	image.onload = () => drawImageActualSize(ctx, image);
+function resizeWindowEventListener() {
+	drawImageActualSize(globalState.img);
 }
 
-function resizeWindowEventListener(event) {
-	const ctx = getContextByCanvasId(globalState.canvasId);
-	const imageSrc = globalState.imgSrc;
+function mouseMoveListener(event) {
+	//For zooming to the mouse position
+	if (!globalState.isDragging) {
+		globalState.translatedMousePosition = getTransformedCursorPosition(event.offsetX, event.offsetY);
+		return;
+	}
 
-	redrawImage(ctx, imageSrc);
+	const localX = event.clientX;
+	const localY = event.clientY;
+
+	globalState.viewportTransform.x = localX - globalState.previousX;
+	globalState.viewportTransform.y = localY - globalState.previousY;
+
+	globalState.previousX = localX;
+	globalState.previousY = localY;
+
+	drawImageActualSize(globalState.img);
 }
 
+function mouseDownListener(event) {
+	globalState.previousX = event.clientX;
+	globalState.previousY = event.clientY;
+	globalState.isDragging = true;
+}
 
-/**
- *
- * @param {string} canvasId
- * @returns {CanvasRenderingContext2D}
- */
-function getContextByCanvasId(canvasId) {
-	const canvas = getCanvas(canvasId);
-	return canvas.getContext('2d');
+function mouseUpListener() {
+	globalState.isDragging = false;
+}
+
+function getTransformedCursorPosition(x, y) {
+	const cursorLocationInRealSpace = new DOMPoint(x, y);
+	return ctx.getTransform().invertSelf().transformPoint(cursorLocationInRealSpace);
 }
 
 
@@ -133,13 +219,13 @@ function getContextByCanvasId(canvasId) {
  */
 function getCanvas(canvasId) {
 
-	if(canvasId === null) {
+	if (canvasId === null) {
 		throw new Error('Canvas not initialized');
 	}
 
 	const canvas = document.getElementById(canvasId);
 
-	if(canvas === null) {
+	if (canvas === null) {
 		throw `Could not find canvas #${canvasId}`
 	}
 

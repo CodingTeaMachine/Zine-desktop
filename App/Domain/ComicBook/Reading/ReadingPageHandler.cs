@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
@@ -10,19 +11,23 @@ public class ReadingPageHandler
 	public ReadingPageHandler(
 		NavigationManager navigationManager,
 		IComicBookService comicBookService,
-		CanvasHandler canvasHandler,
+		IJSRuntime jsRuntime,
+		string canvasId,
 		int groupId,
-		int comicBookId)
+		int comicBookId,
+		Action uiUpdateHandler)
 	{
 		_navigationManager = navigationManager;
 		_comicBookService = comicBookService;
-		_canvasHandler = canvasHandler;
+		_jsRuntime = jsRuntime;
+		_uiUpdateHandler = uiUpdateHandler;
 
 		LoadComic(comicBookId, groupId);
 		LoadImages(comicBookId);
+		_canvasHandler = new CanvasHandler(jsRuntime, canvasId);
 	}
 
-	public ComicBook ComicBook { get; set; } = null!;
+	public ComicBook ComicBook { get; private set; } = null!;
 
 	public int ZoomScale = 100;
 
@@ -32,19 +37,27 @@ public class ReadingPageHandler
 
 	private readonly NavigationManager _navigationManager;
 
+	private readonly IJSRuntime _jsRuntime;
+
+	private readonly Action _uiUpdateHandler;
+
 	public int CurrentPageIndex
 	{
 		get => _currentPageIndex;
 		private set
 		{
-			if (value != _currentPageIndex)
-			{
-				_currentPageIndex = value;
-				SetImageOnCanvas(value);
-			}
+			if (value == _currentPageIndex)
+				return;
+
+			_currentPageIndex = value;
+
+			SetImageOnCanvas(value);
+			ScrollImageToViewInSidebar();
+			_ = UpdateZoomScale();
 		}
 	}
 
+	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
 
 	public string[] Images = [];
@@ -90,16 +103,28 @@ public class ReadingPageHandler
 		SetImageOnCanvas(CurrentPageIndex);
 	}
 
+
 	public async Task ZoomIn()
 	{
 		await _canvasHandler.ZoomIn();
-		ZoomScale = await _canvasHandler.GetZoomScale();
+		await UpdateZoomScale();
 	}
 
 	public async Task ZoomOut()
 	{
 		await _canvasHandler.ZoomOut();
+		await UpdateZoomScale();
+	}
+
+	public async Task UpdateZoomScale()
+	{
 		ZoomScale = await _canvasHandler.GetZoomScale();
+		_uiUpdateHandler();
+	}
+
+	public async void SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
+	{
+		await _canvasHandler.SetDotnetHelperReference(dotNetObjectReference);
 	}
 
 
@@ -128,6 +153,11 @@ public class ReadingPageHandler
 	private void SetImageOnCanvas(int imageIndex)
 	{
 		_ = _canvasHandler.DrawImage(Images[imageIndex]);
+	}
+
+	private void ScrollImageToViewInSidebar()
+	{
+		_jsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
 	}
 
 }

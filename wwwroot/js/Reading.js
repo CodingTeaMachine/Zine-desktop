@@ -7,8 +7,9 @@ function scrollElementIntoView(elementId) {
 
 	/** @type {ScrollIntoViewOptions} */
 	const scrollArguments = {
-		behavior: "auto",
+		behavior: "smooth",
 		block: "center",
+
 	};
 
 	element.scrollIntoView(scrollArguments);

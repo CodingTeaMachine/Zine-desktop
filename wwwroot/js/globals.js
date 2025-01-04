@@ -1,5 +1,15 @@
 /**
- * @typedef {{Direction: number, Modifier: number}} ScrollEvent
+ * @typedef {{
+ *  MouseX: number,
+ *  MouseY: number,
+ * 	Direction: number,
+ * 	Modifier: number
+ * }} ScrollEvent
+ *
+ * @typedef {{
+ * 	   invokeMethod: (string, ...any) => void
+ *     invokeMethodAsync: (string, ...any) => void
+ * }} DotnetHelper
  */
 
 
@@ -8,8 +18,8 @@ window.JsFunctions = {
 	/**
 	 *  Call the HandleClickOutside function on the razor page, when a user either left or right clicks outside the element with elementId
 	 *
-	 * @param elementId
-	 * @param dotNetHelper
+	 * @param {string} elementId
+	 * @param {DotnetHelper} dotNetHelper
 	 * @returns {{dispose: *}}
 	 */
 	registerClickOutsideHandler: (elementId, dotNetHelper) => {
@@ -49,7 +59,7 @@ window.JsFunctions = {
 		};
 
 		window.document.addEventListener('keydown', (e) =>
-			dotNetHelper.invokeMethodAsync('JsOnKeyDown', serializeEvent(e))
+			dotNetHelper.invokeMethodAsync('JS_OnKeyDown', serializeEvent(e))
 		);
 
 		return {
@@ -62,7 +72,7 @@ window.JsFunctions = {
 	registerOnScrollListener: (elementId, dotNetHelper, isAsyncHandler = false) => {
 		const element = document.getElementById(elementId);
 		if (!element) {
-			console.error(`Could not find element with id: ${elementId}`)
+			console.error(`Could not find element with id: ${ elementId }`)
 			return;
 		}
 
@@ -71,15 +81,19 @@ window.JsFunctions = {
 		 */
 		const invokeScrollMethod = (event) => {
 
+			console.log()
+
 			/** @type ScrollEvent */
 			const eventSettings = {
+				MouseX: event.offsetX,
+				MouseY: event.offsetY,
 				Direction: event.deltaY > 0 ? scrollDirection.Down : scrollDirection.Up,
-				Modifier: getModifier(event)
+				Modifier: getModifier(event),
 			}
 
 			const handlerName = isAsyncHandler
-				? 'ElementScrolledAsync'
-				: 'ElementScrolled';
+				? 'JS_ElementScrolledAsync'
+				: 'JS_ElementScrolled';
 
 			dotNetHelper.invokeMethodAsync(handlerName, eventSettings);
 		}
@@ -110,8 +124,8 @@ const keyModifier = {
  * @param {WheelEvent} event
  */
 function getModifier(event) {
-	if(event.altKey) return keyModifier.Alt;
-	else if(event.shiftKey) return keyModifier.Shift;
-	else if(event.ctrlKey) return keyModifier.Ctrl;
+	if (event.altKey) return keyModifier.Alt;
+	else if (event.shiftKey) return keyModifier.Shift;
+	else if (event.ctrlKey) return keyModifier.Ctrl;
 	else return keyModifier.None;
 }

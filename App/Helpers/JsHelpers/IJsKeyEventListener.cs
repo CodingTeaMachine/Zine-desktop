@@ -4,5 +4,5 @@ namespace Zine.App.Helpers.JsHelpers;
 
 public interface IJsKeyEventListener
 {
-	public void JsOnKeyDown(KeyboardEventArgs eventArgs);
+	public void JS_OnKeyDown(KeyboardEventArgs eventArgs);
 }

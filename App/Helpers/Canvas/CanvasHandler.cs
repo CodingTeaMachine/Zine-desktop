@@ -1,62 +1,73 @@
 using Microsoft.JSInterop;
+using Zine.Components.Pages;
 
 namespace Zine.App.Helpers.Canvas;
 
 
-public class CanvasHandler(IJSRuntime jsRuntime, string canvasId) : IAsyncDisposable
+public class CanvasHandler : IAsyncDisposable
 {
-	private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
-		"import", "./js/canvasApiJsInterop.js").AsTask());
-	
-	private bool _isCanvasInitialized = false;
+
+	public CanvasHandler(IJSRuntime jsRuntime, string canvasId)
+	{
+		_jsRuntime = jsRuntime;
+		_canvasId = canvasId;
+
+		_ = InitCanvas();
+	}
+
+	private readonly Lazy<Task<IJSObjectReference>> _moduleTask = new(() => _jsRuntime.InvokeAsync<IJSObjectReference>(
+		"import", "./js/canvas/interop.js").AsTask());
+
+	private static IJSRuntime _jsRuntime = null!;
+	private readonly string _canvasId;
+
+	private async Task InitCanvas()
+	{
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("init", _canvasId);
+	}
 
 	public async Task DrawImage(string imgSrc)
 	{
-		if (!_isCanvasInitialized)
-		{
-			await InitCanvas();
-		}
-		
 		var module = await _moduleTask.Value;
-		await module.InvokeVoidAsync("drawImage", imgSrc);
+		await module.InvokeVoidAsync("showComicPage", imgSrc);
 	}
 
 	public async Task ZoomIn()
 	{
-		var module = await _moduleTask.Value;
-		await module.InvokeVoidAsync("zoomInImage");
+		// var module = await _moduleTask.Value;
+		// await module.InvokeVoidAsync("zoomIn");
 	}
 
 	public async Task ZoomOut()
 	{
-		var module = await _moduleTask.Value;
-		await module.InvokeVoidAsync("zoomOutImage");
+		// var module = await _moduleTask.Value;
+		// await module.InvokeVoidAsync("zoomOut");
 	}
 
-	public async ValueTask<int> GetZoomScale()
+	public async Task<int> GetZoomScale()
 	{
 		var module = await _moduleTask.Value;
-		var scaleAsDecimal = await module.InvokeAsync<float>("getZoomScale");
+		return await module.InvokeAsync<int>("getZoomScale");
+	}
 
-		Console.WriteLine((int)(scaleAsDecimal * 100));
 
-		return (int)(scaleAsDecimal * 100);
+
+	public async Task SetDotnetHelperReference(DotNetObjectReference<Reading> dotNetObjectReference)
+	{
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("setDotnetHelper", dotNetObjectReference);
 	}
 
 	public async ValueTask DisposeAsync()
 	{
+		GC.SuppressFinalize(this);
+
 		if (_moduleTask.Value.IsCompleted)
 		{
 			var module = await _moduleTask.Value;
 			await module.InvokeVoidAsync("dispose");
 			await module.DisposeAsync();
 		}
-	}
-
-	private async Task InitCanvas()
-	{
-		var module = await _moduleTask.Value;
-		await module.InvokeVoidAsync("initCanvas", canvasId);
-		_isCanvasInitialized = true;
 	}
 }
