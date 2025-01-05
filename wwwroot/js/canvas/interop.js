@@ -15,6 +15,9 @@ const currentDraw = {
 	drawHeight: 0,
 }
 
+// For some reason this only works here, not in the init function
+window.addEventListener("resize", setCanvasSize);
+
 // noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
 /**
  * @param {string} canvasId
@@ -24,9 +27,7 @@ export function init(canvasId) {
 	context = canvas.getContext("2d");
 	panAndZoom = new PanAndZoom(context, drawImage);
 
-	const canvasContainer = canvas.parentElement;
-	context.canvas.width = canvasContainer.clientWidth;
-	context.canvas.height = canvasContainer.clientHeight;
+	setCanvasSize()
 }
 
 // noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
@@ -76,6 +77,11 @@ export function setDotnetHelper(dotnetHelper) {
 	panAndZoom.dotnetHelper = dotnetHelper;
 }
 
+export function dispose() {
+	window.removeEventListener("resize", setCanvasSize);
+}
+
+
 /**
  * @param {CanvasRenderingContext2D} ctx
  */
@@ -107,4 +113,17 @@ function __drawImage(ctx, image) {
 function resetZoom() {
 	panAndZoom.resetZoom();
 	context.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function setCanvasSize() {
+
+	if(context === null)
+		return;
+
+	const canvasContainer = context.canvas.parentElement;
+	context.canvas.width = canvasContainer.clientWidth;
+	context.canvas.height = canvasContainer.clientHeight;
+
+	clearCanvas(context);
+	showComicPage(currentImageSrc)
 }
