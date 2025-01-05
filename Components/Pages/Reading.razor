@@ -78,19 +78,12 @@
 	ReadingPageHandler _readingPageHandler = null!;
 
 	[JSInvokable]
-	public void JS_OnKeyDown(KeyboardEventArgs eventArgs)
+	public void JS_OnKeyDown(KeyboardEventArgs keyboardEvent)
 	{
-		switch (eventArgs.Key)
-		{
-			case "ArrowUp":
-			case "ArrowLeft":
-				_readingPageHandler.PrevPage();
-				break;
-			case "ArrowRight":
-			case "ArrowDown":
-				_readingPageHandler.NextPage();
-				break;
-		}
+		if (keyboardEvent.AltKey)
+			HandleAltKeyPress(keyboardEvent);
+		else
+			HandleNormalKeyPress(keyboardEvent);
 	}
 
 	[JSInvokable]
@@ -115,6 +108,33 @@
 			_readingPageHandler.PrevPage();
 	}
 
+	void HandleNormalKeyPress(KeyboardEventArgs keyboardEvent)
+	{
+		switch (keyboardEvent.Key)
+		{
+			case "ArrowUp":
+			case "ArrowLeft":
+				_readingPageHandler.PrevPage();
+				break;
+			case "ArrowRight":
+			case "ArrowDown":
+				_readingPageHandler.NextPage();
+				break;
+		}
+	}
+
+	void HandleAltKeyPress(KeyboardEventArgs keyboardEvent)
+	{
+		switch (keyboardEvent.Key)
+		{
+			case "=":
+				_ = _readingPageHandler.ZoomIn();
+				break;
+			case "-":
+				_ = _readingPageHandler.ZoomOut();
+				break;
+		}
+	}
 
 	void InitReadingPageHandler(IComicBookService comicBookService)
 	{
@@ -127,7 +147,6 @@
 			ComicBookId,
 			StateHasChanged);
 	}
-
 
 	protected override void OnInitialized()
 	{
