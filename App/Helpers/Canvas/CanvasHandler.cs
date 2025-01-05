@@ -33,6 +33,18 @@ public class CanvasHandler : IAsyncDisposable
 		await module.InvokeVoidAsync("showComicPage", imgSrc);
 	}
 
+	public async Task RotateRight()
+	{
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("rotate", "right");
+	}
+
+	public async Task RotateLeft()
+	{
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("rotate", "left");
+	}
+
 	public async Task ZoomIn()
 	{
 		var module = await _moduleTask.Value;

@@ -31,7 +31,7 @@ export default class Transform {
 		this.dy -= dy;
 	}
 
-	transform({ x, y }) {
+	getTransformPoint({ x, y }) {
 		return {
 			x: this.s * x + this.dx,
 			y: this.s * y + this.dy,

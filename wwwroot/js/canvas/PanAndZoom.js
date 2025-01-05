@@ -71,7 +71,7 @@ export default class PanAndZoom {
 
 		const offset = this.mouseOffset(e);
 
-		this.dragStart = this.transform.transform(offset);
+		this.dragStart = this.transform.getTransformPoint(offset);
 		this.isDragging = true;
 	}
 
@@ -97,14 +97,14 @@ export default class PanAndZoom {
 		}
 
 		const offset = this.mouseOffset(e);
-		const dragEnd = this.transform.transform(offset);
+		const dragEnd = this.transform.getTransformPoint(offset);
 		const dx = dragEnd.x - this.dragStart.x;
 		const dy = dragEnd.y - this.dragStart.y;
 
 		this.transform.translate(dx, dy);
 		this.draw();
 
-		this.dragStart = this.transform.transform(offset);
+		this.dragStart = this.transform.getTransformPoint(offset);
 	}
 
 	/**

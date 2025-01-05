@@ -13,6 +13,7 @@ const currentDraw = {
 	ratio: 0,
 	drawWidth: 0,
 	drawHeight: 0,
+	rotationDegree: 0,
 }
 
 // For some reason this only works here, not in the init function
@@ -44,17 +45,30 @@ export function showComicPage(imageSrc) {
 	image.src = imageSrc;
 
 	image.onload = () => {
-		const hRatio = context.canvas.clientWidth / image.width;
-		const vRatio = context.canvas.clientHeight / image.height;
-		currentDraw.ratio = Math.min(hRatio, vRatio);
-
-		currentDraw.drawWidth = image.width * currentDraw.ratio;
-		currentDraw.drawHeight = image.height * currentDraw.ratio;
-
 		currentImage = image;
+
+		setDrawSize();
 
 		__drawImage(context, image);
 	};
+}
+
+// noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
+/**
+ * @param {"right"|"left"} direction
+ */
+export function rotate(direction) {
+
+	currentDraw.rotationDegree = currentDraw.rotationDegree +
+		(direction === "right" ? 90 : -90);
+
+	if(Math.abs(currentDraw.rotationDegree) === 360) {
+		currentDraw.rotationDegree = 0;
+	}
+
+	setDrawSize();
+
+	drawImage(context);
 }
 
 // noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
@@ -77,10 +91,10 @@ export function setDotnetHelper(dotnetHelper) {
 	panAndZoom.dotnetHelper = dotnetHelper;
 }
 
+// noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
 export function dispose() {
 	window.removeEventListener("resize", setCanvasSize);
 }
-
 
 /**
  * @param {CanvasRenderingContext2D} ctx
@@ -102,16 +116,25 @@ function clearCanvas(ctx) {
 }
 
 function __drawImage(ctx, image) {
+	const rotation = currentDraw.rotationDegree;
+	const drawOrigin = getDrawOrigin(ctx, image);
 
-	const drawStartX = (ctx.canvas.width / 2) - (image.width * currentDraw.ratio / 2);
-	const drawStartY = (ctx.canvas.height / 2) - (image.height * currentDraw.ratio / 2);
+	ctx.save();
+
+	if(Math.abs(rotation) !== 0) {
+		ctx.translate(context.canvas.width / 2, context.canvas.height / 2)
+		ctx.rotate(rotation * Math.PI / 180);
+	}
 
 	ctx.drawImage(
 		image,
 		0, 0,
 		image.width, image.height,
-		drawStartX, drawStartY,
-		currentDraw.drawWidth, currentDraw.drawHeight);
+		drawOrigin.x, drawOrigin.y,
+		currentDraw.drawWidth, currentDraw.drawHeight
+	);
+
+	ctx.restore();
 }
 
 function resetZoom() {
@@ -130,4 +153,43 @@ function setCanvasSize() {
 
 	clearCanvas(context);
 	showComicPage(currentImageSrc)
+}
+
+function setDrawSize() {
+	const isImageOnItsSide = [90, 270].includes(Math.abs(currentDraw.rotationDegree));
+
+	const hRatio = isImageOnItsSide
+		? context.canvas.clientWidth / currentImage.height
+		: context.canvas.clientWidth / currentImage.width;
+
+	const vRatio = isImageOnItsSide
+		? context.canvas.clientHeight / currentImage.width
+		: context.canvas.clientHeight / currentImage.height;
+
+	currentDraw.ratio = Math.min(hRatio, vRatio);
+
+	currentDraw.drawWidth = currentImage.width * currentDraw.ratio;
+	currentDraw.drawHeight = currentImage.height * currentDraw.ratio;
+}
+
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {HTMLImageElement} image
+ * @returns {{x: number, y: number}}
+ */
+function getDrawOrigin(ctx, image) {
+	const rotation = Math.abs(currentDraw.rotationDegree);
+
+	switch (rotation) {
+		case 0: return ({
+			x: (ctx.canvas.width / 2) - (image.width * currentDraw.ratio / 2),
+			y: (ctx.canvas.height / 2) - (image.height * currentDraw.ratio / 2),
+		})
+		case 90:
+		case 180:
+		case 270: return ({
+			x: -currentDraw.drawWidth / 2,
+			y: -currentDraw.drawHeight / 2,
+		})
+	}
 }

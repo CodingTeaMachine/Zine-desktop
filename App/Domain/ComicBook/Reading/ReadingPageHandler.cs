@@ -103,6 +103,15 @@ public class ReadingPageHandler
 		SetImageOnCanvas(CurrentPageIndex);
 	}
 
+	public async Task RotateRight()
+	{
+		await _canvasHandler.RotateRight();
+	}
+
+	public async Task RotateLeft()
+	{
+		await _canvasHandler.RotateLeft();
+	}
 
 	public async Task ZoomIn()
 	{

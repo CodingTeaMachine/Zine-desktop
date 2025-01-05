@@ -33,13 +33,23 @@
 
 	<main class="h-full w-full flex flex-col gap-3">
 
-		<div class="w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8">
-			<MudIcon Icon="@Icons.Material.Filled.ZoomIn" class="toolbar-icon" @onclick="_readingPageHandler.ZoomIn" />
-			<MudIcon Icon="@Icons.Material.Filled.ZoomOut" class="toolbar-icon" @onclick="_readingPageHandler.ZoomOut" />
-
-			<div class="ml-2 w-10 text-end">
-				@_readingPageHandler.ZoomScale%
+		<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8">
+			<div class="flex items-center gap-2 sm:gap-1">
+				<MudIcon Icon="@Icons.Material.Filled.RotateRight" class="toolbar-icon" @onclick="_readingPageHandler.RotateRight"/>
+				<MudIcon Icon="@Icons.Material.Filled.RotateLeft" class="toolbar-icon" @onclick="_readingPageHandler.RotateLeft"/>
 			</div>
+
+			<span class="bg-light mx-2 w-[1px] h-4/5"></span>
+
+			<div class="flex items-center gap-2 sm:gap-1">
+				<MudIcon Icon="@Icons.Material.Filled.ZoomIn" class="toolbar-icon" @onclick="_readingPageHandler.ZoomIn" />
+				<MudIcon Icon="@Icons.Material.Filled.ZoomOut" class="toolbar-icon" @onclick="_readingPageHandler.ZoomOut" />
+
+				<div class="ml-2 w-10 text-end">
+					@_readingPageHandler.ZoomScale%
+				</div>
+			</div>
+
 		</div>
 
 		<div class="w-full h-full flex justify-center items-center overflow-hidden relative">
