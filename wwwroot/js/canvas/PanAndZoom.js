@@ -57,29 +57,9 @@ export default class PanAndZoom {
 		if (!e.ctrlKey)
 			return;
 
-		const isZoomOut = Math.sign(e.deltaY) > 0;
+		const isZoomIn = Math.sign(e.deltaY) < 0;
 
-		if (
-			(isZoomOut && this.display.zoomScale - 10 < MIN_ZOOM_LEVEL) //MIN zoom level reached
-			|| (!isZoomOut && this.display.zoomScale + 10 > MAX_ZOOM_LEVEL) // MAX zoom level reached
-		) {
-			return;
-		}
-
-
-		this.display.zoomScale += isZoomOut ? -10 : 10;
-
-		const transform = this.transform.transformedMousePosition(e.offsetX, e.offsetY);
-		this.transform.translate(transform.x, transform.y);
-
-		const factor = isZoomOut ? 0.9 : 1.1;
-		this.transform.scale(factor);
-
-		this.transform.translate(-transform.x, -transform.y);
-
-		this.draw();
-
-		this.dotnetHelper.invokeMethodAsync("JS_UpdatePageZoomDisplay");
+		this.zoom(e.offsetX,e.offsetY, isZoomIn);
 	}
 
 	/**
@@ -125,6 +105,47 @@ export default class PanAndZoom {
 		this.draw();
 
 		this.dragStart = this.transform.transform(offset);
+	}
+
+	/**
+	 * @param {boolean} isZoomIn
+	 */
+	zoomToCenter(isZoomIn) {
+		const centerX = this.ctx.canvas.width / 2;
+		const centerY = this.ctx.canvas.height / 2;
+
+		this.zoom(centerX, centerY, isZoomIn);
+	}
+
+	/**
+	 *
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {boolean} isZoomIn
+	 */
+	zoom(x, y, isZoomIn) {
+
+		if (
+			(isZoomIn && this.display.zoomScale + 10 > MAX_ZOOM_LEVEL) // MAX zoom level reached
+			|| (!isZoomIn && this.display.zoomScale - 10 < MIN_ZOOM_LEVEL) //MIN zoom level reached
+		) {
+			return;
+		}
+
+
+		this.display.zoomScale += isZoomIn ? 10 : -10;
+
+		const transform = this.transform.transformedMousePosition(x, y);
+		this.transform.translate(transform.x, transform.y);
+
+		const factor = isZoomIn ? 1.1 : 0.9;
+		this.transform.scale(factor);
+
+		this.transform.translate(-transform.x, -transform.y);
+
+		this.draw();
+
+		this.dotnetHelper.invokeMethodAsync("JS_UpdatePageZoomDisplay");
 	}
 
 	/**

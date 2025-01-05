@@ -57,6 +57,15 @@ export function showComicPage(imageSrc) {
 }
 
 // noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
+/**
+ * @param {boolean} isZoomIn
+ */
+export function zoom(isZoomIn) {
+	panAndZoom.zoomToCenter(isZoomIn);
+}
+
+
+// noinspection JSUnusedGlobalSymbols Used ub CanvasHandler.cs
 export function getZoomScale() {
 	return panAndZoom.display.zoomScale;
 }

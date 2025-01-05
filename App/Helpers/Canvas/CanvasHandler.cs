@@ -35,14 +35,14 @@ public class CanvasHandler : IAsyncDisposable
 
 	public async Task ZoomIn()
 	{
-		// var module = await _moduleTask.Value;
-		// await module.InvokeVoidAsync("zoomIn");
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("zoom", true);
 	}
 
 	public async Task ZoomOut()
 	{
-		// var module = await _moduleTask.Value;
-		// await module.InvokeVoidAsync("zoomOut");
+		var module = await _moduleTask.Value;
+		await module.InvokeVoidAsync("zoom", false);
 	}
 
 	public async Task<int> GetZoomScale()
