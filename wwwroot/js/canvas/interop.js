@@ -102,11 +102,15 @@ function clearCanvas(ctx) {
 }
 
 function __drawImage(ctx, image) {
+
+	const drawStartX = (ctx.canvas.width / 2) - (image.width * currentDraw.ratio / 2);
+	const drawStartY = (ctx.canvas.height / 2) - (image.height * currentDraw.ratio / 2);
+
 	ctx.drawImage(
 		image,
 		0, 0,
 		image.width, image.height,
-		(ctx.canvas.width / 2) - (image.width * currentDraw.ratio / 2), 0,
+		drawStartX, drawStartY,
 		currentDraw.drawWidth, currentDraw.drawHeight);
 }
 
