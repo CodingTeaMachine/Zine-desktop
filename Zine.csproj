@@ -28,13 +28,10 @@
     <Content Update="electron.manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-<!--    <Content Update="Components\Pages\Reading.razor.css">-->
-<!--      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>-->
-<!--      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>-->
-<!--    </Content>-->
   </ItemGroup>
   
   <ItemGroup>
+    <None Include="wwwroot\512x512.png" />
     <None Include="wwwroot\Fonts\Roboto\*" />
   </ItemGroup>
   
@@ -46,13 +43,8 @@
     <Folder Include="Data\" />
     <Folder Include="logs\" />
     <Folder Update="wwwroot\images\ComicBookCovers\" />
-    <Folder Update="wwwroot\images\Reading\" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Watch Remove="wwwroot/images/Reading/**" />
-    <Watch Remove="wwwroot/images/Reading/*" />
-  </ItemGroup>
   
   <ItemGroup>
     <Watch Include="./Assets/Styles/Tailwind.css" Exclude="./wwwroot/**/*;obj\**\*;bin\**\*" />

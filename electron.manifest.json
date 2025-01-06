@@ -1,39 +1,52 @@
 {
-  "executable": "Zine",
-  "splashscreen": {
-    "imageFile": ""
-  },
-  "name": "Zine",
-  "author": "",
-  "singleInstance": false,
-  "environment": "Development",
-  "build": {
-    "appId": "com.Zine.app",
-    "productName": "Zine",
-    "copyright": "Copyright © 2020",
-    "buildVersion": "1.0.0",
-    "compression": "maximum",
-    "directories": {
-      "output": "../../../bin/Desktop"
-    },
-    "extraResources": [
-      {
-        "from": "./bin",
-        "to": "bin",
-        "filter": [ "**/*" ]
-      }
-    ],
-    "files": [
-      {
-        "from": "./ElectronHostHook/node_modules",
-        "to": "ElectronHostHook/node_modules",
-        "filter": [ "**/*" ]
-      },
-      "**/*"
-    ]
-  },
-  "watchOptions": {
-    "includes": [ "**/*" ],
-    "excludes": [ "wwwroot/images/Reading/**/*" ]
-  }
+	"executable": "Zine",
+	"splashscreen": {
+		"imageFile": ""
+	},
+	"name": "Zine",
+	"author": "",
+	"singleInstance": false,
+	"environment": "Development",
+	"build": {
+		"appId": "com.Zine.app",
+		"productName": "Zine",
+		"copyright": "Copyright © 2025",
+		"buildVersion": "0.5.0",
+		"compression": "maximum",
+		"directories": {
+			"output": "../../../bin/Desktop"
+		},
+		"extraResources": [
+			{
+				"from": "./bin",
+				"to": "bin",
+				"filter": [
+					"**/*"
+				]
+			}
+		],
+		"files": [
+			{
+				"from": "./ElectronHostHook/node_modules",
+				"to": "ElectronHostHook/node_modules",
+				"filter": [
+					"**/*"
+				]
+			},
+			"**/*"
+		],
+		"linux": {
+			"target": "AppImage",
+			"category": "Utility",
+			"icon": "../../../wwwroot/512x512.png"
+		}
+	},
+	"watchOptions": {
+		"includes": [
+			"**/*"
+		],
+		"excludes": [
+			"wwwroot/images/Reading/**/*"
+		]
+	}
 }

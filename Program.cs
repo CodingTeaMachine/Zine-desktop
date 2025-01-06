@@ -62,6 +62,11 @@ app.UseAntiforgery();
 app.MapRazorComponents<Zine.Components.App>()
     .AddInteractiveServerRenderMode();
 
+if (!Directory.Exists(DataPath.ComicBookReadingDirectory))
+{
+    Directory.CreateDirectory(DataPath.ComicBookReadingDirectory);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(DataPath.ComicBookReadingDirectory),
