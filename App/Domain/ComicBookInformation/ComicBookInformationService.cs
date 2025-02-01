@@ -11,13 +11,11 @@ public class ComicBookInformationService(IComicBookInformationRepository reposit
 
 		var pageNamingFormat = CompressionFormatFactory.GetFromFile(comicBookPathOnDisk);
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var coverImageName = comicBookInformationFactory.SaveCoverImage(comicBookPathOnDisk, comicBookId.ToString());
+		var coverImageName = comicBookInformationFactory.SaveCoverImageToDisc(comicBookPathOnDisk, comicBookId.ToString());
 
 		return repository.Create(
 			comicBookId,
-			coverImageName,
-			(int)pageNamingFormat,
-			comicBookInformationFactory.GetNumberOfPages(comicBookPathOnDisk)
+			(int)pageNamingFormat
 		);
 	}
 }

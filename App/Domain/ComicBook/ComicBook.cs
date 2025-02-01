@@ -28,4 +28,6 @@ public class ComicBook
 	public Group.Group Group { get; set; } = null!;
 
 	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
+
+	public ICollection<ComicBookPageInformation.ComicBookPageInformation> Pages { get; init; } = null!;
 }

@@ -1,6 +1,7 @@
 using System.Data;
 using SharpCompress.Archives;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+using Zine.App.Helpers;
 
 namespace Zine.App.Domain.ComicBookInformation;
 
@@ -23,6 +24,10 @@ public class CompressedComicBookInformationExtractor
 			archive.Entries.First(cI => CompressedFileHandler.IsCoverImage(cI, namingFormatName));
 
 		return coverImage;
+	}
 
+	public IEnumerable<IArchiveEntry> GetPages(IArchive archive)
+	{
+		return archive.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last()));
 	}
 }

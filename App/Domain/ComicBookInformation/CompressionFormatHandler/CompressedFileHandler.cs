@@ -28,7 +28,26 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 				&& PageFormatRegex().IsMatch(imageName!);
 		}
 
-		var regex = ComicBookPageNamingFormat.PageFormatToRegexDic[pageNamingFormatName];
+		var regex = ComicBookPageNamingFormat.CoverPageFormatToRegexDic[pageNamingFormatName];
+
+		return IsMatch(imageName!, regex);
+	}
+
+	public static bool IsRearImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
+	{
+		if (!Image.DotExtensions.Contains(Path.GetExtension(potentialCoverImage.Key)))
+			return false;
+
+		var imageName = Path.GetFileNameWithoutExtension(potentialCoverImage.Key)?.ToLower();
+
+		if (pageNamingFormatName == ComicBookPageNamingFormatName.Enumeration)
+		{
+			return
+				!ExcludedFirstFileEndings.Any(excludedFirstFileEnding => imageName!.EndsWith(excludedFirstFileEnding))
+				&& PageFormatRegex().IsMatch(imageName!);
+		}
+
+		var regex = ComicBookPageNamingFormat.RearPageFormatToRegexDic[pageNamingFormatName];
 
 		return IsMatch(imageName!, regex);
 	}
@@ -41,7 +60,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		{
 			var regexToPageFormat =
 				ComicBookPageNamingFormat
-					.PageFormatToRegexDic
+					.CoverPageFormatToRegexDic
 					.First(regexToPageFormat =>
 						filenames.Any(filename => IsMatch(filename!, regexToPageFormat.Value)));
 

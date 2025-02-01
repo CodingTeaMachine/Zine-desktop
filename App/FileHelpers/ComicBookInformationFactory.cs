@@ -9,7 +9,7 @@ namespace Zine.App.FileHelpers;
 
 public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
-	public string SaveCoverImage(string pathOnDisk, string outputFileName)
+	public string SaveCoverImageToDisc(string pathOnDisk, string outputFileName)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
@@ -42,13 +42,13 @@ public class ComicBookInformationFactory(ILoggerService? logger = null)
 		float coverAspectRatio = Image.GetAspectRatio(coverImage);
 		double minAspectRatio = coverAspectRatio * 0.7;
 
-		List<IArchiveEntry> pages = comicBookFile.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last())).ToList();
+		List<IArchiveEntry> pages = infoExtractor.GetPages(comicBookFile).ToList();
 
-		return
-			pages.Count +
-			pages.Count(page =>
-				Image.GetAspectRatio(page) <= minAspectRatio
-			);
+		var doublePages = pages.Where(page =>
+			Image.GetAspectRatio(page) <= minAspectRatio
+		);
+
+		return pages.Count + doublePages.Count();
 	}
 
 }

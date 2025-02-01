@@ -62,7 +62,7 @@ public class GroupService(
 				continue;
 
 			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");
-			new ComicBookInformationFactory().SaveCoverImage(cb.FileUri, cb.Id.ToString());
+			new ComicBookInformationFactory().SaveCoverImageToDisc(cb.FileUri, cb.Id.ToString());
 		}
 
 		return g;

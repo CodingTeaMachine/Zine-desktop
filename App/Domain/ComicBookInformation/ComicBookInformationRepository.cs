@@ -6,14 +6,12 @@ namespace Zine.App.Domain.ComicBookInformation;
 
 public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> contextFactory,ILoggerService logger) : IComicBookInformationRepository
 {
-	public ComicBookInformation Create(int comicBookId, string coverImageName, int pageNamingFormat, int numberOfPages)
+	public ComicBookInformation Create(int comicBookId, int pageNamingFormat)
 	{
 		var cbInfo = new ComicBookInformation
 		{
 			ComicBookId = comicBookId,
-			CoverImage = coverImageName,
 			PageNamingFormat = pageNamingFormat,
-			NumberOfPages = numberOfPages
 		};
 
 		using var context = contextFactory.CreateDbContext();

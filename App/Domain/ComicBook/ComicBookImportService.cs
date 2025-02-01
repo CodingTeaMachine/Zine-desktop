@@ -1,6 +1,7 @@
 using SharpCompress;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
@@ -9,7 +10,8 @@ namespace Zine.App.Domain.ComicBook;
 
 public class ComicBookImportService(
 	IComicBookRepository comicBookRepository,
-	IComicBookInformationService comicBookInformationService ,
+	IComicBookInformationService comicBookInformationService,
+	IComicBookPageInformationService comicBookPageInformationService,
 	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
@@ -70,6 +72,7 @@ public class ComicBookImportService(
 		);
 
 		comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id);
+		comicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id);
 	}
 
 	private List<string> ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
