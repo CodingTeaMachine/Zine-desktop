@@ -11,7 +11,7 @@ public class ComicBookInformationService(IComicBookInformationRepository reposit
 
 		var pageNamingFormat = CompressionFormatFactory.GetFromFile(comicBookPathOnDisk);
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var coverImageName = comicBookInformationFactory.GetCoverImage(comicBookPathOnDisk, comicBookId.ToString());
+		var coverImageName = comicBookInformationFactory.SaveCoverImage(comicBookPathOnDisk, comicBookId.ToString());
 
 		return repository.Create(
 			comicBookId,

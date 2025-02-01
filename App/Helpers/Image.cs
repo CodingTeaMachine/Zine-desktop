@@ -34,21 +34,7 @@ public static class Image
 	/// <exception cref="NotSupportedException"></exception>
 	public static byte[] GetResizedImage(IArchiveEntry entry, int height, int width, int quality = 100, SKFilterQuality filterQuality = SKFilterQuality.High)
 	{
-		using var entryStream = entry.OpenEntryStream();
-
-		using var memoryStream = new MemoryStream();
-		entryStream.CopyTo(memoryStream);
-		var imageBytes = memoryStream.ToArray();
-
-		//entryStream.Seek(0, SeekOrigin.Begin);
-
-		using var originalImage = SKBitmap.Decode(imageBytes);
-
-		if (originalImage == null)
-		{
-			throw new DataException("Could not decode image");
-		}
-
+		using var originalImage = GetImageBitmapFromArchiveEntry(entry);
 		using var resizedImage = originalImage.Resize(new SKImageInfo(width, height), filterQuality);
 
 		if (resizedImage == null)
@@ -62,6 +48,19 @@ public static class Image
 		return imageToReturn.Encode(imageFormat, quality).ToArray();
 	}
 
+	public static ImageDimensions GetImageDimensions(IArchiveEntry entry)
+	{
+		using var image = GetImageBitmapFromArchiveEntry(entry);
+		return new ImageDimensions(image.Width, image.Height);
+	}
+
+	public static float GetAspectRatio(IArchiveEntry entry)
+	{
+		var imageDimensions = GetImageDimensions(entry);
+
+		return (float)imageDimensions.Height / imageDimensions.Width;
+	}
+
 
 
 	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)
@@ -73,4 +72,25 @@ public static class Image
 			?? ImageFormatFactory.Get(entryStream);
 	}
 
+	/// <param name="entry"></param>
+	/// <returns></returns>
+	/// <exception cref="DataException"></exception>
+	private static SKBitmap GetImageBitmapFromArchiveEntry(IArchiveEntry entry)
+	{
+		using var entryStream = entry.OpenEntryStream();
+
+		using var memoryStream = new MemoryStream();
+		entryStream.CopyTo(memoryStream);
+		var imageBytes = memoryStream.ToArray();
+
+		var originalImage = SKBitmap.Decode(imageBytes);
+
+		if (originalImage == null)
+		{
+			throw new DataException("Could not decode image");
+		}
+
+		return originalImage;
+
+	}
 }

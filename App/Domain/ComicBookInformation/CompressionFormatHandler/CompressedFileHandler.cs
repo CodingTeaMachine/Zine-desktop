@@ -12,36 +12,9 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 	[System.Text.RegularExpressions.GeneratedRegex(FileNumberingRegex)]
 	private static partial System.Text.RegularExpressions.Regex PageFormatRegex();
 
-	private readonly string[] _excludedFirstFileEndings = ["101", "100"];
+	private static readonly string[] ExcludedFirstFileEndings = ["101", "100"];
 
-	public string ExtractCoverImage(string outputFileName)
-	{
-		using IArchive comicBookFile = ArchiveFactory.Open(filePath);
-		if (!comicBookFile.Entries.Any()) throw new DataException("Empty comic book file");
-
-
-		ComicBookPageNamingFormatName namingFormatName = GetPageNamingFormat(comicBookFile);
-		IArchiveEntry coverImage = comicBookFile.Entries.First(cI => IsCoverImage(cI, namingFormatName));
-
-		var coverImageExtenstion = Path.GetExtension(coverImage.Key!);
-		var outputFileNameWithExtension = outputFileName + coverImageExtenstion;
-		var outputPath = Path.Join(outputCoverImageDirectory, outputFileNameWithExtension);
-
-		try
-		{
-			var resizedImageData = Image.GetResizedImage(coverImage, 369, 240);
-			File.WriteAllBytes(outputPath, resizedImageData);
-		}
-		catch (Exception ex) when (ex is NotSupportedException or DataException)
-		{
-			//Simply save the original image
-			coverImage.WriteToFile(outputPath);
-		}
-
-		return outputFileNameWithExtension;
-	}
-
-	private bool IsCoverImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
+	public static bool IsCoverImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
 	{
 		if (!Image.DotExtensions.Contains(Path.GetExtension(potentialCoverImage.Key)))
 			return false;
@@ -51,7 +24,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		if (pageNamingFormatName == ComicBookPageNamingFormatName.Enumeration)
 		{
 			return
-				!_excludedFirstFileEndings.Any(excludedFirstFileEnding => imageName!.EndsWith(excludedFirstFileEnding))
+				!ExcludedFirstFileEndings.Any(excludedFirstFileEnding => imageName!.EndsWith(excludedFirstFileEnding))
 				&& PageFormatRegex().IsMatch(imageName!);
 		}
 
@@ -60,7 +33,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		return IsMatch(imageName!, regex);
 	}
 
-	private static ComicBookPageNamingFormatName GetPageNamingFormat(IArchive comicBookArchive)
+	public static ComicBookPageNamingFormatName GetPageNamingFormat(IArchive comicBookArchive)
 	{
 		var filenames = comicBookArchive.Entries.Select(comicBookImage => Path.GetFileNameWithoutExtension(comicBookImage.Key)).ToList();
 
@@ -78,5 +51,28 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		{
 			return ComicBookPageNamingFormatName.Enumeration;
 		}
+	}
+
+	public string ExtractCoverImage(string outputFileName)
+	{
+		var infoExtractor = new CompressedComicBookInformationExtractor();
+		var coverImage = infoExtractor.GetCoverImage(outputFileName);
+
+		var coverImageExtenstion = Path.GetExtension(coverImage.Key!);
+		var outputFileNameWithExtension = outputFileName + coverImageExtenstion;
+		var outputPath = Path.Join(outputCoverImageDirectory, outputFileNameWithExtension);
+
+		try
+		{
+			var resizedImageData = Image.GetResizedImage(coverImage, 369, 240);
+			File.WriteAllBytes(outputPath, resizedImageData);
+		}
+		catch (Exception ex) when (ex is NotSupportedException or DataException)
+		{
+			//Simply save the original image
+			coverImage.WriteToFile(outputPath);
+		}
+
+		return outputFileNameWithExtension;
 	}
 }

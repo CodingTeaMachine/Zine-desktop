@@ -21,6 +21,7 @@ public class ComicBookImportService(
 	/// <param name="recursiveImport"></param>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <exception cref="FormatException"></exception>
+	/// TODO: Handle exceptions in a nicer way
 	public List<string>? ImportFromDisk(ImportType importType ,string pathOnDisk, int groupId, bool recursiveImport = false)
 	{
 		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
