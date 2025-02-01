@@ -9,6 +9,7 @@ appsettings.json
 wwwroot/css/Tailwind.css
 wwwroot/images/ComicBookCovers/
 wwwroot/images/Reading/
+.sonarqube
 
 
 ### DotnetCore template
