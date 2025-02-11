@@ -1,5 +1,4 @@
 using Zine.App.Domain.ComicBook;
-using Zine.App.Enums;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
@@ -47,7 +46,7 @@ public class GroupService(
 
 	public string GetName(int groupId)
 	{
-		return groupRepository.GetById(groupId)?.Name ?? "";
+		return groupRepository.GetById(groupId).Name;
 	}
 
 	private Group LoadCoverImagesForComicBooksInGroupCover(Group g)

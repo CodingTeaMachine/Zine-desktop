@@ -199,7 +199,7 @@ public class ComicBookRepository(
 	public void Rename(int comicBookId, string newName)
 	{
 		using var context = contextFactory.CreateDbContext();
-		var comicBook = context.ComicBooks.First(c => c.Id == comicBookId);;
+		var comicBook = context.ComicBooks.First(c => c.Id == comicBookId);
 		var oldComicBookName = comicBook.Title;
 		comicBook.Title = newName;
 

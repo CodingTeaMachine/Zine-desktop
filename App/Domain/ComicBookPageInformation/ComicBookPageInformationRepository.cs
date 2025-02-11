@@ -11,12 +11,13 @@ public class ComicBookPageInformationRepository(IDbContextFactory<ZineDbContext>
 	public void CreateMany(IEnumerable<ComicBookPageInformation> comicBookPageInformations)
 	{
 		using var context = contextFactory.CreateDbContext();
-		context.ComicBookPageInformation.AddRange(comicBookPageInformations);
+		var bookPageInformationList = comicBookPageInformations as ComicBookPageInformation[] ?? comicBookPageInformations.ToArray();
 
+		context.ComicBookPageInformation.AddRange(bookPageInformationList);
 		try
 		{
 			context.SaveChanges();
-			logger.Information($"Created {comicBookPageInformations.Count()} comic book page informations for comic: ${comicBookPageInformations.First().ComicBookId}");
+			logger.Information($"Created {bookPageInformationList.Length} comic book page informations for comic: ${bookPageInformationList.First().ComicBookId}");
 		}
 		catch (DbUpdateException e)
 		{

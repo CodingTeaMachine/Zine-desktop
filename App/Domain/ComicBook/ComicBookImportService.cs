@@ -3,7 +3,6 @@ using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
-using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook;
@@ -59,7 +58,7 @@ public class ComicBookImportService(
 	/// <exceptions cref="FormatException"></exceptions>
 	private void ImportFileFromDisk(string comicBookPathOnDisk, int groupId)
 	{
-
+		//TODO: Only extract the cover image after the page info is saved, so it can be determined easier and faster.
 		if (!CompressionFormatFactory.IsSupportedFormat(comicBookPathOnDisk))
 		{
 			throw new FormatException("Unsupported compression format");

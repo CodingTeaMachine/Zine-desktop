@@ -29,10 +29,10 @@ public class HandledAppException : Exception
 	{
 		SerilogLogger.Instance()
 			.SetIsPreFormattedMessageFroSingleLog(true)
-			.FromSeverity($"{severity}: {message} {getCalledLineFromLastFrame()}", severity);
+			.FromSeverity($"{severity}: {message} {GetCalledLineFromLastFrame()}", severity);
 	}
 
-	private string getCalledLineFromLastFrame()
+	private string GetCalledLineFromLastFrame()
 	{
 		StackTrace stackTrace = new StackTrace(true);
 

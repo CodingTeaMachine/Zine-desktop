@@ -119,8 +119,9 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	public bool Rename(int groupId, string newName)
 	{
 		var group = GetById(groupId);
-		var oldGroupName = group!.Name;
+		var oldGroupName = group.Name;
 		group.Name = newName;
+
 		try
 		{
 			using var context = contextFactory.CreateDbContext();
@@ -151,7 +152,8 @@ public class GroupRepository(IDbContextFactory<ZineDbContext> contextFactory, IL
 	public bool AddToGroup(int newParentGroupId, int groupId)
 	{
 		var group = GetById(groupId);
-		group!.ParentGroupId = newParentGroupId;
+		group.ParentGroupId = newParentGroupId;
+
 		try
 		{
 			using var context = contextFactory.CreateDbContext();

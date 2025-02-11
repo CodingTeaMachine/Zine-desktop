@@ -1,4 +1,3 @@
-using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
 

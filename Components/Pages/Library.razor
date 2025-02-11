@@ -117,6 +117,7 @@
 </MudDropContainer>
 
 @code
+
 {
 	[Parameter]
 	public int GroupId { get; set; }
@@ -132,6 +133,7 @@
 
 	MudDropContainer<DropItem>? _dropContainer;
 
+	// ReSharper disable once NotAccessedField.Local used in template for an input bind
 	string _searchWord = string.Empty;
 	bool _editingInProgress = false;
 	private const string ComicBookDropZoneIdentifier = "ComicBook";
