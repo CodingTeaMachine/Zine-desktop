@@ -23,13 +23,13 @@ public class ComicBookService(
             .GetAllByGroupId(groupId)
             .Select(cb =>
             {
-                switch (cb.Information.MovedOrDeleted)
+                switch (cb.Information.FileMovedOrDeleted)
                 {
                     case true:
                         logger.Warning($"{cb.FileUri} moved/deleted");
                         break;
                     //Check if the cover image exists, and if not, regenerate it.
-                    case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage)):
+                    case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.SavedCoverImageFileName)):
                         logger.Warning($"Regenerating cover image for: {cb.Title}");
                         new ComicBookInformationFactory().SaveCoverImageToDisc(cb.FileUri, cb.Id.ToString());
                         break;

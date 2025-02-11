@@ -61,7 +61,7 @@
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="_readingPageHandler.GoToFirstPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="_readingPageHandler.PrevPage" />
 
-			<div>@(_readingPageHandler.CurrentPageIndex + 1) / @_readingPageHandler.ComicBook.Information.NumberOfPages</div>
+			<div>@(_readingPageHandler.CurrentPageIndex + 1) / @_readingPageHandler.ComicBook.Pages.Count</div>
 
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="_readingPageHandler.NextPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="_readingPageHandler.GoToLastPage" />

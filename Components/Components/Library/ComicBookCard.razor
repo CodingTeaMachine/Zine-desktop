@@ -16,7 +16,7 @@
 			<div class="overlay hidden absolute inset-0 bg-white opacity-15 w-[107%] -left-[3.5%] h-[103.8%] -top-[2%] rounded-2xl"></div>
 
 			<div class="md:w-60 w-44 hover:cursor-pointer">
-				@if (!ComicBook.Information.MovedOrDeleted)
+				@if (!ComicBook.Information.FileMovedOrDeleted)
 				{
 					<div class="relative">
 						<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true"/>
@@ -109,7 +109,7 @@
 	MudMenu _menuRef = null!;
 	DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
 
-	bool IsComicMovedOrDeleted => _renaming || ComicBook.Information.MovedOrDeleted;
+	bool IsComicMovedOrDeleted => _renaming || ComicBook.Information.FileMovedOrDeleted;
 
 	bool _renaming = false;
 	string _renamingComicBookName = "";
@@ -198,7 +198,7 @@
 
 	string GetCoverImage()
 	{
-		return ComicBook.Information.CoverImageFullPath.Replace("wwwroot", "");
+	return ComicBook.Information.SavedCoverImageFullPath.Replace("wwwroot", "");
 	}
 
 	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)

@@ -5,5 +5,7 @@ public enum PageType
 	Single = 0,
 	Double = 1,
 	Cover = 2,
-	Rear = 3,
+	CoverInside = 3,
+	BackCover = 4,
+	BackCoverInside = 5,
 }

@@ -13,7 +13,13 @@ public class ComicBookInformation
 	public int ComicBookId { get; init; }
 	public ComicBook.ComicBook ComicBook { get; init; } = null!;
 
-	public int PageNamingFormat { get; init; }
+	[Required]
+	[MaxLength(25)]
+	public string SavedCoverImageFileName { get; init; } = null!;
+	
+	[NotMapped]
+	public string SavedCoverImageFullPath => Path.Join(DataPath.ComicBookCoverDirectory, SavedCoverImageFileName);
+
 
 	/// <summary>
 	///	This field is not stored in the DB, because it can just be calculated at runtime
@@ -29,5 +35,5 @@ public class ComicBookInformation
 	}
 
 	[NotMapped]
-	public bool MovedOrDeleted => !File.Exists(ComicBook.FileUri);
+	public bool FileMovedOrDeleted => !File.Exists(ComicBook.FileUri);
 }

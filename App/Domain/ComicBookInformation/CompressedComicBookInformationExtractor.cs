@@ -19,15 +19,17 @@ public class CompressedComicBookInformationExtractor
 		if (!archive.Entries.Any())
 			throw new DataException("Empty comic book file");
 
-		ComicBookPageNamingFormatName namingFormatName = CompressedFileHandler.GetPageNamingFormat(archive);
+		PageNamingConvention namingConvention = CompressedFileHandler.GetPageNamingFormat(archive);
 		IArchiveEntry coverImage =
-			archive.Entries.First(cI => CompressedFileHandler.IsCoverImage(cI, namingFormatName));
+			archive.Entries.First(cI => CompressedFileHandler.IsCoverImage(cI, namingConvention));
 
 		return coverImage;
 	}
 
 	public IEnumerable<IArchiveEntry> GetPages(IArchive archive)
 	{
-		return archive.Entries.Where(file => Image.Extensions.Contains(file.Key?.Split('.').Last()));
+		return archive.Entries
+			.Where(entry => !entry.IsDirectory)
+			.Where(file => Image.IsSupported(file.Key!));
 	}
 }

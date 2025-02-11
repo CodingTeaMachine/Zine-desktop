@@ -65,7 +65,7 @@ public class ReadingPageHandler
 
 	public void GoToPage(int pageIndex)
 	{
-		if (pageIndex >= 0 && pageIndex <= ComicBook.Information.NumberOfPages - 1)
+		if (pageIndex >= 0 && pageIndex <= ComicBook.Pages.Count - 1)
 		{
 			CurrentPageIndex = pageIndex;
 		}
@@ -73,7 +73,7 @@ public class ReadingPageHandler
 
 	public void GoToLastPage()
 	{
-		CurrentPageIndex = ComicBook.Information.NumberOfPages - 1;
+		CurrentPageIndex = ComicBook.Pages.Count - 1;
 	}
 
 	public void GoToFirstPage()
@@ -83,7 +83,7 @@ public class ReadingPageHandler
 
 	public void NextPage()
 	{
-		if (CurrentPageIndex < ComicBook.Information.NumberOfPages - 1)
+		if (CurrentPageIndex < ComicBook.Pages.Count - 1)
 		{
 			CurrentPageIndex++;
 		}

@@ -8,14 +8,9 @@ public class ComicBookInformationService(IComicBookInformationRepository reposit
 {
 	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId)
 	{
-
-		var pageNamingFormat = CompressionFormatFactory.GetFromFile(comicBookPathOnDisk);
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var coverImageName = comicBookInformationFactory.SaveCoverImageToDisc(comicBookPathOnDisk, comicBookId.ToString());
+		var savedCoverImageName = comicBookInformationFactory.SaveCoverImageToDisc(comicBookPathOnDisk, comicBookId.ToString());
 
-		return repository.Create(
-			comicBookId,
-			(int)pageNamingFormat
-		);
+		return repository.Create(comicBookId, savedCoverImageName);
 	}
 }

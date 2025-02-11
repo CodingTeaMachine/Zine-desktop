@@ -57,8 +57,7 @@ public class GroupService(
 		//Check if the cover image exists, and if not, regenerate it.
 		foreach (var cb in g.ComicBooks)
 		{
-			var comicBookCoverImagePath = Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.CoverImage);
-			if (File.Exists(comicBookCoverImagePath))
+			if (File.Exists(cb.Information.SavedCoverImageFullPath))
 				continue;
 
 			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");

@@ -14,45 +14,45 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 
 	private static readonly string[] ExcludedFirstFileEndings = ["101", "100"];
 
-	public static bool IsCoverImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
+	public static bool IsCoverImage(IArchiveEntry potentialCoverImage, PageNamingConvention pageNamingConvention)
 	{
 		if (!Image.DotExtensions.Contains(Path.GetExtension(potentialCoverImage.Key)))
 			return false;
 
 		var imageName = Path.GetFileNameWithoutExtension(potentialCoverImage.Key)?.ToLower();
 
-		if (pageNamingFormatName == ComicBookPageNamingFormatName.Enumeration)
+		if (pageNamingConvention == PageNamingConvention.Enumeration)
 		{
 			return
 				!ExcludedFirstFileEndings.Any(excludedFirstFileEnding => imageName!.EndsWith(excludedFirstFileEnding))
 				&& PageFormatRegex().IsMatch(imageName!);
 		}
 
-		var regex = ComicBookPageNamingFormat.CoverPageFormatToRegexDic[pageNamingFormatName];
+		var regex = ComicBookPageNamingFormat.CoverPageFormatToRegexDic[pageNamingConvention];
 
 		return IsMatch(imageName!, regex);
 	}
 
-	public static bool IsRearImage(IArchiveEntry potentialCoverImage, ComicBookPageNamingFormatName pageNamingFormatName)
+	public static bool IsRearImage(IArchiveEntry potentialCoverImage, PageNamingConvention pageNamingConvention)
 	{
 		if (!Image.DotExtensions.Contains(Path.GetExtension(potentialCoverImage.Key)))
 			return false;
 
 		var imageName = Path.GetFileNameWithoutExtension(potentialCoverImage.Key)?.ToLower();
 
-		if (pageNamingFormatName == ComicBookPageNamingFormatName.Enumeration)
+		if (pageNamingConvention == PageNamingConvention.Enumeration)
 		{
 			return
 				!ExcludedFirstFileEndings.Any(excludedFirstFileEnding => imageName!.EndsWith(excludedFirstFileEnding))
 				&& PageFormatRegex().IsMatch(imageName!);
 		}
 
-		var regex = ComicBookPageNamingFormat.RearPageFormatToRegexDic[pageNamingFormatName];
+		var regex = ComicBookPageNamingFormat.BackCoverPageFormatToRegexDic[pageNamingConvention];
 
 		return IsMatch(imageName!, regex);
 	}
 
-	public static ComicBookPageNamingFormatName GetPageNamingFormat(IArchive comicBookArchive)
+	public static PageNamingConvention GetPageNamingFormat(IArchive comicBookArchive)
 	{
 		var filenames = comicBookArchive.Entries.Select(comicBookImage => Path.GetFileNameWithoutExtension(comicBookImage.Key)).ToList();
 
@@ -68,7 +68,7 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		}
 		catch (InvalidOperationException)
 		{
-			return ComicBookPageNamingFormatName.Enumeration;
+			return PageNamingConvention.Enumeration;
 		}
 	}
 

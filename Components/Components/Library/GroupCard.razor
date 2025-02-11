@@ -185,7 +185,7 @@
 	string GetCoverImage(int comicBookIndex)
 	{
 		return comicBookIndex < Group.ComicBooks.Count
-			? Group.ComicBooks.ToArray()[comicBookIndex].Information.CoverImageFullPath.Replace("wwwroot", "")
+			? Group.ComicBooks.ToArray()[comicBookIndex].Information.SavedCoverImageFullPath.Replace("wwwroot", "")
 			: "";
 	}
 

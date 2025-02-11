@@ -2,23 +2,47 @@ namespace Zine.App.Domain.ComicBookInformation;
 
 public static class ComicBookPageNamingFormat
 {
-	private const string Cover_CTaggedRegex = "c( ?)(0{1,2})(1{1})$";
-	private const string Cover_CTaggedZeroBasedRegex = "c( ?)(0{1,2})(0{1})$";
+	private const string CoverZeroBased = "[^i]c([\\s_-])?(0+)?0$";
+	private const string CoverOneBased = "[^i]c([\\s_-])?(0+)?1$";
 
-	private const string Rear_CTaggedRegex = "ic( ?)(0{1,2})(1{1})$";
-	private const string Rear_CTaggedZeroBasedRegex = "ic( ?)(0{1,2})(0{1})$";
+	private const string CoverInsideZeroBased = "ic([\\s_-])?(0+)?0$";
+	private const string CoverInsideOneBased = "ic([\\s_-])?(0+)?1$";
+	private const string CoverInsideExplicit = "ifc$";
 
-	public static readonly Dictionary<ComicBookPageNamingFormatName, string> CoverPageFormatToRegexDic =
+	private const string BackCoverOneBased = "[^i]c([\\s_-])?(0+)?1$";
+	private const string BackCoverTwoBased = "[^i]c([\\s_-])?(0+)?2$";
+
+	private const string BackCoverInsideOneBased = "ic([\\s_-])?(0+)?1$";
+	private const string BackCoverInsideTwoBased = "ic([\\s_-])?(0+)?2$";
+	private const string BackCoverInsideExplicit = "ibc$";
+
+	public static readonly Dictionary<PageNamingConvention, string> CoverPageFormatToRegexDic =
 		new()
 		{
-			{ ComicBookPageNamingFormatName.CTagged, Cover_CTaggedRegex },
-			{ ComicBookPageNamingFormatName.CTaggedZeroBased, Cover_CTaggedZeroBasedRegex }
+			{ PageNamingConvention.CoverMarkedZeroBased, CoverZeroBased },
+			{ PageNamingConvention.CoverMarkedOneBased, CoverOneBased },
 		};
 
-	public static readonly Dictionary<ComicBookPageNamingFormatName, string> RearPageFormatToRegexDic =
+	public static readonly Dictionary<PageNamingConvention, string> CoverInsidePageFormatToRegexDic =
 		new()
 		{
-			{ ComicBookPageNamingFormatName.CTagged, Rear_CTaggedRegex },
-			{ ComicBookPageNamingFormatName.CTaggedZeroBased, Rear_CTaggedZeroBasedRegex }
+			{ PageNamingConvention.CoverMarkedZeroBased, CoverInsideZeroBased },
+			{ PageNamingConvention.CoverMarkedOneBased, CoverInsideOneBased },
+			{ PageNamingConvention.CoverInsideExplicit, CoverInsideExplicit }
+		};
+
+	public static readonly Dictionary<PageNamingConvention, string> BackCoverPageFormatToRegexDic =
+		new()
+		{
+			{ PageNamingConvention.CoverMarkedOneBased, BackCoverOneBased },
+			{ PageNamingConvention.CoverMarkedTwoBased, BackCoverTwoBased },
+		};
+
+	public static readonly Dictionary<PageNamingConvention, string> BackCoverInsidePageFormatToRegexDic =
+		new()
+		{
+			{ PageNamingConvention.CoverMarkedOneBased, BackCoverInsideOneBased },
+			{ PageNamingConvention.CoverMarkedTwoBased, BackCoverInsideTwoBased },
+			{ PageNamingConvention.BackCoverInsideExplicit, BackCoverInsideExplicit }
 		};
 }

@@ -61,6 +61,11 @@ public static class Image
 		return (float)imageDimensions.Height / imageDimensions.Width;
 	}
 
+	public static bool IsSupported(string imageName)
+	{
+		return DotExtensions.Any(extension => extension == Path.GetExtension(imageName));
+	}
+
 
 
 	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)

@@ -235,8 +235,8 @@ public class ComicBookRepository(
 			.Include(comicBook => comicBook.Information)
 			.First(cb => cb.Id == comicId);
 
-		logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicToDelete.Id} at {comicToDelete.Information.CoverImageFullPath}");
-		File.Delete(comicToDelete.Information.CoverImageFullPath);
+		logger.Information($"ComicBookService.Delete: Deleting cover image for: {comicToDelete.Id} at {comicToDelete.Information.SavedCoverImageFullPath}");
+		File.Delete(comicToDelete.Information.SavedCoverImageFullPath);
 
 		context.ComicBooks.Remove(comicToDelete);
 		try
@@ -271,8 +271,8 @@ public class ComicBookRepository(
 
 			comicBooksToDelete.ToList().ForEach(cb =>
 			{
-				logger.Information($"ComicBookRepository.DeleteAllFromGroup: Deleting cover image for: {cb.Id} at {cb.Information.CoverImageFullPath}");
-				File.Delete(cb.Information.CoverImageFullPath);
+				logger.Information($"ComicBookRepository.DeleteAllFromGroup: Deleting cover image for: {cb.Id} at {cb.Information.SavedCoverImageFullPath}");
+				File.Delete(cb.Information.SavedCoverImageFullPath);
 				context.ComicBooks.Remove(cb);
 			});
 
