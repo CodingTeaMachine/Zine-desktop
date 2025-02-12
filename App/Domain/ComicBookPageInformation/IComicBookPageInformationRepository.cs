@@ -1,6 +1,8 @@
+using Zine.App.Database;
+
 namespace Zine.App.Domain.ComicBookPageInformation;
 
 public interface IComicBookPageInformationRepository
 {
-	public void CreateMany(IEnumerable<ComicBookPageInformation> comicBookPageInformations);
+	public IEnumerable<ComicBookPageInformation> CreateMany(IEnumerable<ComicBookPageInformation> comicBookPageInformationList, ZineDbContext? context = null);
 }

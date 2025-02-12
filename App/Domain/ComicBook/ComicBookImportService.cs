@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using SharpCompress;
+using Zine.App.Database;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Domain.ComicBookPageInformation;
@@ -11,6 +13,7 @@ public class ComicBookImportService(
 	IComicBookRepository comicBookRepository,
 	IComicBookInformationService comicBookInformationService,
 	IComicBookPageInformationService comicBookPageInformationService,
+	IDbContextFactory<ZineDbContext> contextFactory,
 	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
@@ -58,20 +61,37 @@ public class ComicBookImportService(
 	/// <exceptions cref="FormatException"></exceptions>
 	private void ImportFileFromDisk(string comicBookPathOnDisk, int groupId)
 	{
-		//TODO: Only extract the cover image after the page info is saved, so it can be determined easier and faster.
 		if (!CompressionFormatFactory.IsSupportedFormat(comicBookPathOnDisk))
 		{
 			throw new FormatException("Unsupported compression format");
 		}
 
-		var createdComicBook = comicBookRepository.Create(
-			Path.GetFileNameWithoutExtension(comicBookPathOnDisk),
-			comicBookPathOnDisk,
-			groupId
-		);
+		var context = contextFactory.CreateDbContext();
 
-		comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id);
-		comicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id);
+		using var transaction = context.Database.BeginTransaction();
+
+		try
+		{
+			var createdComicBook = comicBookRepository.Create(
+				Path.GetFileNameWithoutExtension(comicBookPathOnDisk),
+				comicBookPathOnDisk,
+				groupId,
+				context
+			);
+
+			var createdPageInfo =  comicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id, context);
+
+			var coverImage = createdPageInfo.First(info => info.PageType == PageType.Cover);
+			comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id, coverImage, context);
+
+			transaction.Commit();
+		}
+		catch (Exception e)
+		{
+			logger.Error($"Failed to import file {comicBookPathOnDisk}. Rolling back transaction. {e.Message}");
+			transaction.Rollback();
+			throw;
+		}
 	}
 
 	private List<string> ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)

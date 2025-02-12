@@ -18,8 +18,6 @@ public static class Image
 		".webp"
 	];
 
-	public static string[] Extensions => DotExtensions.Select(extension => extension.Remove(0, 1)).ToArray();
-	
 	/// <summary>
 	///
 	/// </summary>
@@ -47,12 +45,6 @@ public static class Image
 		return imageToReturn.Encode(imageFormat, quality).ToArray();
 	}
 
-	public static ImageDimensions GetImageDimensions(IArchiveEntry entry)
-	{
-		using var image = GetImageBitmapFromArchiveEntry(entry);
-		return new ImageDimensions(image.Width, image.Height);
-	}
-
 	public static float GetAspectRatio(IArchiveEntry entry)
 	{
 		var imageDimensions = GetImageDimensions(entry);
@@ -65,7 +57,11 @@ public static class Image
 		return DotExtensions.Any(extension => extension == Path.GetExtension(imageName));
 	}
 
-
+	private static ImageDimensions GetImageDimensions(IArchiveEntry entry)
+	{
+		using var image = GetImageBitmapFromArchiveEntry(entry);
+		return new ImageDimensions(image.Width, image.Height);
+	}
 
 	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)
 	{
@@ -85,6 +81,7 @@ public static class Image
 
 		using var memoryStream = new MemoryStream();
 		entryStream.CopyTo(memoryStream);
+		memoryStream.Position = 0;
 		var imageBytes = memoryStream.ToArray();
 
 		var originalImage = SKBitmap.Decode(imageBytes);

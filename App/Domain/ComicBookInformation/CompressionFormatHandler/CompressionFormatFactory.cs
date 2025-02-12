@@ -2,8 +2,6 @@ namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 
 public static class CompressionFormatFactory
 {
-    public static readonly List<string> ComicFileExtensions = [".cb7", ".cba", ".cbr" ,".cbt", ".cbz"];
-
     /// <summary>
     /// The inner KeyValuePair's structure => byte offset -> byte's to match
     /// </summary>

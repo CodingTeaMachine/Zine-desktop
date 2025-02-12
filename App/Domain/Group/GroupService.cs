@@ -1,4 +1,5 @@
 using Zine.App.Domain.ComicBook;
+using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
@@ -60,7 +61,8 @@ public class GroupService(
 				continue;
 
 			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");
-			new ComicBookInformationFactory().SaveCoverImageToDisc(cb.FileUri, cb.Id.ToString());
+			var coverImage = cb.Pages.First(page => page.PageType == PageType.Cover);
+			new ComicBookInformationFactory().SaveThumbnailToDisc(coverImage.PageFileName, cb.FileUri, cb.Id.ToString());
 		}
 
 		return g;

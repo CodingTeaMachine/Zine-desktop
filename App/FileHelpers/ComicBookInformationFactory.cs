@@ -9,18 +9,18 @@ namespace Zine.App.FileHelpers;
 
 public class ComicBookInformationFactory(ILoggerService? logger = null)
 {
-	public string SaveCoverImageToDisc(string pathOnDisk, string outputFileName)
+	public string SaveThumbnailToDisc(string comicBookFilePath, string coverImageFileName, string outputFileName)
 	{
 		if (!Directory.Exists(DataPath.ComicBookCoverDirectory))
 			Directory.CreateDirectory(DataPath.ComicBookCoverDirectory);
 
 
-		var formatHandler = new CompressedFileHandler(pathOnDisk, DataPath.ComicBookCoverDirectory);
-		var coverImageName  = formatHandler.ExtractCoverImage(outputFileName);
+		var formatHandler = new CompressedFileHandler(comicBookFilePath, DataPath.ComicBookCoverDirectory);
+		var createdCoverImageFileName = formatHandler.SaveThumbnailToDisc(coverImageFileName, outputFileName);
 
-		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(pathOnDisk)}. Image name: {coverImageName}");
+		logger?.Information($"Importing cover image for: {Path.GetFileNameWithoutExtension(coverImageFileName)}. Image name: {outputFileName}");
 
-		return coverImageName;
+		return createdCoverImageFileName;
 	}
 
 	/// <summary>

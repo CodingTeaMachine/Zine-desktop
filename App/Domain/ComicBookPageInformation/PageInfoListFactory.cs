@@ -10,8 +10,8 @@ public static class PageInfoListFactory
 {
 	public static List<ComicBookPageInformation> GetPageInfoList(string comicBookPathOnDisk, int comicBookId)
 	{
-		var infoExtractor = new CompressedComicBookInformationExtractor();
 		using IArchive comicBookFile = ArchiveFactory.Open(comicBookPathOnDisk);
+		var infoExtractor = new CompressedComicBookInformationExtractor();
 
 		List<IArchiveEntry> pages = infoExtractor
 			.GetPages(comicBookFile)

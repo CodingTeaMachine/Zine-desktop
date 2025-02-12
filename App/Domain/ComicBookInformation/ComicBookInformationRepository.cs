@@ -6,7 +6,7 @@ namespace Zine.App.Domain.ComicBookInformation;
 
 public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> contextFactory,ILoggerService logger) : IComicBookInformationRepository
 {
-	public ComicBookInformation Create(int comicBookId, string savedComicBookFileName)
+	public ComicBookInformation Create(int comicBookId, string savedComicBookFileName, ZineDbContext? context = null)
 	{
 		var cbInfo = new ComicBookInformation
 		{
@@ -14,7 +14,8 @@ public class ComicBookInformationRepository(IDbContextFactory<ZineDbContext> con
 			SavedCoverImageFileName = savedComicBookFileName
 		};
 
-		using var context = contextFactory.CreateDbContext();
+		context ??= contextFactory.CreateDbContext();
+
 		var savedComicBookInformation = context.ComicBookInformation.Add(cbInfo);
 
 		try

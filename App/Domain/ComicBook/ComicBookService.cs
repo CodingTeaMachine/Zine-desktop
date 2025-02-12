@@ -1,6 +1,7 @@
 using MudBlazor;
 using SharpCompress;
 using SharpCompress.Archives;
+using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
 using Zine.App.Enums;
 using Zine.App.Exceptions;
@@ -31,7 +32,8 @@ public class ComicBookService(
                     //Check if the cover image exists, and if not, regenerate it.
                     case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory, cb.Information.SavedCoverImageFileName)):
                         logger.Warning($"Regenerating cover image for: {cb.Title}");
-                        new ComicBookInformationFactory().SaveCoverImageToDisc(cb.FileUri, cb.Id.ToString());
+                        var coverImage = cb.Pages.First(page => page.PageType == PageType.Cover);
+                        new ComicBookInformationFactory().SaveThumbnailToDisc(coverImage.PageFileName ,cb.FileUri, cb.Id.ToString());
                         break;
                 }
 
@@ -93,7 +95,7 @@ public class ComicBookService(
 
         comicBookFile
             .Entries
-            .Where(entry => Image.Extensions.Contains(entry.Key?.Split('.').Last()))
+            .Where(entry => !entry.IsDirectory && Image.IsSupported(entry.Key!))
             .ForEach(entry => entry.WriteToDirectory(DataPath.ComicBookReadingDirectory));
     }
 

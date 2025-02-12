@@ -8,16 +8,19 @@ namespace Zine.App.Domain.ComicBookPageInformation;
 
 public class ComicBookPageInformationRepository(IDbContextFactory<ZineDbContext> contextFactory,ILoggerService logger) : IComicBookPageInformationRepository
 {
-	public void CreateMany(IEnumerable<ComicBookPageInformation> comicBookPageInformations)
+	public IEnumerable<ComicBookPageInformation> CreateMany(IEnumerable<ComicBookPageInformation> comicBookPageInformationList, ZineDbContext? context = null)
 	{
-		using var context = contextFactory.CreateDbContext();
-		var bookPageInformationList = comicBookPageInformations as ComicBookPageInformation[] ?? comicBookPageInformations.ToArray();
+		context ??= contextFactory.CreateDbContext();
+
+		var bookPageInformationList = comicBookPageInformationList as ComicBookPageInformation[] ?? comicBookPageInformationList.ToArray();
 
 		context.ComicBookPageInformation.AddRange(bookPageInformationList);
 		try
 		{
 			context.SaveChanges();
 			logger.Information($"Created {bookPageInformationList.Length} comic book page informations for comic: ${bookPageInformationList.First().ComicBookId}");
+
+			return bookPageInformationList;
 		}
 		catch (DbUpdateException e)
 		{

@@ -54,7 +54,8 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 
 	public static PageNamingConvention GetPageNamingFormat(IArchive comicBookArchive)
 	{
-		var filenames = comicBookArchive.Entries.Select(comicBookImage => Path.GetFileNameWithoutExtension(comicBookImage.Key)).ToList();
+		var filenames = comicBookArchive.Entries
+			.Select(comicBookImage => Path.GetFileNameWithoutExtension(comicBookImage.Key)).ToList();
 
 		try
 		{
@@ -72,10 +73,9 @@ public partial class CompressedFileHandler(string filePath, string outputCoverIm
 		}
 	}
 
-	public string ExtractCoverImage(string outputFileName)
+	public string SaveThumbnailToDisc(string coverImageFileName, string outputFileName)
 	{
-		var infoExtractor = new CompressedComicBookInformationExtractor();
-		var coverImage = infoExtractor.GetCoverImage(outputFileName);
+		var coverImage = CompressedComicBookInformationExtractor.GetCoverImage(filePath, coverImageFileName);
 
 		var coverImageExtenstion = Path.GetExtension(coverImage.Key!);
 		var outputFileNameWithExtension = outputFileName + coverImageExtenstion;

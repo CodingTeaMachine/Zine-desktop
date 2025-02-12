@@ -77,20 +77,23 @@ public class ComicBookRepository(
 
 	//Create
 
-/// <summary>
-///
-/// </summary>
-/// <param name="title"></param>
-/// <param name="fileUri"></param>
-/// <param name="groupId"></param>
-/// <returns></returns>
-	public ComicBook Create(string title, string fileUri, int groupId)
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="title"></param>
+	/// <param name="fileUri"></param>
+	/// <param name="groupId"></param>
+	/// <param name="context"></param>
+	/// <returns></returns>
+	public ComicBook Create(string title, string fileUri, int groupId, ZineDbContext? context = null)
 	{
 
 		var comicBookToCreate = new ComicBook
 			{ Title = title, FileUri = fileUri, GroupId = groupId };
 
-		using var context = contextFactory.CreateDbContext();
+
+		context ??= contextFactory.CreateDbContext();
+
 		var createdComicBook = context.ComicBooks.Add(comicBookToCreate);
 
 		try

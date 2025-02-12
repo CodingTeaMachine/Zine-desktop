@@ -8,10 +8,11 @@ namespace Zine.App.Domain.ComicBookInformation;
 public class CompressedComicBookInformationExtractor
 {
 
-	public IArchiveEntry GetCoverImage(string filePath)
+	public static IArchiveEntry GetCoverImage(string filePath, string coverImageName)
 	{
-		using IArchive comicBookFile = ArchiveFactory.Open(filePath);
-		return GetCoverImage(comicBookFile);
+		IArchive comicBookFile = ArchiveFactory.Open(filePath);
+		IArchiveEntry coverImage = comicBookFile.Entries.First(cbFile => Path.GetFileName(cbFile.Key!) == coverImageName);
+		return coverImage;
 	}
 
 	public IArchiveEntry GetCoverImage(IArchive archive)
