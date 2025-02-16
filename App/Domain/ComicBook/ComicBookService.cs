@@ -73,6 +73,13 @@ public class ComicBookService(
 		return repository.GetById(comicId);
 	}
 
+	public ComicBook? GetWithPages(int comicId)
+	{
+		return repository.First(
+			filter: c => c.Id == comicId,
+			includes: query => query.Include(c => c.Pages));
+	}
+
 	/// <summary>
 	///
 	/// </summary>

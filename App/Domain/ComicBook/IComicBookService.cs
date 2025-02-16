@@ -10,6 +10,7 @@ public interface IComicBookService
 
     public IEnumerable<ComicBook> GetAllByGroupId(int groupId);
     public ComicBook? GetById(int comicId);
+    public ComicBook? GetWithPages(int comicId);
     public void AddToGroup(int groupId, int comicBookId);
     public void MoveAll(int currentGroupId, int newGroupId);
     public void Rename(int comicBookId, string newTitle);

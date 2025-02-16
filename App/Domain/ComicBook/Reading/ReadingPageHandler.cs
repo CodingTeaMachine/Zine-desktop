@@ -1,5 +1,7 @@
+using System.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
@@ -21,10 +23,17 @@ public class ReadingPageHandler
 		_comicBookService = comicBookService;
 		_jsRuntime = jsRuntime;
 		_uiUpdateHandler = uiUpdateHandler;
-
-		LoadComic(comicBookId, groupId);
-		LoadImages(comicBookId);
 		_canvasHandler = new CanvasHandler(jsRuntime, canvasId);
+
+		try
+		{
+			LoadComic(comicBookId);
+		}
+		catch (DataException)
+		{
+			_navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
+		}
+
 	}
 
 	public ComicBook ComicBook { get; private set; } = null!;
@@ -60,7 +69,7 @@ public class ReadingPageHandler
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
 
-	public string[] Images = [];
+	public List<string> Images = [];
 
 
 	public void GoToPage(int pageIndex)
@@ -137,14 +146,16 @@ public class ReadingPageHandler
 	}
 
 
-	private void LoadComic(int comicBookId, int groupId)
+	private void LoadComic(int comicBookId)
 	{
-		var loadedComicBook = _comicBookService.GetById(comicBookId);
+		var loadedComicBook = _comicBookService.GetWithPages(comicBookId);
 
-		if (loadedComicBook == null)
-			_navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
-		else
-			ComicBook = loadedComicBook;
+		if(loadedComicBook == null)
+			throw new DataException("Comic book not found");
+
+		ComicBook = loadedComicBook;
+
+		LoadImages(comicBookId);
 	}
 
 
@@ -152,11 +163,27 @@ public class ReadingPageHandler
 	{
 		_comicBookService.ExtractImagesOfComicBook(comicBookId);
 
-		Images = Directory
-			.GetFiles(DataPath.ComicBookReadingDirectory, "*.*", SearchOption.TopDirectoryOnly)
-			.Select(path => "/images/Reading/" + Path.GetFileName(path))
-			.Order()
-			.ToArray();
+		var pageInfoHelper = new PageInfoHelper(ComicBook.Pages);
+
+		var coverImage = pageInfoHelper.GetCover();
+		Images.Add(coverImage.PageFileName);
+
+		var coverInside = pageInfoHelper.GetCoverInside();
+		if(coverInside != null)
+			Images.Add(coverInside.PageFileName);
+
+		var pages = pageInfoHelper.GetPages().OrderBy(p => p.PageFileName);
+		Images.AddRange(pages.Select(page => page.PageFileName));
+
+		var backCoverInside = pageInfoHelper.GetBackCoverInside();
+		if(backCoverInside != null)
+			Images.Add(backCoverInside.PageFileName);
+
+		var backCover = pageInfoHelper.GetBackCover();
+		if(backCover != null)
+			Images.Add(backCover.PageFileName);
+
+		Images = Images.Select(path => "/images/Reading/" + Path.GetFileName(path)).ToList();
 	}
 
 	private void SetImageOnCanvas(int imageIndex)
