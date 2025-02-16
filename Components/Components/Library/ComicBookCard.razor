@@ -61,7 +61,7 @@
 		@* Add comic book to a group *@
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Disabled="IsComicMovedOrDeleted">
 			<ActivatorContent>
-				<MudMenuItem Disabled="IsComicMovedOrDeleted" Icon="@Icons.Material.Filled.Folder">
+				<MudMenuItem Disabled="IsComicMovedOrDeleted || !Groups.Any()" Icon="@Icons.Material.Filled.Folder">
 					Add To Group
 					<MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
 				</MudMenuItem>

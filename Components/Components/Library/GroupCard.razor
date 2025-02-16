@@ -58,7 +58,7 @@
 		@* Add group to another group *@
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft">
 			<ActivatorContent>
-				<MudMenuItem Icon="@Icons.Material.Filled.Folder">
+				<MudMenuItem Disabled="Groups.All(g => g.Id == Group.Id)" Icon="@Icons.Material.Filled.Folder">
 					Add To Group
 					<MudIcon Icon="@Icons.Material.Filled.ChevronRight" />
 				</MudMenuItem>
