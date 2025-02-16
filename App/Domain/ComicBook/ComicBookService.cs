@@ -166,15 +166,13 @@ public class ComicBookService(
 		}
 	}
 
-	//TODO: Update so it returns void
-	public bool Delete(int comicId)
+	public void Delete(int comicId)
 	{
 		repository.Delete(comicId);
 
 		try
 		{
 			dbContext.SaveChanges();
-			return true;
 		}
 		catch (DbUpdateException e)
 		{

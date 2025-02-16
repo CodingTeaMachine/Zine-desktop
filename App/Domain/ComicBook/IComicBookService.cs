@@ -13,6 +13,6 @@ public interface IComicBookService
     public void AddToGroup(int groupId, int comicBookId);
     public void MoveAll(int currentGroupId, int newGroupId);
     public void Rename(int comicBookId, string newTitle);
-    public bool Delete(int comicId);
+    public void Delete(int comicId);
     public void DeleteAllFromGroup(int groupId);
 }

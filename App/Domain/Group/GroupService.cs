@@ -136,8 +136,7 @@ public class GroupService(
 
 	//Update
 
-	//TODO: Refactor so it doesn't return a bool, but throws an exception on error
-	public bool Rename(int groupId, string newName)
+	public void Rename(int groupId, string newName)
 	{
 		// groupRepository.Rename(groupId, newName);
 		try
@@ -151,8 +150,6 @@ public class GroupService(
 			repository.Update(groupToUpdate);
 
 			dbContext.SaveChanges();
-
-			return true;
 		}
 		catch (Exception)
 		{
@@ -160,8 +157,7 @@ public class GroupService(
 		}
 	}
 
-	//TODO: Refactor so it doesn't return a bool, but throws an exception on error
-	public bool AddToGroup(int newParentGroupId, int groupId)
+	public void AddToGroup(int newParentGroupId, int groupId)
 	{
 		logger.Information($"GroupService.AddToGroup: Adding group({groupId}) to parent group({newParentGroupId})");
 		try
@@ -175,19 +171,15 @@ public class GroupService(
 			repository.Update(groupToUpdate);
 
 			dbContext.SaveChanges();
-
-			return true;
 		}
-		catch (Exception)
+		catch (DbUpdateException e)
 		{
-			logger.Error("GroupService.AddToGroup: Group not found: " + groupId);
-			return false;
+			throw new HandledAppException("Error adding comic book to group" + groupId, Severity.Error, e);
 		}
 	}
 
 	//Delete
-	//TODO: Refactor so it doesn't return a bool, but throws an exception on error
-	public bool Delete(int groupId, bool deleteAllContent)
+	public void Delete(int groupId, bool deleteAllContent)
 	{
 		logger.Information($"GroupService.Delete: GroupId: {groupId}, DeleteAllContent: {deleteAllContent}");
 
@@ -219,12 +211,10 @@ public class GroupService(
 
 			repository.Delete(currentGroup);
 			dbContext.SaveChanges();
-
-			return true;
 		}
-		catch (Exception ex) when(ex is DataException or DbUpdateException)
+		catch (DbUpdateException ex)
 		{
-			return false;
+			throw new HandledAppException("Error deleting group", Severity.Error, ex);
 		}
 	}
 

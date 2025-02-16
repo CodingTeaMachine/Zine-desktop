@@ -136,13 +136,20 @@
 
 	void AddToGroup(int groupId)
 	{
-		var isAddedToGroup = GroupService.AddToGroup(groupId, Group.Id);
-		if (isAddedToGroup)
+		try
 		{
+			GroupService.AddToGroup(groupId, Group.Id);
 			UpdatedGroup.InvokeAsync(groupId);
 			_menuRef.CloseMenuAsync();
-		} else
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
 			Snackbar.Add("Error adding group to group", Severity.Error);
+		}
 	}
 
 	void RemoveFromGroup()
@@ -150,13 +157,20 @@
 		if(Group.ParentGroupId == null)
 			return;
 
-		var isAddedToGroup = GroupService.AddToGroup(Group.ParentGroup!.ParentGroupId!.Value, Group.Id);
-		if (isAddedToGroup)
+		try
 		{
+			GroupService.AddToGroup(Group.ParentGroup!.ParentGroupId!.Value, Group.Id);
 			UpdatedGroup.InvokeAsync(Group.ParentGroupId.Value);
 			_menuRef.CloseMenuAsync();
-		} else
-			Snackbar.Add("Error removing group", Severity.Error);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Error removing from group", Severity.Error);
+		}
 	}
 
 	async Task DeleteGroup()
