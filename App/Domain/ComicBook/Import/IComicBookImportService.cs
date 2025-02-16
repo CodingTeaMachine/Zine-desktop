@@ -1,6 +1,6 @@
 using Zine.App.Enums;
 
-namespace Zine.App.Domain.ComicBook;
+namespace Zine.App.Domain.ComicBook.Import;
 
 public interface IComicBookImportService
 {

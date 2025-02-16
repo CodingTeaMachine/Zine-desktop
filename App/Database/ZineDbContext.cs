@@ -3,14 +3,12 @@ using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
-using Zine.App.Domain.Settings;
 using Zine.App.Enums;
 
 namespace Zine.App.Database;
 
 public class ZineDbContext(IConfiguration configuration) : DbContext
 {
-    public DbSet<Setting> Settings { get; init; }
     public DbSet<ComicBook> ComicBooks { get; init; }
     public DbSet<ComicBookInformation> ComicBookInformation { get; init; }
     public DbSet<ComicBookPageInformation> ComicBookPageInformation { get; init; }

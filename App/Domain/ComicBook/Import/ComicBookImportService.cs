@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using SharpCompress;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBookInformation;
@@ -7,13 +6,13 @@ using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
 using Zine.App.Logger;
 
-namespace Zine.App.Domain.ComicBook;
+namespace Zine.App.Domain.ComicBook.Import;
 
 public class ComicBookImportService(
-	IComicBookRepository comicBookRepository,
+	IComicBookService comicBookService,
 	IComicBookInformationService comicBookInformationService,
 	IComicBookPageInformationService comicBookPageInformationService,
-	IDbContextFactory<ZineDbContext> contextFactory,
+	ZineDbContext context,
 	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
@@ -66,23 +65,20 @@ public class ComicBookImportService(
 			throw new FormatException("Unsupported compression format");
 		}
 
-		var context = contextFactory.CreateDbContext();
-
 		using var transaction = context.Database.BeginTransaction();
 
 		try
 		{
-			var createdComicBook = comicBookRepository.Create(
+			var createdComicBook = comicBookService.Create(
 				Path.GetFileNameWithoutExtension(comicBookPathOnDisk),
 				comicBookPathOnDisk,
-				groupId,
-				context
+				groupId
 			);
 
-			var createdPageInfo =  comicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id, context);
+			var createdPageInfo =  comicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id);
 
 			var coverImage = createdPageInfo.First(info => info.PageType == PageType.Cover);
-			comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id, coverImage, context);
+			comicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id, coverImage);
 
 			transaction.Commit();
 		}

@@ -5,10 +5,10 @@ using MudBlazor;
 using MudBlazor.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
+using Zine.App.Domain.ComicBook.Import;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
-using Zine.App.Domain.Settings;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Logger;
@@ -33,23 +33,16 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString(ConfigKeys.DbContext)
                   ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 
-builder.Services.AddScoped<ISettingsRepository, SettingsContextFactory>();
-builder.Services.AddScoped<ISettingsService, SettingsService>();
-
-builder.Services.AddScoped<IComicBookRepository, ComicBookRepository>();
 builder.Services.AddScoped<IComicBookService, ComicBookService>();
 builder.Services.AddScoped<IComicBookImportService, ComicBookImportService>();
 
-builder.Services.AddScoped<IComicBookInformationRepository, ComicBookInformationRepository>();
 builder.Services.AddScoped<IComicBookInformationService, ComicBookInformationService>();
 
-builder.Services.AddScoped<IComicBookPageInformationRepository, ComicBookPageInformationRepository>();
 builder.Services.AddScoped<IComicBookPageInformationService, ComicBookPageInformationService>();
 
-
-
-builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+
+builder.Services.AddScoped(typeof(GenericRepository<>));
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

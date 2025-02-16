@@ -2,6 +2,7 @@
 
 @using Zine.App
 @using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.ComicBook.Import
 @using Zine.App.Domain.Group
 @using Zine.App.Enums
 @using Zine.App.Exceptions
@@ -277,7 +278,16 @@
 	private void LoadCurrentGroup()
 	{
 		_searchWord = string.Empty;
-		_currentGroup = GroupService.LoadForLibraryPage(GroupId);
+
+		try
+		{
+			_currentGroup = GroupService.LoadForLibraryPage(GroupId);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+			return;
+		}
 
 		_groupList = _currentGroup!.ChildGroups.ToList();
 		_contextMenuGroups = _groupList;

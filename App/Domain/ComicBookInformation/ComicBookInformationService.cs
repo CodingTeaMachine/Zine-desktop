@@ -1,16 +1,37 @@
+using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using Zine.App.Database;
+using Zine.App.Exceptions;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBookInformation;
 
-public class ComicBookInformationService(IComicBookInformationRepository repository, ILoggerService logger) : IComicBookInformationService
+public class ComicBookInformationService(
+	ZineDbContext dbContext,
+	GenericRepository<ComicBookInformation> repository,
+	ILoggerService logger) : IComicBookInformationService
 {
-	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation, ZineDbContext? context = null)
+	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
 	{
 		ComicBookInformationFactory comicBookInformationFactory = new(logger);
 		var savedCoverImageName = comicBookInformationFactory.SaveThumbnailToDisc(comicBookPathOnDisk, comicBookPageInformation.PageFileName , comicBookId.ToString());
 
-		return repository.Create(comicBookId, savedCoverImageName, context);
+		var infoToSave = new ComicBookInformation
+		{
+			ComicBookId = comicBookId,
+			SavedCoverImageFileName = savedCoverImageName,
+		};
+
+		try
+		{
+			repository.Insert(infoToSave);
+			dbContext.SaveChanges();
+			return infoToSave;
+		}
+		catch (DbUpdateException e)
+		{
+			throw new HandledAppException("Error creating comic book information", Severity.Error, e);
+		}
 	}
 }

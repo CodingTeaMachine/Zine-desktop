@@ -2,7 +2,6 @@ namespace Zine.App.Domain.Group;
 
 public interface IGroupService
 {
-	public string GetName(int groupId);
 	public IEnumerable<Group> SearchByName(string searchTerm);
 	public Group? LoadForLibraryPage(int parentId);
 
