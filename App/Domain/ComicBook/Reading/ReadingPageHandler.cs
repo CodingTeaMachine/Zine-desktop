@@ -19,7 +19,6 @@ public class ReadingPageHandler
 		int comicBookId,
 		Action uiUpdateHandler)
 	{
-		_navigationManager = navigationManager;
 		_comicBookService = comicBookService;
 		_jsRuntime = jsRuntime;
 		_uiUpdateHandler = uiUpdateHandler;
@@ -31,7 +30,7 @@ public class ReadingPageHandler
 		}
 		catch (DataException)
 		{
-			_navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
+			navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
 		}
 
 	}
@@ -44,11 +43,13 @@ public class ReadingPageHandler
 
 	private readonly CanvasHandler _canvasHandler;
 
-	private readonly NavigationManager _navigationManager;
-
 	private readonly IJSRuntime _jsRuntime;
 
 	private readonly Action _uiUpdateHandler;
+
+	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => ComicBook.Pages.ToList()[_currentPageIndex];
+
+	public int MaxPageNumber => ComicBook.Pages.ToList().Last().PageNumberEnd;
 
 	public int CurrentPageIndex
 	{

@@ -5,6 +5,7 @@
 @implements IDisposable
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Domain.ComicBookPageInformation
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
 
@@ -61,7 +62,17 @@
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="_readingPageHandler.GoToFirstPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="_readingPageHandler.PrevPage" />
 
-			<div>@(_readingPageHandler.CurrentPageIndex + 1) / @_readingPageHandler.ComicBook.Pages.Count</div>
+			<div>
+				@if (_readingPageHandler.CurrentPage.PageType == PageType.Double)
+				{
+					<span>@(_readingPageHandler.CurrentPage.PageNumberStart) - @(_readingPageHandler.CurrentPage.PageNumberEnd)</span>
+				}
+				else
+				{
+					<span>@_readingPageHandler.CurrentPage.PageNumberStart</span>
+				}
+				/ <span> @_readingPageHandler.MaxPageNumber </span>
+			</div>
 
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="_readingPageHandler.NextPage" />
 			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="_readingPageHandler.GoToLastPage" />

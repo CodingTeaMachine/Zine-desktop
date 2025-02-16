@@ -19,7 +19,7 @@ public static class PageInfoListFactory
 			.ToList();
 
 		var pageInfoList = new List<ComicBookPageInformation>();
-		var pageNumber = 0;
+		var pageNumber = 1;
 
 		//Create the cover image
 		var coverKvp = GetCoverImage(pages);
@@ -27,7 +27,7 @@ public static class PageInfoListFactory
 		{
 			PageFileName = Path.GetFileName(coverKvp.Value.Key!),
 			PageType = PageType.Cover,
-			PageNumberStart = ++pageNumber,
+			PageNumberStart = pageNumber++,
 			ComicBookId = comicBookId,
 		});
 
@@ -39,7 +39,7 @@ public static class PageInfoListFactory
 			{
 				PageFileName = coverInside,
 				PageType = PageType.CoverInside,
-				PageNumberStart = ++pageNumber,
+				PageNumberStart = pageNumber++,
 				ComicBookId = comicBookId,
 			});
 		}
@@ -49,26 +49,7 @@ public static class PageInfoListFactory
 		string? backCoverInside = null;
 		if (backCover.HasValue)
 		{
-			pageInfoList.Add(new ComicBookPageInformation
-			{
-				PageFileName = backCover.Value.Value,
-				PageType = PageType.BackCover,
-				PageNumberStart = pages.Count,
-				ComicBookId = comicBookId,
-			});
-
-			//Create the inside of the back cover
 			backCoverInside = GetBackCoverInsideImage(pages, backCover.Value.Key);
-			if (backCoverInside != null)
-			{
-				pageInfoList.Add(new ComicBookPageInformation
-				{
-					PageFileName = backCoverInside,
-					PageType = PageType.BackCoverInside,
-					PageNumberStart = pages.Count - 1,
-					ComicBookId = comicBookId,
-				});
-			}
 		}
 
 
@@ -90,7 +71,6 @@ public static class PageInfoListFactory
 		insidePages.ForEach(page =>
 		{
 			var isDoubleImage = IsDoubleImage(page, minAspectRatio);
-			pageNumber += isDoubleImage ? 2 : 1;
 
 			pageInfoList.Add(new ComicBookPageInformation()
 			{
@@ -99,7 +79,32 @@ public static class PageInfoListFactory
 				PageNumberStart = pageNumber,
 				ComicBookId = comicBookId,
 			});
+
+			pageNumber += isDoubleImage ? 2 : 1;
 		});
+
+		//Add the back cover, and it's inside to the end of it all
+		if (backCover.HasValue)
+		{
+			if (backCoverInside != null)
+			{
+				pageInfoList.Add(new ComicBookPageInformation
+				{
+					PageFileName = backCoverInside,
+					PageType = PageType.BackCoverInside,
+					PageNumberStart = pageNumber++,
+					ComicBookId = comicBookId,
+				});
+			}
+
+			pageInfoList.Add(new ComicBookPageInformation
+			{
+				PageFileName = backCover.Value.Value,
+				PageType = PageType.BackCover,
+				PageNumberStart = pageNumber++,
+				ComicBookId = comicBookId,
+			});
+		}
 
 		return pageInfoList;
 	}
