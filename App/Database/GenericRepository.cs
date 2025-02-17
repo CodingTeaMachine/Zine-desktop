@@ -43,7 +43,7 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 			query = includes(query);
 		}
 
-		return query.First(filter);
+		return query.FirstOrDefault(filter);
 	}
 
 	/// <summary>

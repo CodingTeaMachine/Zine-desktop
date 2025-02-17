@@ -111,7 +111,7 @@ public class GroupService(
 
 			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");
 			var coverImage = cb.Pages.First(page => page.PageType == PageType.Cover);
-			new ComicBookInformationFactory().SaveThumbnailToDisc(coverImage.PageFileName, cb.FileUri, cb.Id.ToString());
+			new ComicBookImageHandler().SaveThumbnailToDisc(coverImage.PageFileName, cb.FileUri, cb.Id.ToString());
 		}
 
 		return g;

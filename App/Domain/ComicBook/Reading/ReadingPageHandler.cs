@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
-using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
 
@@ -35,7 +34,7 @@ public class ReadingPageHandler
 
 	}
 
-	public ComicBook ComicBook { get; private set; } = null!;
+	private ComicBook ComicBook { get; set; } = null!;
 
 	public int ZoomScale = 100;
 

@@ -1,4 +1,5 @@
 @using Zine.App
+@using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Exceptions
 
@@ -94,6 +95,9 @@
 
 	[Parameter]
 	public IGroupService GroupService { get; set; } = null!;
+
+	[Parameter]
+	public IComicBookService ComicBookService { get; set; } = null!;
 
 	[Parameter]
 	public EventCallback<bool> EditStateChanged { get; set; }
@@ -198,9 +202,13 @@
 
 	string GetCoverImage(int comicBookIndex)
 	{
-		return comicBookIndex < Group.ComicBooks.Count
-			? Group.ComicBooks.ToArray()[comicBookIndex].Information.SavedCoverImageFullPath.Replace("wwwroot", "")
-			: "";
+
+		if (comicBookIndex >= Group.ComicBooks.Count)
+			return "";
+
+		var comicBook = Group.ComicBooks.ToArray()[comicBookIndex];
+
+		return ComicBookService.GetComicBookCoverFromDisc(comicBook.Id).Replace("wwwroot", "");
 	}
 
 

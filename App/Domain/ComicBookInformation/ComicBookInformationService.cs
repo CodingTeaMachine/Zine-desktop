@@ -14,8 +14,8 @@ public class ComicBookInformationService(
 {
 	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
 	{
-		ComicBookInformationFactory comicBookInformationFactory = new(logger);
-		var savedCoverImageName = comicBookInformationFactory.SaveThumbnailToDisc(comicBookPathOnDisk, comicBookPageInformation.PageFileName , comicBookId.ToString());
+		ComicBookImageHandler comicBookImageHandler = new(logger);
+		var savedCoverImageName = comicBookImageHandler.SaveThumbnailToDisc(comicBookPathOnDisk, comicBookPageInformation.PageFileName , comicBookId.ToString());
 
 		var infoToSave = new ComicBookInformation
 		{

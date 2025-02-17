@@ -47,7 +47,7 @@ public static class Image
 
 	public static float GetAspectRatio(IArchiveEntry entry)
 	{
-		var imageDimensions = GetImageDimensions(entry);
+		var imageDimensions = GetDimensions(entry);
 
 		return (float)imageDimensions.Height / imageDimensions.Width;
 	}
@@ -57,7 +57,7 @@ public static class Image
 		return DotExtensions.Any(extension => extension == Path.GetExtension(imageName));
 	}
 
-	private static ImageDimensions GetImageDimensions(IArchiveEntry entry)
+	public static ImageDimensions GetDimensions(IArchiveEntry entry)
 	{
 		using var image = GetImageBitmapFromArchiveEntry(entry);
 		return new ImageDimensions(image.Width, image.Height);

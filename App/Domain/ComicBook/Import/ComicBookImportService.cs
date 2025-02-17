@@ -1,9 +1,9 @@
 using SharpCompress;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBookInformation;
-using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
+using Zine.App.Helpers.Compression;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBook.Import;

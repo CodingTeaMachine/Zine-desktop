@@ -47,6 +47,7 @@
     <Folder Include="Data\" />
     <Folder Include="logs\" />
     <Folder Update="wwwroot\images\ComicBookCovers\" />
+    <Folder Include="wwwroot\images\ComicBookCovers\" />
   </ItemGroup>
 
 </Project>

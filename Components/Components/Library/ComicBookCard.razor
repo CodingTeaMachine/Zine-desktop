@@ -193,11 +193,9 @@
 
 
 
-
-
 	string GetCoverImage()
 	{
-		return ComicBook.Information.SavedCoverImageFullPath.Replace("wwwroot", "");
+		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");;
 	}
 
 	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)

@@ -1,4 +1,4 @@
-namespace Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
+namespace Zine.App.Helpers.Compression;
 
 public static class CompressionFormatFactory
 {

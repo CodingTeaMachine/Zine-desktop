@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Zine.App.Domain.ComicBookInformation.CompressionFormatHandler;
 using Zine.App.Enums;
+using Zine.App.Helpers.Compression;
 
 namespace Zine.App.Domain.ComicBookInformation;
 

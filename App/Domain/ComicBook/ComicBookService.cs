@@ -39,33 +39,24 @@ public class ComicBookService(
 		}
 	}
 
-	public IEnumerable<ComicBook> GetAllByGroupId(int groupId)
+	public string GetComicBookCoverFromDisc(int comicBookId)
 	{
-		return repository
-			.List(
-				filter: cb => cb.GroupId == groupId,
-				includes: query => query.Include(c => c.Information))
-			.Select(cb =>
-			{
-				switch (cb.Information.FileMovedOrDeleted)
-				{
-					case true:
-						logger.Warning($"{cb.FileUri} moved/deleted");
-						break;
-					//Check if the cover image exists, and if not, regenerate it.
-					case false when !File.Exists(Path.Join(DataPath.ComicBookCoverDirectory,
-						cb.Information.SavedCoverImageFileName)):
-						//TODO: Move to comic book information service or cover image handler
-						logger.Warning($"Regenerating cover image for: {cb.Title}");
-						var coverImage = cb.Pages.First(page => page.PageType == PageType.Cover);
-						new ComicBookInformationFactory().SaveThumbnailToDisc(coverImage.PageFileName, cb.FileUri,
-							cb.Id.ToString());
-						break;
-				}
+		var comicBook = repository.First(
+			filter: cb => cb.Id == comicBookId,
+			includes: query => query.Include(cb => cb.Information).Include(cb => cb.Pages));
 
+		if (comicBook == null)
+			throw new HandledAppException("Comic book not found", Severity.Error);
 
-				return cb;
-			});
+		if (!File.Exists(comicBook.Information.SavedCoverImageFullPath))
+		{
+			logger.Warning($"Regenerating cover image for: {comicBook.Title}");
+			var comicBookCover = new PageInfoHelper(comicBook.Pages).GetCover();
+			new ComicBookImageHandler().SaveThumbnailToDisc(comicBook.FileUri, comicBookCover.PageFileName,
+				comicBookId.ToString());
+		}
+
+		return comicBook.Information.SavedCoverImageFullPath;
 	}
 
 	public ComicBook? GetById(int comicId)
@@ -103,7 +94,6 @@ public class ComicBookService(
 			throw new HandledAppException("Error searching comic books", Severity.Error, e);
 		}
 	}
-
 
 
 	public void AddToGroup(int groupId, int comicBookId)
@@ -175,6 +165,17 @@ public class ComicBookService(
 
 	public void Delete(int comicId)
 	{
+		var comicToDelete =
+			repository.First(cb => cb.Id == comicId, includes: query => query.Include(c => c.Information));
+
+		if (comicToDelete == null)
+			throw new HandledAppException("Could not find comic book", Severity.Error);
+
+		if (File.Exists(comicToDelete.Information.SavedCoverImageFullPath))
+		{
+			File.Delete(comicToDelete.Information.SavedCoverImageFullPath);
+		}
+
 		repository.Delete(comicId);
 
 		try
@@ -191,13 +192,20 @@ public class ComicBookService(
 	{
 		try
 		{
-			var comicBooksToDelete = repository.List(cb => cb.GroupId == groupId);
+			var comicBooksToDelete = repository.List(
+				filter: cb => cb.GroupId == groupId,
+				includes: query => query.Include(c => c.Information));
 
 			comicBooksToDelete.ForEach(cb =>
 			{
 				logger.Information(
 					$"ComicBookRepository.DeleteAllFromGroup: Deleting cover image for: {cb.Id} at {cb.Information.SavedCoverImageFullPath}");
-				File.Delete(cb.Information.SavedCoverImageFullPath);
+
+				if (File.Exists(cb.Information.SavedCoverImageFullPath))
+				{
+					File.Delete(cb.Information.SavedCoverImageFullPath);
+				}
+
 				repository.Delete(cb.Id);
 			});
 
@@ -246,5 +254,4 @@ public class ComicBookService(
 			File.Delete(file);
 		}
 	}
-
 }
