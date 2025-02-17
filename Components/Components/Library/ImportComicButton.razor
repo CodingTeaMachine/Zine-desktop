@@ -1,3 +1,4 @@
+@using Zine.App.Domain.ComicBook.Import
 @using Zine.App.Enums
 @using Zine.App.FileHelpers
 
@@ -27,8 +28,9 @@
 </MudMenu>
 
 @code {
+
 	[Parameter]
-	public EventCallback<(ImportType, string, bool)> Import { get; set; }
+	public EventCallback<ImportAction> Import { get; set; }
 
 
 	private async void FileImportAction()
@@ -38,19 +40,39 @@
 		if (string.IsNullOrEmpty(selectedPath))
 			return;
 
-		await Import.InvokeAsync((ImportType.File, selectedPath, false));
+		var action = new ImportAction
+		{
+			Type = ImportType.File,
+			FilePath = selectedPath
+		};
+
+		await Import.InvokeAsync(action);
 	}
 
 	private async void DirectoryImportAction()
 	{
-		bool? result = await DialogService.ShowMessageBox("Directory Import", "Would you like to import all comic books from sub folders too?", "Yes", "No");
-
 		string? selectedPath = await FileSelector.GetDirectoryPathFromFileDialog();
 
 		if (string.IsNullOrEmpty(selectedPath))
 			return;
 
-		await Import.InvokeAsync((ImportType.Directory, selectedPath, result != null));
+		bool isRecursiveImport = await DialogService.ShowMessageBox("Directory Import", "Would you like to import all comic books from sub folders too?", "Yes", "No") ?? false;
+		bool keepFoldersAsGroups = false;
+
+		if (isRecursiveImport)
+		{
+			keepFoldersAsGroups = await DialogService.ShowMessageBox("Directory import", "Would you like to import folders as groups?", "Yes", "No") ?? false;
+		}
+
+		var action = new ImportAction
+		{
+			Type = ImportType.Directory,
+			FilePath = selectedPath,
+			IsRecursiveImport = isRecursiveImport,
+			KeepFoldersAsGroups = keepFoldersAsGroups
+		};
+
+		await Import.InvokeAsync(action);
 	}
 
 }

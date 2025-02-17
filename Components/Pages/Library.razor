@@ -174,11 +174,11 @@
 		ReloadDropzone();
 	}
 
-	private void Import((ImportType importType, string path, bool recursiveImport) args)
+	private void Import(ImportAction action)
 	{
 		try
 		{
-			ComicBookImportService!.ImportFromDisk(args.importType, args.path, GroupId, args.recursiveImport);
+			ComicBookImportService!.ImportFromDisk(action, GroupId);
 			Snackbar.Add("Successfully imported comic books.", Severity.Success);
 			LoadCurrentGroup();
 		}

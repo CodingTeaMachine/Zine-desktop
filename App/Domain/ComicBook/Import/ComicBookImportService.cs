@@ -16,38 +16,36 @@ public class ComicBookImportService(
 	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
-	///
+	/// 
 	/// </summary>
-	/// <param name="importType"></param>
-	/// <param name="pathOnDisk"></param>
+	/// <param name="action"></param>
 	/// <param name="groupId"></param>
-	/// <param name="recursiveImport"></param>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <exception cref="FormatException"></exception>
 	/// TODO: Handle exceptions in a nicer way
-	public List<string>? ImportFromDisk(ImportType importType ,string pathOnDisk, int groupId, bool recursiveImport = false)
+	public List<string>? ImportFromDisk(ImportAction action, int groupId)
 	{
-		logger.Information($"Importing {(importType == ImportType.Directory ? "directory" : "file")} from: {pathOnDisk}");
+		logger.Information($"Importing {(action.Type == ImportType.Directory ? "directory" : "file")} from: {action.FilePath}");
 
-		switch (importType)
+		switch (action.Type)
 		{
 			case ImportType.File:
 				try
 				{
-					ImportFileFromDisk(pathOnDisk, groupId);
+					ImportFileFromDisk(action.FilePath, groupId);
 					return null; // No error
 				}
 				catch (FormatException)
 				{
-					return [Path.GetFileNameWithoutExtension(pathOnDisk)];
+					return [Path.GetFileNameWithoutExtension(action.FilePath)];
 				}
 			case ImportType.Directory:
-				var errorList = ImportDirectoryFromDisk(pathOnDisk, groupId, recursiveImport);
+				var errorList = ImportDirectoryFromDisk(action.FilePath, groupId, action.IsRecursiveImport, action.KeepFoldersAsGroups);
 				return errorList.Count > 0
 					? errorList
 					: null; // No error
 			default:
-				throw new ArgumentOutOfRangeException(nameof(importType), importType, "Unsupported import type");
+				throw new ArgumentOutOfRangeException(nameof(action.Type), action.Type, "Unsupported import type");
 		}
 	}
 
@@ -90,8 +88,10 @@ public class ComicBookImportService(
 		}
 	}
 
-	private List<string> ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport)
+	private List<string> ImportDirectoryFromDisk(string pathOnDisk, int groupId, bool recursiveImport, bool keepFoldersAsGroups)
 	{
+		//TODO: keepFoldersAsGroups
+
 		var unsupportedComicBookList = new List<string>();
 
 		var searchDepth = recursiveImport
