@@ -46,7 +46,7 @@ public class ComicBookService(
 			includes: query => query.Include(cb => cb.Information).Include(cb => cb.Pages));
 
 		if (comicBook == null)
-			throw new HandledAppException("Comic book not found", Severity.Error);
+			throw new HandledAppException("Comic book not found: " + comicBookId, Severity.Error);
 
 		if (!File.Exists(comicBook.Information.SavedCoverImageFullPath))
 		{

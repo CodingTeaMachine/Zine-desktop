@@ -11,7 +11,11 @@ public class ComicBookInformation
 	public int Id { get; init; }
 
 	public int ComicBookId { get; init; }
-	public ComicBook.ComicBook ComicBook { get; init; } = null!;
+
+	/**
+	 * It is marked nullable because during the cascade delete the object can lose reference and FileMovedOrDeleted throws an exception
+	 */
+	public ComicBook.ComicBook? ComicBook { get; init; }
 
 	[Required]
 	[MaxLength(25)]
@@ -29,11 +33,13 @@ public class ComicBookInformation
 	{
 		get
 		{
-			var fileExtension = Path.GetExtension(ComicBook.FileUri);
-			return CompressionFormatFactory.GetFromFile(fileExtension);
+			var fileExtension = Path.GetExtension(ComicBook?.FileUri);
+			return fileExtension != null ?
+				CompressionFormatFactory.GetFromFile(fileExtension)
+				: CompressionFormat.Unknown;
 		}
 	}
 
 	[NotMapped]
-	public bool FileMovedOrDeleted => !File.Exists(ComicBook.FileUri);
+	public bool FileMovedOrDeleted => !File.Exists(ComicBook?.FileUri);
 }

@@ -296,7 +296,7 @@
 
 		_comicBookList = [];
 		_comicBookList = _currentGroup.ComicBooks
-			.Select(book => new DropItem { ComicBook = book, Identifier = GetComicBookIdentifier(book.Id) })
+			.Select(cb => new DropItem { ComicBook = cb, Identifier = GetComicBookIdentifier(cb.Id) })
 			.ToList();
 
 		ReloadDropzone();

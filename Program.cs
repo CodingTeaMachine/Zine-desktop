@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBook.Import;
+using Zine.App.Domain.ComicBook.Import.Strategies;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
@@ -33,16 +34,24 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString(ConfigKeys.DbContext)
                   ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 
+builder.Services.AddScoped(typeof(GenericRepository<>));
+
+//Services
 builder.Services.AddScoped<IComicBookService, ComicBookService>();
 builder.Services.AddScoped<IComicBookImportService, ComicBookImportService>();
-
 builder.Services.AddScoped<IComicBookInformationService, ComicBookInformationService>();
-
 builder.Services.AddScoped<IComicBookPageInformationService, ComicBookPageInformationService>();
-
 builder.Services.AddScoped<IGroupService, GroupService>();
 
-builder.Services.AddScoped(typeof(GenericRepository<>));
+//Importing comic books
+builder.Services.AddScoped<ImportUnitOfWork>();
+
+builder.Services.AddScoped<SingleFileImportStrategy>();
+builder.Services.AddScoped<TopLevelImportStrategy>();
+builder.Services.AddScoped<RecursiveImportStrategy>();
+builder.Services.AddScoped<KeepStructureImportStrategy>();
+builder.Services.AddScoped<ImportStrategyFactory>();
+
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

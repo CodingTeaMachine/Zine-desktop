@@ -4,6 +4,6 @@ namespace Zine.App.Domain.ComicBook.Import;
 
 public interface IComicBookImportService
 {
-	public List<string>? ImportFromDisk(ImportAction action, int groupId);
+	public void ImportFromDisk(ImportAction action, int groupId);
 
 }
