@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zine.App.Database;
 
@@ -10,9 +11,11 @@ using Zine.App.Database;
 namespace Zine.Migrations
 {
     [DbContext(typeof(ZineDbContext))]
-    partial class ZineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250218124824_Added Page Width Checked Col To Page Info")]
+    partial class AddedPageWidthCheckedColToPageInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.5");

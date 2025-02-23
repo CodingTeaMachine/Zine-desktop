@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Zine.App.Database;
+using Zine.App.Enums;
 using Zine.App.Exceptions;
 using Zine.App.FileHelpers;
 using Zine.App.Logger;
@@ -9,18 +10,16 @@ namespace Zine.App.Domain.ComicBookInformation;
 
 public class ComicBookInformationService(
 	ZineDbContext dbContext,
-	GenericRepository<ComicBookInformation> repository,
-	ILoggerService logger) : IComicBookInformationService
+	GenericRepository<ComicBookInformation> repository) : IComicBookInformationService
 {
 	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
 	{
-		ComicBookImageHandler comicBookImageHandler = new(logger);
-		var savedCoverImageName = comicBookImageHandler.SaveThumbnailToDisc(comicBookPathOnDisk, comicBookPageInformation.PageFileName , comicBookId.ToString());
+		var fileName = comicBookId + Path.GetExtension(comicBookPageInformation.PageFileName).ToLower(); //Sometimes the extension are capitalized
 
 		var infoToSave = new ComicBookInformation
 		{
 			ComicBookId = comicBookId,
-			SavedCoverImageFileName = savedCoverImageName,
+			SavedCoverImageFileName = fileName,
 		};
 
 		try

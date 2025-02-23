@@ -24,6 +24,10 @@
 	{
 		var result = await _messageBox.ShowAsync();
 
-		return new DialogResult {Confirmed = result != null, DeleteAllContent = DeleteAllContent};
+		var dialogResult =	new DialogResult {Confirmed = result != null, DeleteAllContent = DeleteAllContent};
+
+		DeleteAllContent = false;
+
+		return dialogResult;
 	}
 }

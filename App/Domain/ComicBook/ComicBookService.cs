@@ -16,6 +16,7 @@ public class ComicBookService(
 	ZineDbContext dbContext,
 	GenericRepository<ComicBook> repository,
 	GenericRepository<Group.Group> groupRepository,
+	IComicBookPageInformationService comicBookPageInformationService,
 	ILoggerService logger
 ) : IComicBookService
 {
@@ -43,7 +44,9 @@ public class ComicBookService(
 	{
 		var comicBook = repository.First(
 			filter: cb => cb.Id == comicBookId,
-			includes: query => query.Include(cb => cb.Information).Include(cb => cb.Pages));
+			includes: query => query
+				.Include(cb => cb.Information)
+				.Include(cb => cb.Pages));
 
 		if (comicBook == null)
 			throw new HandledAppException("Comic book not found: " + comicBookId, Severity.Error);
@@ -53,7 +56,7 @@ public class ComicBookService(
 			logger.Warning($"Regenerating cover image for: {comicBook.Title}");
 			var comicBookCover = new PageInfoHelper(comicBook.Pages).GetCover();
 			new ComicBookImageHandler().SaveThumbnailToDisc(comicBook.FileUri, comicBookCover.PageFileName,
-				comicBookId.ToString());
+				comicBook.Information.SavedCoverImageFileName);
 		}
 
 		return comicBook.Information.SavedCoverImageFullPath;
@@ -64,11 +67,18 @@ public class ComicBookService(
 		return repository.GetById(comicId);
 	}
 
-	public ComicBook? GetWithPages(int comicId)
+	public ComicBook? GetForReadingView(int comicId)
 	{
-		return repository.First(
+		var comicBook = repository.First(
 			filter: c => c.Id == comicId,
 			includes: query => query.Include(c => c.Pages));
+
+		if(comicBook == null)
+			throw new HandledAppException("Could not find comic book", Severity.Error, "Could not find comic book: " + comicId);
+
+		comicBookPageInformationService.CheckPageTypes(comicBook);
+
+		return comicBook;
 	}
 
 	/// <summary>

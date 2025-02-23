@@ -19,7 +19,7 @@ public class ComicBookImportService(
 	/// TODO: Handle exceptions in a nicer way
 	public void ImportFromDisk(ImportAction action, int groupId)
 	{
-		logger.Information($"Importing {(action.Type == ImportType.Directory ? "directory" : "file")} from: {action.FilePath}");
+		var startTime = DateTime.Now;
 
 		var strategy =
 			importStrategyFactory.GetStrategy(action.Type, action.IsRecursiveImport, action.KeepFoldersAsGroups);
@@ -28,5 +28,8 @@ public class ComicBookImportService(
 			throw new HandledAppException("Cannot determine import strategy", Severity.Error);
 
 		new ImportContext(strategy).Execute(action.FilePath, groupId);
+
+		var endTime = DateTime.Now;
+		logger.Information("Import time" + endTime.Subtract(startTime).TotalMilliseconds);
 	}
 }

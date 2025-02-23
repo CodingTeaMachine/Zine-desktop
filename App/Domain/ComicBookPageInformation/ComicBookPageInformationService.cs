@@ -1,14 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
+using SharpCompress;
+using SharpCompress.Archives;
 using Zine.App.Database;
+using Zine.App.Domain.ComicBook;
 using Zine.App.Exceptions;
+using Zine.App.Helpers;
+using Zine.App.Logger;
 
 namespace Zine.App.Domain.ComicBookPageInformation;
 
 public class ComicBookPageInformationService(
 	ZineDbContext dbContext,
-	GenericRepository<ComicBookPageInformation> repository
-	) : IComicBookPageInformationService
+	GenericRepository<ComicBookPageInformation> repository) : IComicBookPageInformationService
 {
 	public IEnumerable<ComicBookPageInformation> CreateMany(string comicBookPathOnDisk, int comicBookId)
 	{
@@ -24,7 +28,66 @@ public class ComicBookPageInformationService(
 		{
 			throw new HandledAppException("Failed to create comic book page informations", Severity.Error, e);
 		}
-
 	}
 
+	public void CheckPageTypes(ComicBook.ComicBook comicBook)
+	{
+		var pageInfoHelper = new PageInfoHelper(comicBook.Pages);
+
+		var comicBookFile = ArchiveFactory.Open(comicBook.FileUri);
+		var coverPage = pageInfoHelper.GetCover();
+		var coverImage = pageInfoHelper.GetFileFromArchiveByPage(comicBookFile, coverPage.PageFileName);
+
+		float coverAspectRatio = Image.GetAspectRatio(coverImage);
+		double minAspectRatio = coverAspectRatio * 0.7;
+
+
+		var pageNumber = 1;
+
+		if (pageInfoHelper.GetCoverInside() != null)
+			pageNumber++;
+
+		foreach (var page in pageInfoHelper.GetPages())
+		{
+			if(page.IsWidthChecked)
+				continue;
+
+			var pageAsArchiveEntry = pageInfoHelper.GetFileFromArchiveByPage(comicBookFile, page.PageFileName);
+			var isDoubleImage = IsDoubleImage(pageAsArchiveEntry, minAspectRatio);
+
+			page.PageType = isDoubleImage ? PageType.Double : PageType.Single;
+			page.PageNumberStart = pageNumber;
+
+			pageNumber += isDoubleImage ? 2 : 1;
+
+			page.IsWidthChecked = true;
+
+			repository.Update(page);
+		}
+
+		var backCoverInsideImage = pageInfoHelper.GetBackCoverInside();
+		if (backCoverInsideImage != null && backCoverInsideImage.PageNumberStart != pageNumber)
+		{
+			pageNumber += 1;
+			backCoverInsideImage.PageNumberStart = pageNumber;
+
+			repository.Update(backCoverInsideImage);
+		}
+
+		var backCoverImage = pageInfoHelper.GetBackCover();
+		if (backCoverImage != null && backCoverImage.PageNumberStart != pageNumber)
+		{
+			pageNumber += 1;
+			backCoverImage.PageNumberStart = pageNumber;
+			repository.Update(backCoverImage);
+		}
+
+		dbContext.SaveChanges();
+		comicBookFile.Dispose();
+	}
+
+	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
+	{
+		return Image.GetAspectRatio(page) <= minAspectRatio;
+	}
 }

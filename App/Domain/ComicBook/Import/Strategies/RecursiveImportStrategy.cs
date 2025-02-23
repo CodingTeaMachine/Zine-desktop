@@ -17,7 +17,7 @@ public class RecursiveImportStrategy(ImportUnitOfWork unitOfWork) : AImportStrat
 			{
 				try
 				{
-					ImportProcess(filePath, groupId);
+					ImportComicBook(filePath, groupId);
 				}
 				catch (Exception)
 				{

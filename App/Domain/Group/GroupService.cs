@@ -4,9 +4,7 @@ using MudBlazor;
 using SharpCompress;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
-using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Exceptions;
-using Zine.App.FileHelpers;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.Group;
@@ -55,10 +53,6 @@ public class GroupService(
 			if (loadedGroup == null)
 				throw new HandledAppException("Group not found", Severity.Warning);
 
-			loadedGroup.ChildGroups = loadedGroup.ChildGroups
-				.Select(LoadCoverImagesForComicBooksInGroupCover)
-				.ToList();
-
 			return loadedGroup;
 		}
 		catch (DataException e)
@@ -97,24 +91,6 @@ public class GroupService(
 		{
 			throw new HandledAppException("Error loading groups", Severity.Error, e);
 		}
-	}
-
-	private Group LoadCoverImagesForComicBooksInGroupCover(Group g)
-	{
-		g.ComicBooks = g.ComicBooks.Take(4).ToList();
-
-		//Check if the cover image exists, and if not, regenerate it.
-		foreach (var cb in g.ComicBooks)
-		{
-			if (File.Exists(cb.Information.SavedCoverImageFullPath))
-				continue;
-
-			logger.Information($"GroupService.LoadCoverImagesForComicBooksInGroupCover: Regenerating cover image for: \"{cb.Title}\"");
-			var coverImage = cb.Pages.First(page => page.PageType == PageType.Cover);
-			new ComicBookImageHandler().SaveThumbnailToDisc(coverImage.PageFileName, cb.FileUri, cb.Id.ToString());
-		}
-
-		return g;
 	}
 
 

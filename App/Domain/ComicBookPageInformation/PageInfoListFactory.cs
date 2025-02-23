@@ -29,6 +29,7 @@ public static class PageInfoListFactory
 			PageType = PageType.Cover,
 			PageNumberStart = pageNumber++,
 			ComicBookId = comicBookId,
+			IsWidthChecked = true
 		});
 
 		//Create the inside of the cover image
@@ -41,6 +42,7 @@ public static class PageInfoListFactory
 				PageType = PageType.CoverInside,
 				PageNumberStart = pageNumber++,
 				ComicBookId = comicBookId,
+				IsWidthChecked = true
 			});
 		}
 
@@ -65,23 +67,16 @@ public static class PageInfoListFactory
 			}
 		);
 
-		float coverAspectRatio = Image.GetAspectRatio(coverKvp.Value);
-		double minAspectRatio = coverAspectRatio * 0.7;
-
-		insidePages.ForEach(page =>
+		pageInfoList.AddRange(insidePages.Select(page => new ComicBookPageInformation
 		{
-			var isDoubleImage = IsDoubleImage(page, minAspectRatio);
-
-			pageInfoList.Add(new ComicBookPageInformation()
-			{
-				PageFileName = Path.GetFileName(page.Key!),
-				PageType = isDoubleImage ? PageType.Double : PageType.Single,
-				PageNumberStart = pageNumber,
-				ComicBookId = comicBookId,
-			});
-
-			pageNumber += isDoubleImage ? 2 : 1;
-		});
+			PageFileName = Path.GetFileName(page.Key!),
+			// Calculating weather the image is double with takes a lot of time (approx 29x longer)
+			// so it is only calculated when the comic is first opened
+			PageType = PageType.Single,
+			PageNumberStart = pageNumber++,
+			ComicBookId = comicBookId,
+			IsWidthChecked = false
+		}));
 
 		//Add the back cover, and it's inside to the end of it all
 		if (backCover.HasValue)
@@ -94,6 +89,7 @@ public static class PageInfoListFactory
 					PageType = PageType.BackCoverInside,
 					PageNumberStart = pageNumber++,
 					ComicBookId = comicBookId,
+					IsWidthChecked = true
 				});
 			}
 
@@ -103,6 +99,7 @@ public static class PageInfoListFactory
 				PageType = PageType.BackCover,
 				PageNumberStart = pageNumber++,
 				ComicBookId = comicBookId,
+				IsWidthChecked = true
 			});
 		}
 
@@ -184,10 +181,5 @@ public static class PageInfoListFactory
 			)
 			.Select(page => Path.GetFileName(page.Key!))
 			.FirstOrDefault();
-	}
-
-	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
-	{
-		return Image.GetAspectRatio(page) <= minAspectRatio;
 	}
 }

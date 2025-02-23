@@ -8,6 +8,6 @@ public class SingleFileImportStrategy(ImportUnitOfWork unitOfWork) : AImportStra
 	public override void Import(string comicBookPathOnDisk, int groupId)
 	{
 		_unitOfWork.Logger.Information($"SingleFileImportStrategy.Import: Importing comic book {comicBookPathOnDisk}");
-		ImportProcess(comicBookPathOnDisk, groupId);
+		ImportComicBook(comicBookPathOnDisk, groupId);
 	}
 }

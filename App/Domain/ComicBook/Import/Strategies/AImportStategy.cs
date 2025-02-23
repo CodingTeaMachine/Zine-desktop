@@ -7,13 +7,14 @@ public abstract class AImportStrategy(ImportUnitOfWork unitOfWork)
 {
 	public abstract void Import(string comicBookPathOnDisk, int groupId);
 
-	protected void ImportProcess(string comicBookPathOnDisk, int groupId)
+	protected void ImportComicBook(string comicBookPathOnDisk, int groupId)
 	{
 		if (!CompressionFormatFactory.IsSupportedFormat(comicBookPathOnDisk))
 		{
 			throw new FormatException("Unsupported compression format");
 		}
 
+		unitOfWork.Logger.Information($"AImportStrategy.ImportComicBook: Importing comic book {Path.GetFileNameWithoutExtension(comicBookPathOnDisk)}");
 		using var transaction = unitOfWork.Context.Database.BeginTransaction();
 
 		try

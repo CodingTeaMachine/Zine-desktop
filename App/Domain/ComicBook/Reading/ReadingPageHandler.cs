@@ -148,7 +148,7 @@ public class ReadingPageHandler
 
 	private void LoadComic(int comicBookId)
 	{
-		var loadedComicBook = _comicBookService.GetWithPages(comicBookId);
+		var loadedComicBook = _comicBookService.GetForReadingView(comicBookId);
 
 		if(loadedComicBook == null)
 			throw new DataException("Comic book not found");

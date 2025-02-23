@@ -54,7 +54,8 @@ public static class Image
 
 	public static bool IsSupported(string imageName)
 	{
-		return DotExtensions.Any(extension => extension == Path.GetExtension(imageName));
+		//TODO: Refacor like the compression format ones, to check bytes
+		return DotExtensions.Any(extension => extension == Path.GetExtension(imageName).ToLower());
 	}
 
 	public static ImageDimensions GetDimensions(IArchiveEntry entry)
@@ -78,13 +79,14 @@ public static class Image
 	private static SKBitmap GetImageBitmapFromArchiveEntry(IArchiveEntry entry)
 	{
 		using var entryStream = entry.OpenEntryStream();
+		var originalImage = SKBitmap.Decode(entryStream);
 
-		using var memoryStream = new MemoryStream();
-		entryStream.CopyTo(memoryStream);
-		memoryStream.Position = 0;
-		var imageBytes = memoryStream.ToArray();
-
-		var originalImage = SKBitmap.Decode(imageBytes);
+		// using var memoryStream = new MemoryStream();
+		// entryStream.CopyTo(memoryStream);
+		// memoryStream.Position = 0;
+		// var imageBytes = memoryStream.ToArray();
+		//
+		// var originalImage = SKBitmap.Decode(imageBytes);
 
 		if (originalImage == null)
 		{
@@ -92,6 +94,5 @@ public static class Image
 		}
 
 		return originalImage;
-
 	}
 }

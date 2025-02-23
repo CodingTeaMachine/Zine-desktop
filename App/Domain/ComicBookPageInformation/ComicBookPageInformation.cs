@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -13,14 +14,17 @@ public class ComicBookPageInformation
 	public required string PageFileName { get; init; }
 
 	[Required]
-	public PageType PageType { get; init; }
+	public PageType PageType { get; set; }
 
 	[Required]
 	public int ComicBookId { get; init; }
 	public ComicBook.ComicBook ComicBook { get; init; } = null!;
 
 	[Required]
-	public int PageNumberStart { get; init; }
+	public int PageNumberStart { get; set; }
+
+	[DefaultValue(false)]
+	public bool IsWidthChecked { get; set; }
 
 	[NotMapped]
 	public int PageNumberEnd =>

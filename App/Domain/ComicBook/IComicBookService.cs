@@ -9,7 +9,7 @@ public interface IComicBookService
     public ComicBook Create(string title, string fileUri, int groupId);
     public ComicBook? GetById(int comicId);
     public string GetComicBookCoverFromDisc(int comicBookId);
-    public ComicBook? GetWithPages(int comicId);
+    public ComicBook? GetForReadingView(int comicId);
     public void AddToGroup(int groupId, int comicBookId);
     public void MoveAll(int currentGroupId, int newGroupId);
     public void Rename(int comicBookId, string newTitle);

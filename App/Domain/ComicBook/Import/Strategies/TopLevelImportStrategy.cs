@@ -18,7 +18,7 @@ public class TopLevelImportStrategy(ImportUnitOfWork unitOfWork) : AImportStrate
 			{
 				try
 				{
-					ImportProcess(filePath, groupId);
+					ImportComicBook(filePath, groupId);
 				}
 				catch (FormatException)
 				{
