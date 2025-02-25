@@ -1,11 +1,14 @@
+using Zine.App.Domain.ComicBook.Import.Events;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Helpers.Compression;
 
 namespace Zine.App.Domain.ComicBook.Import.Strategies;
 
-public abstract class AImportStrategy(ImportUnitOfWork unitOfWork)
+public abstract class AImportStrategy(ImportUnitOfWork unitOfWork, ImportEventService importEventService)
 {
 	public abstract void Import(string comicBookPathOnDisk, int groupId);
+
+	public abstract int GetNumberOfImports(string directoryPath);
 
 	protected void ImportComicBook(string comicBookPathOnDisk, int groupId)
 	{
@@ -31,6 +34,9 @@ public abstract class AImportStrategy(ImportUnitOfWork unitOfWork)
 			unitOfWork.ComicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id, coverImage);
 
 			transaction.Commit();
+
+			//Send the notification to the UI
+			importEventService.NotifyImport();
 		}
 		catch (Exception e)
 		{

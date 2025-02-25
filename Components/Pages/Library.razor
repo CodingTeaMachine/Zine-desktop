@@ -23,7 +23,6 @@
 	<p class="pt-0.5">Back</p>
 </MudLink>
 
-
 @* Action row with import, create directory and search *@
 <div class="grid grid-cols-3 items-center mb-4 mx-5">
 
@@ -174,16 +173,26 @@
 		ReloadDropzone();
 	}
 
-	private void Import(ImportAction action)
+	private async Task Import(ImportAction action)
 	{
+		var dialogOptions = new DialogOptions
+		{
+			CloseOnEscapeKey = false,
+			BackdropClick = false,
+			CloseButton = false
+		};
+		var dialog = await DialogService.ShowAsync<ImportProgressDialog>("", dialogOptions);
+
 		try
 		{
 			ComicBookImportService!.ImportFromDisk(action, GroupId);
+			dialog.Close();
 			Snackbar.Add("Successfully imported comic books.", Severity.Success);
 			LoadCurrentGroup();
 		}
-		catch (Exception e) when (e is ArgumentOutOfRangeException or FormatException)
+		catch (Exception e) when (e is ArgumentOutOfRangeException or FormatException or DirectoryNotFoundException)
 		{
+			dialog.Close();
 			Snackbar.Add(e.Message, Severity.Error);
 		}
 	}

@@ -6,6 +6,7 @@ using MudBlazor.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBook.Import;
+using Zine.App.Domain.ComicBook.Import.Events;
 using Zine.App.Domain.ComicBook.Import.Strategies;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
@@ -45,10 +46,11 @@ builder.Services.AddScoped<IGroupService, GroupService>();
 
 //Importing comic books
 builder.Services.AddScoped<ImportUnitOfWork>();
+builder.Services.AddSingleton<ImportEventService>();
 
 builder.Services.AddScoped<SingleFileImportStrategy>();
 builder.Services.AddScoped<TopLevelImportStrategy>();
-builder.Services.AddScoped<RecursiveImportStrategy>();
+builder.Services.AddScoped<IncludeSubdirectoriesImportStrategy>();
 builder.Services.AddScoped<KeepStructureImportStrategy>();
 builder.Services.AddScoped<ImportStrategyFactory>();
 

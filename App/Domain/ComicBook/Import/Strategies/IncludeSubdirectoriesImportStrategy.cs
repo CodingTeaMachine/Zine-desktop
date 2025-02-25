@@ -1,18 +1,26 @@
 using System.Data;
 using SharpCompress;
+using Zine.App.Domain.ComicBook.Import.Events;
 
 namespace Zine.App.Domain.ComicBook.Import.Strategies;
 
-public class RecursiveImportStrategy(ImportUnitOfWork unitOfWork) : AImportStrategy(unitOfWork)
+public class IncludeSubdirectoriesImportStrategy(ImportUnitOfWork unitOfWork, ImportEventService eventService) : AImportStrategy(unitOfWork, eventService)
 {
 	private readonly ImportUnitOfWork _unitOfWork = unitOfWork;
+
+	public override int GetNumberOfImports(string directoryPath)
+	{
+		_unitOfWork.Logger.Information($"RecursiveImportStrategy.GetNumberOfComicBooks: Getting number of comic books to import {directoryPath}");
+
+		return GetComicBookPaths(directoryPath).Count();
+	}
 
 	public override void Import(string comicBookPathOnDisk, int groupId)
 	{
 		_unitOfWork.Logger.Information($"RecursiveImportStrategy.Import: Importing comic book {comicBookPathOnDisk}");
 		var importErrorList = new List<string>();
 
-		Directory.EnumerateFiles(comicBookPathOnDisk, "*.cb?", SearchOption.AllDirectories)
+		GetComicBookPaths(comicBookPathOnDisk)
 			.ForEach(filePath =>
 			{
 				try
@@ -27,5 +35,10 @@ public class RecursiveImportStrategy(ImportUnitOfWork unitOfWork) : AImportStrat
 
 		if (importErrorList.Count != 0)
 			throw new DataException("Error importing the following comic books: " + string.Join(", ", importErrorList));
+	}
+
+	private IEnumerable<string> GetComicBookPaths(string directoryPath)
+	{
+		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.AllDirectories);
 	}
 }

@@ -1,5 +1,5 @@
 using MudBlazor;
-using Zine.App.Enums;
+using Zine.App.Domain.ComicBook.Import.Events;
 using Zine.App.Exceptions;
 using Zine.App.Logger;
 
@@ -7,6 +7,7 @@ namespace Zine.App.Domain.ComicBook.Import;
 
 public class ComicBookImportService(
 	ImportStrategyFactory importStrategyFactory,
+	ImportEventService eventService,
 	ILoggerService logger) : IComicBookImportService
 {
 	/// <summary>
@@ -16,10 +17,13 @@ public class ComicBookImportService(
 	/// <param name="groupId"></param>
 	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <exception cref="FormatException"></exception>
+	/// <exception cref="DirectoryNotFoundException"></exception>
 	/// TODO: Handle exceptions in a nicer way
 	public void ImportFromDisk(ImportAction action, int groupId)
 	{
-		var startTime = DateTime.Now;
+
+		if(!Directory.Exists(action.FilePath))
+			throw new DirectoryNotFoundException("Directory or file doesn't exist: " + action.FilePath);
 
 		var strategy =
 			importStrategyFactory.GetStrategy(action.Type, action.IsRecursiveImport, action.KeepFoldersAsGroups);
@@ -27,9 +31,11 @@ public class ComicBookImportService(
 		if(strategy == null)
 			throw new HandledAppException("Cannot determine import strategy", Severity.Error);
 
-		new ImportContext(strategy).Execute(action.FilePath, groupId);
+		var context = new ImportContext(strategy);
 
-		var endTime = DateTime.Now;
-		logger.Information("Import time" + endTime.Subtract(startTime).TotalMilliseconds);
+		var numberOfImports = context.GetNumberOfImports(action.FilePath);
+		eventService.NotifyTotalCountSet(numberOfImports);
+
+		context.Execute(action.FilePath, groupId);
 	}
 }

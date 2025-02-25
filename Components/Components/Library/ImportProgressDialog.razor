@@ -1,0 +1,60 @@
+@inject ImportEventService ImportEventService
+
+@using Zine.App.Domain.ComicBook.Import.Events
+
+@implements IDisposable
+
+<MudDialog>
+	<TitleContent>
+		Importing in Progress
+	</TitleContent>
+	<DialogContent>
+		<div class="flex flex-col gap-2 items-center align-middle w-fit mx-auto">
+			<MudProgressCircular Color="Color.Primary" Value="@_progressInPercent" Rounded="true"/>
+			<div>
+				<span>@_processedImports</span> / <span>@_totalImports</span>
+			</div>
+		</div>
+	</DialogContent>
+</MudDialog>
+
+@code {
+
+	[CascadingParameter]
+	private IMudDialogInstance DialogInstance { get; set; } = null!;
+
+	private int _totalImports = 0;
+	private int _processedImports = 0;
+	private int _progressInPercent = 0;
+
+	protected override void OnInitialized()
+	{
+		ImportEventService.OnTotalCountSet += HandleTotalCountSet;
+		ImportEventService.OnImport += HandleImportCountIncrease;
+	}
+
+	private void HandleTotalCountSet(object? sender, int totalCount)
+	{
+		_totalImports = totalCount;
+		StateHasChanged();
+	}
+
+	private void HandleImportCountIncrease()
+	{
+		_processedImports++;
+
+		var actualPercentage = (double)_processedImports / _totalImports * 100;
+
+		_progressInPercent = (int)Math.Round(actualPercentage);
+
+		StateHasChanged();
+		Console.WriteLine("Update");
+	}
+
+	public void Dispose()
+	{
+		ImportEventService.OnTotalCountSet -= HandleTotalCountSet;
+		ImportEventService.OnImport -= HandleImportCountIncrease;
+	}
+
+}

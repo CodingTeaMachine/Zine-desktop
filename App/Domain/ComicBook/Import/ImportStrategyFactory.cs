@@ -15,7 +15,7 @@ public class ImportStrategyFactory(IServiceProvider serviceProvider)
 			return serviceProvider.GetService<KeepStructureImportStrategy>();
 
 		if(isRecursiveImport)
-			return serviceProvider.GetService<RecursiveImportStrategy>();
+			return serviceProvider.GetService<IncludeSubdirectoriesImportStrategy>();
 
 		return serviceProvider.GetService<TopLevelImportStrategy>();
 	}

@@ -8,4 +8,9 @@ public class ImportContext(AImportStrategy strategy)
 	{
 		strategy.Import(pathOnDisc, groupId);
 	}
+
+	public int GetNumberOfImports(string pathOnDisc)
+	{
+		return strategy.GetNumberOfImports(pathOnDisc);
+	}
 }

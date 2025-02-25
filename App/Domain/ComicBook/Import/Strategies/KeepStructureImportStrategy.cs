@@ -1,13 +1,23 @@
 using System.Data;
 using SharpCompress;
+using Zine.App.Domain.ComicBook.Import.Events;
 
 namespace Zine.App.Domain.ComicBook.Import.Strategies;
 
-public class KeepStructureImportStrategy(ImportUnitOfWork unitOfWork) : AImportStrategy(unitOfWork)
+public class KeepStructureImportStrategy(ImportUnitOfWork unitOfWork, ImportEventService importEventService) : AImportStrategy(unitOfWork, importEventService)
 {
 	private readonly ImportUnitOfWork _unitOfWork = unitOfWork;
 	
 	private readonly List<string> _importErrorFiles = [];
+
+	public override int GetNumberOfImports(string directoryPath)
+	{
+		_unitOfWork.Logger.Information($"KeepStructureImportStrategy.GetNumberOfComicBooks: Getting number of comic books to import {directoryPath}");
+
+		return GetComicBookPaths(directoryPath).Count();
+
+	}
+
 
 	public override void Import(string comicBookPathOnDisk, int groupId)
 	{
@@ -47,5 +57,10 @@ public class KeepStructureImportStrategy(ImportUnitOfWork unitOfWork) : AImportS
 					_importErrorFiles.Add(Path.GetFileNameWithoutExtension(filePath));
 				}
 			});
+	}
+
+	private IEnumerable<string> GetComicBookPaths(string directoryPath)
+	{
+		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.AllDirectories);
 	}
 }
