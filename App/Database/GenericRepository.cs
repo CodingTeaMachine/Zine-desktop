@@ -12,19 +12,23 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 	public IEnumerable<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null)
+		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null,
+		int? skip = null,
+		int? take = null)
 	{
 		IQueryable<TEntity> query = _dbSet;
 
 		if (filter != null)
-		{
 			query = query.Where(filter);
-		}
+
+		if(skip != null)
+			query = query.Skip(skip.Value);
+
+		if(take != null)
+			query = query.Take(take.Value);
 
 		if (includes != null)
-		{
 			query = includes(query);
-		}
 
 		return orderBy != null
 			? orderBy(query).ToList()

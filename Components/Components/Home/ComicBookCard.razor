@@ -1,0 +1,49 @@
+@using Zine.App
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Helpers
+
+@inject IComicBookService ComicBookService
+
+
+<a href="@ReadingPageLink" class="block md:w-60 w-44 hover:cursor-pointer">
+	@if (!ComicBook.Information.FileMovedOrDeleted)
+	{
+		<div class="relative">
+			<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true" />
+
+			@if (_openingComicBookForReading)
+			{
+				<div class="absolute inset-0 w-full h-full rounded-lg bg-light/95 flex items-center justify-center">
+					<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+				</div>
+			}
+
+		</div>
+	}
+	else
+	{
+		<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
+			<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
+			Moved / Deleted
+		</MudPaper>
+	}
+
+	<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title</p>
+</a>
+
+@code {
+
+	[Parameter]
+	public required ComicBook ComicBook { get; set; }
+
+	string ReadingPageLink => PageManager.GetReadingPageLink(ComicBook.Id, AppConstants.MainGroupId);
+
+	bool _openingComicBookForReading = false;
+
+	string GetCoverImage()
+	{
+		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");
+		;
+	}
+
+}

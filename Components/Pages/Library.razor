@@ -4,7 +4,6 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Import
 @using Zine.App.Domain.Group
-@using Zine.App.Enums
 @using Zine.App.Exceptions
 @using Zine.App.Helpers
 @using Zine.Assets.Icons
@@ -334,7 +333,7 @@
 
 	private string GetComicBookLink(int comicBookId)
 	{
-		return PageManager.GetLibraryComicBookLink(comicBookId, GroupId);
+		return PageManager.GetReadingPageLink(comicBookId, GroupId);
 	}
 
 	protected override void OnInitialized()

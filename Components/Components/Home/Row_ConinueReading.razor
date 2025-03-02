@@ -1,0 +1,31 @@
+@using Zine.App.Domain.ComicBook
+
+@inject IComicBookService ComicBookService
+
+<div>
+	<h2 class="row-title">Continue reading</h2>
+
+	<div>
+		@if (_currentlyReadComicBook != null)
+		{
+			<ComicBookCard ComicBook="_currentlyReadComicBook"/>
+		}
+	</div>
+
+</div>
+
+
+@code {
+	ComicBook? _currentlyReadComicBook;
+
+	private void LoadCurrentlyReadComicBook()
+	{
+		_currentlyReadComicBook = ComicBookService.GetCurrentlyReadComicBooks(1).FirstOrDefault();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		LoadCurrentlyReadComicBook();
+	}
+}

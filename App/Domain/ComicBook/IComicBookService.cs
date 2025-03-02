@@ -8,6 +8,8 @@ public interface IComicBookService
 
     public ComicBook Create(string title, string fileUri, int groupId);
     public ComicBook? GetById(int comicId);
+    public IEnumerable<ComicBook> GetCurrentlyReadComicBooks(int count);
+    public IEnumerable<ComicBook> GetRecommendations();
     public string GetComicBookCoverFromDisc(int comicBookId);
     public ComicBook? GetForReadingView(int comicId);
     public void AddToGroup(int groupId, int comicBookId);

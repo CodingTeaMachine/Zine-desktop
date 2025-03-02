@@ -36,6 +36,7 @@
   
   <ItemGroup>
     <None Include="wwwroot\512x512.png" />
+    <None Include="wwwroot\css\pages\Home.css" />
     <None Include="wwwroot\Fonts\Roboto\*" />
   </ItemGroup>
   

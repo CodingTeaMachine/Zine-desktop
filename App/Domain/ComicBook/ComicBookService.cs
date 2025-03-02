@@ -67,6 +67,21 @@ public class ComicBookService(
 		return repository.GetById(comicId);
 	}
 
+	public IEnumerable<ComicBook> GetCurrentlyReadComicBooks(int count)
+	{
+		return repository.List(
+			includes: q => q.Include(cb => cb.Information),
+			take: count);
+	}
+
+	public IEnumerable<ComicBook> GetRecommendations()
+	{
+		return repository.List(
+			includes: q => q.Include(cb => cb.Information),
+			take: 8
+			);
+	}
+
 	public ComicBook? GetForReadingView(int comicId)
 	{
 		var comicBook = repository.First(
