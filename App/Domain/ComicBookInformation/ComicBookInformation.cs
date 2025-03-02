@@ -20,7 +20,9 @@ public class ComicBookInformation
 	[Required]
 	[MaxLength(25)]
 	public string SavedCoverImageFileName { get; init; } = null!;
-	
+
+	public DateTime? LastOpened { get; set; }
+
 	[NotMapped]
 	public string SavedCoverImageFullPath => Path.Join(DataPath.ComicBookCoverDirectory, SavedCoverImageFileName);
 

@@ -5,12 +5,14 @@
 @implements IDisposable
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Domain.ComicBookInformation
 @using Zine.App.Domain.ComicBookPageInformation
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
 
 @inject NavigationManager NavigationManager;
 @inject IComicBookService ComicBookService
+@inject IComicBookInformationService ComicBookInformationService
 @inject IJSRuntime JsRuntime;
 
 <script src="js/Reading.js"></script>
@@ -157,11 +159,12 @@
 		}
 	}
 
-	void InitReadingPageHandler(IComicBookService comicBookService)
+	void InitReadingPageHandler()
 	{
 		_readingPageHandler = new ReadingPageHandler(
 			NavigationManager,
-			comicBookService,
+			ComicBookService,
+			ComicBookInformationService,
 			JsRuntime,
 			CanvasId,
 			GroupId,
@@ -172,7 +175,7 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		InitReadingPageHandler(ComicBookService);
+		InitReadingPageHandler();
 	}
 
 

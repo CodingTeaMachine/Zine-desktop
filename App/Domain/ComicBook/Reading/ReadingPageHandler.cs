@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
@@ -12,6 +13,7 @@ public class ReadingPageHandler
 	public ReadingPageHandler(
 		NavigationManager navigationManager,
 		IComicBookService comicBookService,
+		IComicBookInformationService comicBookInformationService,
 		IJSRuntime jsRuntime,
 		string canvasId,
 		int groupId,
@@ -26,6 +28,7 @@ public class ReadingPageHandler
 		try
 		{
 			LoadComic(comicBookId);
+			comicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
 		}
 		catch (DataException)
 		{

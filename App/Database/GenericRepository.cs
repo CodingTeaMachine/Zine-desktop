@@ -9,9 +9,12 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 {
 	private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
+	public int Count() => _dbSet.Count();
+
 	public IEnumerable<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,
-		Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+		Expression<Func<TEntity, object>>? orderBy = null,
+		Expression<Func<TEntity, object>>? orderByDescending = null,
 		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null,
 		int? skip = null,
 		int? take = null)
@@ -30,9 +33,13 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 		if (includes != null)
 			query = includes(query);
 
-		return orderBy != null
-			? orderBy(query).ToList()
-			: query.ToList();
+		if(orderBy != null)
+			query = query.OrderBy(orderBy);
+
+		if(orderByDescending != null)
+			query = query.OrderByDescending(orderByDescending);
+
+		return query.ToList();
 	}
 
 	public TEntity? First(

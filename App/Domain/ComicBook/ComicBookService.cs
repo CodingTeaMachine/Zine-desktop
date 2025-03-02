@@ -71,14 +71,23 @@ public class ComicBookService(
 	{
 		return repository.List(
 			includes: q => q.Include(cb => cb.Information),
+			filter: cb => cb.Information.LastOpened != null,
+			orderByDescending: cb => cb.Information.LastOpened ?? DateTime.MinValue,
 			take: count);
 	}
 
 	public IEnumerable<ComicBook> GetRecommendations()
 	{
+		const int recommendationCount = 8;
+		var totalCount = repository.Count();
+
+		var randomIndex = new Random().Next(0, totalCount - recommendationCount + 1);
+
 		return repository.List(
+			filter: cb => cb.Information.LastOpened == null,
 			includes: q => q.Include(cb => cb.Information),
-			take: 8
+			skip: randomIndex,
+			take: recommendationCount
 			);
 	}
 
@@ -86,7 +95,9 @@ public class ComicBookService(
 	{
 		var comicBook = repository.First(
 			filter: c => c.Id == comicId,
-			includes: query => query.Include(c => c.Pages));
+			includes: query =>
+				query.Include(c => c.Pages)
+					 .Include(q => q.Information));
 
 		if(comicBook == null)
 			throw new HandledAppException("Could not find comic book", Severity.Error, "Could not find comic book: " + comicId);
