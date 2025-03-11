@@ -26,6 +26,9 @@ public class ComicBookPageInformation
 	[DefaultValue(false)]
 	public bool IsWidthChecked { get; set; }
 
+	[DefaultValue(false)]
+	public bool IsRead { get; set; }
+
 	[NotMapped]
 	public int PageNumberEnd =>
 		PageType == PageType.Double

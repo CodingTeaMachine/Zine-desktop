@@ -13,6 +13,7 @@
 @inject NavigationManager NavigationManager;
 @inject IComicBookService ComicBookService
 @inject IComicBookInformationService ComicBookInformationService
+@inject IComicBookPageInformationService ComicBookPageInformationService
 @inject IJSRuntime JsRuntime;
 
 <script src="js/Reading.js"></script>
@@ -161,15 +162,23 @@
 
 	void InitReadingPageHandler()
 	{
-		_readingPageHandler = new ReadingPageHandler(
-			NavigationManager,
-			ComicBookService,
-			ComicBookInformationService,
-			JsRuntime,
-			CanvasId,
-			GroupId,
-			ComicBookId,
-			StateHasChanged);
+		var handlerParams = new ReadingPageHandlerParams
+		{
+			NavigationManager = NavigationManager,
+			JsRuntime = JsRuntime,
+			UiUpdateHandler = StateHasChanged,
+
+			ComicBookService = ComicBookService,
+			ComicBookInformationService = ComicBookInformationService,
+			ComicBookPageInformationService = ComicBookPageInformationService,
+
+			CanvasId = CanvasId,
+			GroupId = GroupId,
+			ComicBookId = ComicBookId,
+		};
+
+
+		_readingPageHandler = new ReadingPageHandler(handlerParams);
 	}
 
 	protected override void OnInitialized()

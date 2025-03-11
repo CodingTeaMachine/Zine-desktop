@@ -2,6 +2,7 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Exceptions
+@using Zine.Components.Components.General
 
 @inject IJSRuntime JsRuntime
 @inject IDialogService DialogService
@@ -15,24 +16,39 @@
 			<div class="overlay hidden absolute inset-0 bg-white opacity-15 w-[107%] -left-[3.5%] h-[103.8%] -top-[2%] rounded-2xl"></div>
 
 			<div class="md:w-60 w-44 hover:cursor-pointer">
-				@if (!ComicBook.Information.FileMovedOrDeleted)
+				@if (ComicBook.Information.FileMovedOrDeleted)
+				{
+
+					<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
+						<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
+						Moved / Deleted
+					</MudPaper>
+				}
+				else
 				{
 					<div class="relative">
-						<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true"/>
+
+						<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true" />
+
+						@if (ComicBook.ReadPercentage == 100)
+						{
+							<div class="absolute top-0 right-0">
+								<CheckMarkTriangle />
+							</div>
+						}
+
 						@if (_openingComicBookForReading)
 						{
 							<div class="absolute inset-0 w-full h-full rounded-lg bg-light/95 flex items-center justify-center">
 								<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
 							</div>
 						}
+
+						<div class="absolute w-full bottom-0">
+							<MudProgressLinear Color="Color.Primary" Value="@ComicBook.ReadPercentage" />
+						</div>
+
 					</div>
-				}
-				else
-				{
-					<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
-						<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
-						Moved / Deleted
-					</MudPaper>
 				}
 
 				@if (_renaming)

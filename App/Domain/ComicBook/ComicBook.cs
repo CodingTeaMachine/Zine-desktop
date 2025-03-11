@@ -30,4 +30,14 @@ public class ComicBook
 	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
 
 	public ICollection<ComicBookPageInformation.ComicBookPageInformation> Pages { get; init; } = null!;
+
+	[NotMapped]
+	public int ReadPercentage
+	{
+		get {
+			var readPages = Pages.Count(p => p.IsRead);
+			var readPageRatio = readPages / (double)Pages.Count;
+			return (int)Math.Round(readPageRatio * 100, 0);
+		}
+	}
 }

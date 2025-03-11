@@ -1,7 +1,5 @@
 using System.Data;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
@@ -10,31 +8,26 @@ namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
-	public ReadingPageHandler(
-		NavigationManager navigationManager,
-		IComicBookService comicBookService,
-		IComicBookInformationService comicBookInformationService,
-		IJSRuntime jsRuntime,
-		string canvasId,
-		int groupId,
-		int comicBookId,
-		Action uiUpdateHandler)
+	public ReadingPageHandler(ReadingPageHandlerParams handlerParams)
 	{
-		_comicBookService = comicBookService;
-		_jsRuntime = jsRuntime;
-		_uiUpdateHandler = uiUpdateHandler;
-		_canvasHandler = new CanvasHandler(jsRuntime, canvasId);
+		_comicBookService = handlerParams.ComicBookService;
+		_comicBookPageInformationService = handlerParams.ComicBookPageInformationService;
+		_jsRuntime = handlerParams.JsRuntime;
+		_uiUpdateHandler = handlerParams.UiUpdateHandler;
+		_canvasHandler = new CanvasHandler(_jsRuntime, handlerParams.CanvasId);
 
 		try
 		{
-			LoadComic(comicBookId);
-			comicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
+			LoadComic(handlerParams.ComicBookId);
+			handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
 		}
 		catch (DataException)
 		{
-			navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
+			handlerParams.NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(handlerParams.GroupId));
 		}
 
+		_pages = ComicBook.Pages.ToArray();
+		MaxPageNumber = _pages.Last().PageNumberEnd;
 	}
 
 	private ComicBook ComicBook { get; set; } = null!;
@@ -43,19 +36,38 @@ public class ReadingPageHandler
 
 	private readonly IComicBookService _comicBookService;
 
+	private readonly IComicBookPageInformationService _comicBookPageInformationService;
+
 	private readonly CanvasHandler _canvasHandler;
 
 	private readonly IJSRuntime _jsRuntime;
 
 	private readonly Action _uiUpdateHandler;
 
-	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => ComicBook.Pages.ToList()[_currentPageIndex];
+	private readonly ComicBookPageInformation.ComicBookPageInformation[] _pages;
+	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => _pages[_currentPageIndex];
 
-	public int MaxPageNumber => ComicBook.Pages.ToList().Last().PageNumberEnd;
+	public readonly int MaxPageNumber;
+
+	// ReSharper disable once RedundantDefaultMemberInitializer
+	private int _currentPageIndex = 0;
+
+	public List<string> Images = [];
+
 
 	public int CurrentPageIndex
 	{
-		get => _currentPageIndex;
+		get
+		{
+
+			// Only update the page read status if navigating to the page for the first time
+			if (_pages[_currentPageIndex].IsRead == false)
+			{
+				_comicBookPageInformationService.UpdateReadStatus(_pages[_currentPageIndex].Id);
+			}
+
+			return _currentPageIndex;
+		}
 		private set
 		{
 			if (value == _currentPageIndex)
@@ -68,12 +80,6 @@ public class ReadingPageHandler
 			_ = UpdateZoomScale();
 		}
 	}
-
-	// ReSharper disable once RedundantDefaultMemberInitializer
-	private int _currentPageIndex = 0;
-
-	public List<string> Images = [];
-
 
 	public void GoToPage(int pageIndex)
 	{

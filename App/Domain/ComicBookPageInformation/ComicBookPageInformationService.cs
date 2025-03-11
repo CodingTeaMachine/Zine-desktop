@@ -86,6 +86,27 @@ public class ComicBookPageInformationService(
 		comicBookFile.Dispose();
 	}
 
+	public void UpdateReadStatus(int comicBookPageInformationId)
+	{
+		var pageToUpdate = repository.GetById(comicBookPageInformationId);
+
+		if(pageToUpdate == null)
+			throw new HandledAppException("Did not find comic book page information", Severity.Error, $"Could not find comic book page information by id: ${comicBookPageInformationId}");
+
+		pageToUpdate.IsRead = true;
+
+		try
+		{
+			repository.Update(pageToUpdate);
+			dbContext.SaveChanges();
+		}
+		catch (Exception e)
+		{
+			throw new HandledAppException("Failed to update comic book page information", Severity.Error, e);
+		}
+
+	}
+
 	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
 	{
 		return Image.GetAspectRatio(page) <= minAspectRatio;
