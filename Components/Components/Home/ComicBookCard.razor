@@ -4,9 +4,10 @@
 @using Zine.Components.Components.General
 
 @inject IComicBookService ComicBookService
+@inject NavigationManager NavigationManager
 
 
-<a href="@ReadingPageLink" class="block md:w-60 w-44 hover:cursor-pointer">
+<div @onclick="OpenComicBook" class="md:w-60 w-44 @(ComicBook.Information.FileMovedOrDeleted ? "cursor-default" : "cursor-pointer")">
 	@if (ComicBook.Information.FileMovedOrDeleted)
 	{
 		<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
@@ -42,7 +43,7 @@
 	}
 
 	<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title</p>
-</a>
+</div>
 
 @code {
 
@@ -56,7 +57,17 @@
 	string GetCoverImage()
 	{
 		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");
-		;
 	}
 
+	private void OpenComicBook()
+	{
+		if(!ComicBook.Information.FileMovedOrDeleted)
+			NavigationManager.NavigateTo(GetComicBookLink());
+	}
+
+
+	private string GetComicBookLink()
+	{
+		return PageManager.GetReadingPageLink(ComicBook.Id, ComicBook.GroupId);
+	}
 }

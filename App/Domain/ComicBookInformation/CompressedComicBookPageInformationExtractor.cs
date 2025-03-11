@@ -9,7 +9,7 @@ public class CompressedComicBookPageInformationExtractor
 	public static IArchiveEntry GetCoverImage(string filePath, string coverImageName)
 	{
 		IArchive comicBookFile = ArchiveFactory.Open(filePath);
-		IArchiveEntry coverImage = comicBookFile.Entries.First(cbFile => Path.GetFileName(cbFile.Key!) == coverImageName);
+		IArchiveEntry coverImage = comicBookFile.Entries.First(cbFile => cbFile.Key! == coverImageName);
 		return coverImage;
 	}
 

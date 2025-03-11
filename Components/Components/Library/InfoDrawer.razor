@@ -1,0 +1,128 @@
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Pages.Library
+
+@implements IDisposable
+
+@inject ReadingPageEventBus EventBus
+@inject IComicBookService ComicBookService
+@inject ISnackbar Snackbar
+
+<MudDrawer Open="Open" Anchor="Anchor.Right" Elevation="1" Variant="@DrawerVariant.Temporary" OpenChanged="HandleOpenStateChanged" Class="!w-fit">
+
+	<MudDrawerHeader>
+		<span class="w-full text-center text-xl text-white mt-5">Information</span>
+	</MudDrawerHeader>
+
+	@if (Open && ComicBook != null)
+	{
+		<MudDrawerContainer Class="p-5">
+			<table class="table-auto">
+				<tbody class="[&_th]:p-3 [&_th]:text-left [&_td]:p-3">
+
+				<tr>
+					<th>Title</th>
+					<td>@ComicBook.Title</td>
+				</tr>
+
+				<tr>
+					<th>Pages</th>
+					<td>@ComicBook.Pages.Count</td>
+				</tr>
+
+				<tr>
+					<th>Drawn by</th>
+					<td class="text-red-600"> TODO </td>
+				</tr>
+
+				<tr>
+					<th>Written by</th>
+					<td class="text-red-600"> TODO </td>
+				</tr>
+
+				<tr>
+					<th>Edited by</th>
+					<td class="text-red-600"> TODO </td>
+				</tr>
+
+				<tr>
+					<th>Published by</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Tags</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Series</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Issue #</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Release date</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				</tbody>
+			</table>
+		</MudDrawerContainer>
+	}
+</MudDrawer>
+
+@code {
+
+	public bool Open { get; set; }
+
+	private Action? _unsubscribe = null;
+
+	private ComicBook? ComicBook { get; set; }
+
+	private void OpenDrawer(int comicBookId)
+	{
+		Open = true;
+
+		LoadComic(comicBookId);
+
+		StateHasChanged();
+	}
+
+	private void HandleOpenStateChanged(bool isOpen)
+	{
+		if (!isOpen)
+			Open = false;
+	}
+
+	private void LoadComic(int comicBookId)
+	{
+		var comicBook = ComicBookService.GetForInformationDrawer(comicBookId);
+
+		if (comicBook == null)
+		{
+			Snackbar.Add("Could not find comic book", Severity.Error);
+			Open = false;
+		}
+		else
+			ComicBook = comicBook;
+	}
+
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+			_unsubscribe = EventBus.Subscribe<int>(EventName.OpenInfoDrawer, OpenDrawer);
+	}
+
+
+	public void Dispose()
+	{
+		_unsubscribe?.Invoke();
+		// ComicBook = null;
+	}
+
+}

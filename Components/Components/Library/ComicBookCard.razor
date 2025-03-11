@@ -2,23 +2,24 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Group
 @using Zine.App.Exceptions
+@using Zine.App.Pages.Library
 @using Zine.Components.Components.General
 
 @inject IJSRuntime JsRuntime
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject ReadingPageEventBus EventBus
 
 <MudMenu @ref="_menuRef" id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor Disabled="_renaming">
-	<ActivatorContent>
+	<ActivatorContent >
 		<MudItem Class="h-full">
 
 			@* Overlay when dargging *@
 			<div class="overlay hidden absolute inset-0 bg-white opacity-15 w-[107%] -left-[3.5%] h-[103.8%] -top-[2%] rounded-2xl"></div>
 
-			<div class="md:w-60 w-44 hover:cursor-pointer">
+			<div class="md:w-60 w-44" >
 				@if (ComicBook.Information.FileMovedOrDeleted)
 				{
-
 					<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
 						<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
 						Moved / Deleted
@@ -71,8 +72,11 @@
 	</ActivatorContent>
 
 	<ChildContent>
+		@* View / edit information *@
+		<MudMenuItem Icon="@Icons.Material.Outlined.Info" Disabled="IsComicMovedOrDeleted" OnClick="OpenInfoDrawer"> Info </MudMenuItem>
+
 		@* Rename comic book *@
-		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Disabled="IsComicMovedOrDeleted" OnClick="StartRenamingComicBook">Rename</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Disabled="IsComicMovedOrDeleted" OnClick="StartRenamingComicBook"> Rename </MudMenuItem>
 
 		@* Add comic book to a group *@
 		<MudMenu ActivationEvent="MouseEvent.MouseOver" AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" Disabled="IsComicMovedOrDeleted">
@@ -91,15 +95,16 @@
 		</MudMenu>
 
 		@* Remove comic book from current group *@
-		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == AppConstants.MainGroupId || IsComicMovedOrDeleted">Remove from group</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Filled.FolderDelete" OnClick="RemoveFromGroup" Disabled="ComicBook.GroupId == AppConstants.MainGroupId || IsComicMovedOrDeleted"> Remove from group </MudMenuItem>
 
 		@* Delete comic book *@
-		<MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="DeleteComicBook">Delete comic book</MudMenuItem>
+		<MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="DeleteComicBook"> Delete comic book </MudMenuItem>
 	</ChildContent>
 </MudMenu>
 
 
 @code {
+
 	[Parameter]
 	public bool ContextMenuDisabled { get; set; } = false;
 
@@ -107,10 +112,7 @@
 	public required ComicBook ComicBook { get; set; }
 
 	[Parameter]
-    public required IEnumerable<Group> Groups { get; set; }
-
-	[Parameter]
-	public EventCallback UpdatedComicBook { get; set; }
+	public required IEnumerable<Group> Groups { get; set; }
 
 	[Parameter]
 	public IGroupService GroupService { get; set; } = null!;
@@ -121,6 +123,9 @@
 	[Parameter]
 	public EventCallback<bool> EditStateChanged { get; set; }
 
+	[Parameter]
+	public EventCallback UpdatedComicBook { get; set; }
+
 	MudMenu _menuRef = null!;
 	DotNetObjectReference<ComicBookCard> _currentComponentRef = null!;
 
@@ -129,6 +134,11 @@
 	bool _renaming = false;
 	string _renamingComicBookName = "";
 	bool _openingComicBookForReading = false;
+
+	void OpenInfoDrawer()
+	{
+		EventBus.Publish(EventName.OpenInfoDrawer, ComicBook.Id);
+	}
 
 	void StartRenamingComicBook()
 	{
@@ -141,7 +151,7 @@
 	{
 		_renaming = false;
 
-		if(ComicBook.Title.Equals(_renamingComicBookName))
+		if (ComicBook.Title.Equals(_renamingComicBookName))
 			return;
 
 		try
@@ -158,13 +168,11 @@
 		catch (Exception)
 		{
 			Snackbar.Add("Error renaming comic book", Severity.Error);
-
 		}
 	}
 
 	void AddToGroup(int groupId, bool isMovingToParentAction = false)
 	{
-
 		try
 		{
 			ComicBookService.AddToGroup(groupId, ComicBook.Id);
@@ -208,10 +216,10 @@
 	}
 
 
-
 	string GetCoverImage()
 	{
-		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");;
+		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");
+		;
 	}
 
 	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)

@@ -9,7 +9,12 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 {
 	private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
-	public int Count() => _dbSet.Count();
+	public int Count(Expression<Func<TEntity, bool>>? filter = null)
+	{
+		return filter != null
+			? _dbSet.Count(filter)
+			: _dbSet.Count();
+	}
 
 	public IEnumerable<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,

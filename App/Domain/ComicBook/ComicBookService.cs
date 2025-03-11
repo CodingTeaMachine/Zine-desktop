@@ -79,16 +79,35 @@ public class ComicBookService(
 	public IEnumerable<ComicBook> GetRecommendations()
 	{
 		const int recommendationCount = 8;
-		var totalCount = repository.Count();
+		var totalCount = repository.Count(cb => cb.Information.LastOpened == null);
 
-		var randomIndex = new Random().Next(0, totalCount - recommendationCount + 1);
+		List<ComicBook> recommendations = [];
+		List<int> generatedIndexes = [];
 
-		return repository.List(
-			filter: cb => cb.Information.LastOpened == null,
-			includes: q => q.Include(cb => cb.Information),
-			skip: randomIndex,
-			take: recommendationCount
-			);
+		while (recommendations.Count < Math.Min(recommendationCount, totalCount))
+		{
+			var randomIndex = new Random().Next(0, totalCount - 1);
+
+			if(generatedIndexes.Contains(randomIndex))
+				continue;
+
+			Console.WriteLine(randomIndex);
+
+			generatedIndexes.Add(randomIndex);
+
+			var recommendation = repository.List(
+				filter: cb => cb.Information.LastOpened == null,
+				includes: q => q.Include(cb => cb.Information),
+				skip: randomIndex,
+				take: 1
+			).First();
+
+			Console.WriteLine(recommendation.Title);
+
+			recommendations.Add(recommendation);
+		}
+
+		return recommendations;
 	}
 
 	public ComicBook? GetForReadingView(int comicId)
@@ -97,12 +116,28 @@ public class ComicBookService(
 			filter: c => c.Id == comicId,
 			includes: query =>
 				query.Include(c => c.Pages)
-					 .Include(q => q.Information));
+					.Include(q => q.Information));
 
-		if(comicBook == null)
-			throw new HandledAppException("Could not find comic book", Severity.Error, "Could not find comic book: " + comicId);
+		if (comicBook == null)
+			throw new HandledAppException("Could not find comic book", Severity.Error,
+				"Could not find comic book: " + comicId);
 
 		comicBookPageInformationService.CheckPageTypes(comicBook);
+
+		return comicBook;
+	}
+
+	public ComicBook? GetForInformationDrawer(int comicId)
+	{
+		var comicBook = repository.First(
+			filter: c => c.Id == comicId,
+			includes: query =>
+				query.Include(c => c.Pages)
+					.Include(c => c.Information));
+
+		if (comicBook == null)
+			throw new HandledAppException("Could not find comic book", Severity.Error,
+				"Could not find comic book: " + comicId);
 
 		return comicBook;
 	}
@@ -120,7 +155,12 @@ public class ComicBookService(
 
 		try
 		{
-			var comicBooks = repository.List(f => f.Title.ToLower().Contains(searchTerm)).ToArray();
+			var comicBooks = repository.List(
+				filter: cb => cb.Title.ToLower().Contains(searchTerm),
+				includes: query =>
+					query.Include(c => c.Pages)
+						.Include(c => c.Information)
+			).ToArray();
 			logger.Information(
 				$"ComicBookService.SearchByTitle: Found {comicBooks.Length} comic books for term: \"{searchTerm}\"");
 			return comicBooks;

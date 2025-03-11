@@ -15,6 +15,7 @@ public interface IComicBookService
     public IEnumerable<ComicBook> GetRecommendations();
     public string GetComicBookCoverFromDisc(int comicBookId);
     public ComicBook? GetForReadingView(int comicId);
+    public ComicBook? GetForInformationDrawer(int comicId);
     public IEnumerable<ComicBook> SearchByTitle(string searchTerm);
 
     //Update

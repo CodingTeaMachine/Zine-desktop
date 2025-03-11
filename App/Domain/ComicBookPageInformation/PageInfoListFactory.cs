@@ -25,7 +25,7 @@ public static class PageInfoListFactory
 		var coverKvp = GetCoverImage(pages);
 		pageInfoList.Add(new ComicBookPageInformation
 		{
-			PageFileName = Path.GetFileName(coverKvp.Value.Key!),
+			PageFileName = coverKvp.Value.Key!,
 			PageType = PageType.Cover,
 			PageNumberStart = pageNumber++,
 			ComicBookId = comicBookId,
@@ -56,10 +56,10 @@ public static class PageInfoListFactory
 
 
 		//The rest of the pages, already ordered in
-		var coverImageFileName = Path.GetFileName(coverKvp.Value.Key);
+		var coverImageFileName = coverKvp.Value.Key;
 		var insidePages = pages.Where(entry =>
 			{
-				var fileName = Path.GetFileName(entry.Key);
+				var fileName = entry.Key;
 				return fileName != coverImageFileName &&
 				       fileName != coverInside &&
 				       fileName != backCover?.Value &&
@@ -69,7 +69,7 @@ public static class PageInfoListFactory
 
 		pageInfoList.AddRange(insidePages.Select(page => new ComicBookPageInformation
 		{
-			PageFileName = Path.GetFileName(page.Key!),
+			PageFileName = page.Key!,
 			// Calculating weather the image is double with takes a lot of time (approx 29x longer)
 			// so it is only calculated when the comic is first opened
 			PageType = PageType.Single,
@@ -137,7 +137,7 @@ public static class PageInfoListFactory
 				Regex.IsMatch(Path.GetFileNameWithoutExtension(page.Key!), format) ||
 				Regex.IsMatch(Path.GetFileNameWithoutExtension(page.Key!), explicitFormat)
 			)
-			.Select(page => Path.GetFileName(page.Key!))
+			.Select(page => page.Key!)
 			.FirstOrDefault();
 	}
 
@@ -157,7 +157,7 @@ public static class PageInfoListFactory
 
 		foreach (var page in pages.Where(page => Regex.IsMatch(Path.GetFileNameWithoutExtension(page.Key!), format)))
 		{
-			return new KeyValuePair<PageNamingConvention, string>(formatKey, Path.GetFileName(page.Key!));
+			return new KeyValuePair<PageNamingConvention, string>(formatKey, page.Key!);
 		}
 
 		return null;
@@ -179,7 +179,7 @@ public static class PageInfoListFactory
 				Regex.IsMatch(Path.GetFileNameWithoutExtension(page.Key!), format) ||
 				Regex.IsMatch(Path.GetFileNameWithoutExtension(page.Key!), explicitFormat)
 			)
-			.Select(page => Path.GetFileName(page.Key!))
+			.Select(page => page.Key!)
 			.FirstOrDefault();
 	}
 }

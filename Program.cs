@@ -14,6 +14,7 @@ using Zine.App.Domain.Group;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Logger;
+using Zine.App.Pages.Library;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IncludeSubdirectoriesImportStrategy>();
 builder.Services.AddScoped<KeepStructureImportStrategy>();
 builder.Services.AddScoped<ImportStrategyFactory>();
 
+builder.Services.AddSingleton<ReadingPageEventBus>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

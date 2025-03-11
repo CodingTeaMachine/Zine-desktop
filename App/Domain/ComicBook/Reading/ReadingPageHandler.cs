@@ -1,53 +1,50 @@
 using System.Data;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
-using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
 
 namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
-	public ReadingPageHandler(ReadingPageHandlerParams handlerParams)
-	{
-		_comicBookService = handlerParams.ComicBookService;
-		_comicBookPageInformationService = handlerParams.ComicBookPageInformationService;
-		_jsRuntime = handlerParams.JsRuntime;
-		_uiUpdateHandler = handlerParams.UiUpdateHandler;
-		_canvasHandler = new CanvasHandler(_jsRuntime, handlerParams.CanvasId);
+	// public ReadingPageHandler(ReadingPageHandlerParams handlerParams)
+	// {
+	// 	_comicBookService = handlerParams.ComicBookService;
+	// 	_comicBookPageInformationService = handlerParams.ComicBookPageInformationService;
+	// 	_jsRuntime = handlerParams.JsRuntime;
+	// 	_uiUpdateHandler = handlerParams.UiUpdateHandler;
+	// 	_canvasHandler = new CanvasHandler(_jsRuntime, handlerParams.CanvasId);
+	//
+	// 	try
+	// 	{
+	// 		LoadComic(handlerParams.ComicBookId);
+	// 		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
+	// 	}
+	// 	catch (DataException e)
+	// 	{
+	// 		Console.WriteLine(e.Message);
+	// 		handlerParams.NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(handlerParams.GroupId));
+	// 	}
+	// }
 
-		try
-		{
-			LoadComic(handlerParams.ComicBookId);
-			handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
-		}
-		catch (DataException)
-		{
-			handlerParams.NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(handlerParams.GroupId));
-		}
-
-		_pages = ComicBook.Pages.ToArray();
-		MaxPageNumber = _pages.Last().PageNumberEnd;
-	}
 
 	private ComicBook ComicBook { get; set; } = null!;
 
 	public int ZoomScale = 100;
 
-	private readonly IComicBookService _comicBookService;
+	private IComicBookService? _comicBookService;
 
-	private readonly IComicBookPageInformationService _comicBookPageInformationService;
+	private IComicBookPageInformationService? _comicBookPageInformationService;
 
-	private readonly CanvasHandler _canvasHandler;
+	private CanvasHandler? _canvasHandler;
 
-	private readonly IJSRuntime _jsRuntime;
+	private IJSRuntime? _jsRuntime;
 
-	private readonly Action _uiUpdateHandler;
+	private Action? _uiUpdateHandler;
 
-	private readonly ComicBookPageInformation.ComicBookPageInformation[] _pages;
-	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => _pages[_currentPageIndex];
+	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => ComicBook.Pages.ToList()[_currentPageIndex];
 
-	public readonly int MaxPageNumber;
+	public int MaxPageNumber => ComicBook.Pages.ToList().Last().PageNumberEnd;
 
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
@@ -55,15 +52,37 @@ public class ReadingPageHandler
 	public List<string> Images = [];
 
 
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="handlerParams"></param>
+	/// <exception cref="DataException"></exception>
+	/// <returns></returns>
+	public static ReadingPageHandler Create(ReadingPageHandlerParams handlerParams)
+	{
+		var handler = new ReadingPageHandler
+		{
+			_comicBookService = handlerParams.ComicBookService,
+			_comicBookPageInformationService = handlerParams.ComicBookPageInformationService,
+			_jsRuntime = handlerParams.JsRuntime,
+			_uiUpdateHandler = handlerParams.UiUpdateHandler,
+			_canvasHandler = new CanvasHandler(handlerParams.JsRuntime, handlerParams.CanvasId)
+		};
+
+		handler.LoadComic(handlerParams.ComicBookId);
+		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(handler.ComicBook.Information.Id);
+
+		return handler;
+	}
+
 	public int CurrentPageIndex
 	{
 		get
 		{
-
 			// Only update the page read status if navigating to the page for the first time
-			if (_pages[_currentPageIndex].IsRead == false)
+			if (CurrentPage.IsRead == false)
 			{
-				_comicBookPageInformationService.UpdateReadStatus(_pages[_currentPageIndex].Id);
+				_comicBookPageInformationService!.UpdateReadStatus(CurrentPage.Id);
 			}
 
 			return _currentPageIndex;
@@ -123,41 +142,41 @@ public class ReadingPageHandler
 
 	public async Task RotateRight()
 	{
-		await _canvasHandler.RotateRight();
+		await _canvasHandler!.RotateRight();
 	}
 
 	public async Task RotateLeft()
 	{
-		await _canvasHandler.RotateLeft();
+		await _canvasHandler!.RotateLeft();
 	}
 
 	public async Task ZoomIn()
 	{
-		await _canvasHandler.ZoomIn();
+		await _canvasHandler!.ZoomIn();
 		await UpdateZoomScale();
 	}
 
 	public async Task ZoomOut()
 	{
-		await _canvasHandler.ZoomOut();
+		await _canvasHandler!.ZoomOut();
 		await UpdateZoomScale();
 	}
 
 	public async Task UpdateZoomScale()
 	{
-		ZoomScale = await _canvasHandler.GetZoomScale();
-		_uiUpdateHandler();
+		ZoomScale = await _canvasHandler!.GetZoomScale();
+		_uiUpdateHandler!();
 	}
 
 	public async void SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
 	{
-		await _canvasHandler.SetDotnetHelperReference(dotNetObjectReference);
+		await _canvasHandler!.SetDotnetHelperReference(dotNetObjectReference);
 	}
 
 
 	private void LoadComic(int comicBookId)
 	{
-		var loadedComicBook = _comicBookService.GetForReadingView(comicBookId);
+		var loadedComicBook = _comicBookService!.GetForReadingView(comicBookId);
 
 		if(loadedComicBook == null)
 			throw new DataException("Comic book not found");
@@ -170,7 +189,7 @@ public class ReadingPageHandler
 
 	private void LoadImages(int comicBookId)
 	{
-		_comicBookService.ExtractImagesOfComicBook(comicBookId);
+		_comicBookService!.ExtractImagesOfComicBook(comicBookId);
 
 		var pageInfoHelper = new PageInfoHelper(ComicBook.Pages);
 
@@ -197,12 +216,12 @@ public class ReadingPageHandler
 
 	private void SetImageOnCanvas(int imageIndex)
 	{
-		_ = _canvasHandler.DrawImage(Images[imageIndex]);
+		_ = _canvasHandler!.DrawImage(Images[imageIndex]);
 	}
 
 	private void ScrollImageToViewInSidebar()
 	{
-		_jsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
+		_jsRuntime!.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
 	}
 
 }

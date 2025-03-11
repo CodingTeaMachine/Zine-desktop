@@ -6,6 +6,7 @@
 @using Zine.App.Domain.Group
 @using Zine.App.Exceptions
 @using Zine.App.Helpers
+@using Zine.App.Pages.Library
 @using Zine.Assets.Icons
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
@@ -16,6 +17,7 @@
 @inject IComicBookService ComicBookService
 @inject IComicBookImportService ComicBookImportService
 
+<InfoDrawer />
 
 <MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
 	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
@@ -85,19 +87,26 @@
 						Class="rounded-lg"
 						CanDrop="@((item) => !item.Identifier.Equals(GetComicBookIdentifier(dropItem.ComicBook.Id)))"
 						Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
+
 						<ChildContent>
-							<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
-								<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.FileMovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
-									<ComicBookCard
-										GroupService="GroupService"
-										ComicBookService="ComicBookService"
-										ComicBook="@dropItem.ComicBook"
-										Groups="_contextMenuGroups"
-										ContextMenuDisabled="_editingInProgress"
-										UpdatedComicBook="@LoadCurrentGroup"
-										EditStateChanged="newState => _editingInProgress = newState" />
-								</MudDynamicDropItem>
-							</a>
+							<MudDynamicDropItem
+								T="DropItem"
+								Item="dropItem"
+								Disabled="dropItem.ComicBook.Information.FileMovedOrDeleted"
+								DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg"
+								@onclick="() => OpenComicBook(dropItem.ComicBook)">
+
+								<ComicBookCard
+									GroupService="GroupService"
+									ComicBookService="ComicBookService"
+									ComicBook="@dropItem.ComicBook"
+									Groups="_contextMenuGroups"
+									ContextMenuDisabled="_editingInProgress"
+									UpdatedComicBook="@LoadCurrentGroup"
+									EditStateChanged="newState => _editingInProgress = newState" />
+
+							</MudDynamicDropItem>
+
 						</ChildContent>
 					</MudDropZone>
 				}
@@ -125,12 +134,6 @@
 	[Inject]
 	IGroupService GroupService { get; set; } = null!;
 
-	private class DropItem
-	{
-		public ComicBook ComicBook { get; init; } = null!;
-		public string Identifier { get; set; } = null!;
-	}
-
 	MudDropContainer<DropItem>? _dropContainer;
 
 	// ReSharper disable once NotAccessedField.Local used in template for an input bind
@@ -143,6 +146,7 @@
 	List<DropItem> _comicBookList = [];
 	List<Group> _groupList = [];
 	List<Group> _contextMenuGroups = [];
+
 
 	private void SearchByTitle(string searchTerm)
 	{
@@ -320,6 +324,12 @@
 		return "Group " + identifier;
 	}
 
+	private void OpenComicBook(ComicBook comicBook)
+	{
+		if(!comicBook.Information.FileMovedOrDeleted)
+			NavigationManager.NavigateTo(GetComicBookLink(comicBook.Id));
+	}
+
 
 	/// <summary>
 	/// The dropzone doesn't automatically update, when data updates
@@ -342,4 +352,5 @@
 		PageManager.SetPageTitle(Page.Library);
 		LoadCurrentGroup();
 	}
+
 }

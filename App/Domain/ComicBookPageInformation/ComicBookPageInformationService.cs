@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using SharpCompress;
@@ -109,6 +110,13 @@ public class ComicBookPageInformationService(
 
 	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
 	{
-		return Image.GetAspectRatio(page) <= minAspectRatio;
+		try
+		{
+			return Image.GetAspectRatio(page) <= minAspectRatio;
+		}
+		catch (DataException)
+		{
+			return false;
+		}
 	}
 }

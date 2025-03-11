@@ -8,7 +8,7 @@ namespace Zine.App.Helpers;
 public static class Image
 {
 	
-	public static readonly string[] DotExtensions =
+	private static readonly string[] DotExtensions =
 	[
 		".bmp",
 		".gif",
@@ -66,7 +66,7 @@ public static class Image
 
 	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)
 	{
-		using var entryStream = entry.OpenEntryStream();
+		var entryStream = entry.OpenEntryStream();
 		var codec = SKCodec.Create(entryStream);
 		return
 			codec?.EncodedFormat
@@ -78,19 +78,13 @@ public static class Image
 	/// <exception cref="DataException"></exception>
 	private static SKBitmap GetImageBitmapFromArchiveEntry(IArchiveEntry entry)
 	{
-		using var entryStream = entry.OpenEntryStream();
+		var entryStream = entry.OpenEntryStream();
 		var originalImage = SKBitmap.Decode(entryStream);
 
-		// using var memoryStream = new MemoryStream();
-		// entryStream.CopyTo(memoryStream);
-		// memoryStream.Position = 0;
-		// var imageBytes = memoryStream.ToArray();
-		//
-		// var originalImage = SKBitmap.Decode(imageBytes);
 
 		if (originalImage == null)
 		{
-			throw new DataException("Could not decode image");
+			throw new DataException($"Could not decode image: {entry.Key}");
 		}
 
 		return originalImage;
