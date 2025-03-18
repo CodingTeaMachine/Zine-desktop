@@ -125,9 +125,9 @@
 	}
 
 	[JSInvokable]
-	public async void JS_UpdatePageZoomDisplay()
+	public async Task JS_UpdatePageZoomDisplay()
 	{
-		await _readingPageHandler?.UpdateZoomScale();
+		await _readingPageHandler?.UpdateZoomScale()!;
 		StateHasChanged();
 	}
 
