@@ -20,6 +20,9 @@ public class ComicBookService(
 	ILoggerService logger
 ) : IComicBookService
 {
+
+	// Create
+
 	public ComicBook Create(string title, string fileUri, int groupId)
 	{
 		var comicBookToCreate = new ComicBook
@@ -40,27 +43,7 @@ public class ComicBookService(
 		}
 	}
 
-	public string GetComicBookCoverFromDisc(int comicBookId)
-	{
-		var comicBook = repository.First(
-			filter: cb => cb.Id == comicBookId,
-			includes: query => query
-				.Include(cb => cb.Information)
-				.Include(cb => cb.Pages));
-
-		if (comicBook == null)
-			throw new HandledAppException("Comic book not found: " + comicBookId, Severity.Error);
-
-		if (!File.Exists(comicBook.Information.SavedCoverImageFullPath))
-		{
-			logger.Warning($"Regenerating cover image for: {comicBook.Title}");
-			var comicBookCover = new PageInfoHelper(comicBook.Pages).GetCover();
-			new ComicBookImageHandler().SaveThumbnailToDisc(comicBook.FileUri, comicBookCover.PageFileName,
-				comicBook.Information.SavedCoverImageFileName);
-		}
-
-		return comicBook.Information.SavedCoverImageFullPath;
-	}
+	// Read
 
 	public ComicBook? GetById(int comicId)
 	{
@@ -91,7 +74,6 @@ public class ComicBookService(
 			if(generatedIndexes.Contains(randomIndex))
 				continue;
 
-			Console.WriteLine(randomIndex);
 
 			generatedIndexes.Add(randomIndex);
 
@@ -102,7 +84,6 @@ public class ComicBookService(
 				take: 1
 			).First();
 
-			Console.WriteLine(recommendation.Title);
 
 			recommendations.Add(recommendation);
 		}
@@ -110,7 +91,7 @@ public class ComicBookService(
 		return recommendations;
 	}
 
-	public ComicBook? GetForReadingView(int comicId)
+	public ComicBook GetForReadingView(int comicId)
 	{
 		var comicBook = repository.First(
 			filter: c => c.Id == comicId,
@@ -127,13 +108,17 @@ public class ComicBookService(
 		return comicBook;
 	}
 
-	public ComicBook? GetForInformationDrawer(int comicId)
+	public ComicBook GetForInformationDrawer(int comicId)
 	{
 		var comicBook = repository.First(
 			filter: c => c.Id == comicId,
 			includes: query =>
-				query.Include(c => c.Pages)
-					.Include(c => c.Information));
+				query
+					.Include(c => c.Pages)
+					.Include(c => c.Information)
+					.ThenInclude(cbI => cbI.People)
+				)
+			;
 
 		if (comicBook == null)
 			throw new HandledAppException("Could not find comic book", Severity.Error,
@@ -171,6 +156,7 @@ public class ComicBookService(
 		}
 	}
 
+	// Update
 
 	public void AddToGroup(int groupId, int comicBookId)
 	{
@@ -239,6 +225,23 @@ public class ComicBookService(
 		}
 	}
 
+	public ComicBook Update(ComicBook comicBook)
+	{
+		repository.Update(comicBook);
+
+		try
+		{
+			dbContext.SaveChanges();
+			return comicBook;
+		}
+		catch (DbUpdateException e)
+		{
+			throw new HandledAppException("Error updating comic book", Severity.Error, e);
+		}
+	}
+
+	// Delete
+
 	public void Delete(int comicId)
 	{
 		var comicToDelete =
@@ -295,12 +298,11 @@ public class ComicBookService(
 		}
 	}
 
+	// Misc
 
 	public void ExtractImagesOfComicBook(int comicBookId)
 	{
 		CleanReadingDirectory();
-
-		Console.WriteLine("Extracting images");
 
 		var comicBook = GetById(comicBookId);
 
@@ -319,6 +321,29 @@ public class ComicBookService(
 			.Where(entry => !entry.IsDirectory && Image.IsSupported(entry.Key!))
 			.ForEach(entry => entry.WriteToDirectory(DataPath.ComicBookReadingDirectory));
 	}
+
+	public string GetComicBookCoverFromDisc(int comicBookId)
+	{
+		var comicBook = repository.First(
+			filter: cb => cb.Id == comicBookId,
+			includes: query => query
+				.Include(cb => cb.Information)
+				.Include(cb => cb.Pages));
+
+		if (comicBook == null)
+			throw new HandledAppException("Comic book not found: " + comicBookId, Severity.Error);
+
+		if (!File.Exists(comicBook.Information.SavedCoverImageFullPath))
+		{
+			logger.Warning($"Regenerating cover image for: {comicBook.Title}");
+			var comicBookCover = new PageInfoHelper(comicBook.Pages).GetCover();
+			new ComicBookImageHandler().SaveThumbnailToDisc(comicBook.FileUri, comicBookCover.PageFileName,
+				comicBook.Information.SavedCoverImageFileName);
+		}
+
+		return comicBook.Information.SavedCoverImageFullPath;
+	}
+
 
 	public static void CleanReadingDirectory()
 	{

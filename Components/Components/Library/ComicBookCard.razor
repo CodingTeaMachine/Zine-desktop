@@ -219,10 +219,9 @@
 	string GetCoverImage()
 	{
 		return ComicBookService.GetComicBookCoverFromDisc(ComicBook.Id).Replace("wwwroot", "");
-		;
 	}
 
-	private async void HandleRenameKeypress(KeyboardEventArgs eventArgs)
+	private async Task HandleRenameKeypress(KeyboardEventArgs eventArgs)
 	{
 		if (eventArgs.Key.Equals("Enter"))
 			await ConfirmRenamingComicBook();

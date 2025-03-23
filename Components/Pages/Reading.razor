@@ -193,9 +193,9 @@
 			Snackbar.Add(e.Message, Severity.Error);
 			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(GroupId));
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
-			Console.WriteLine(e.StackTrace);
+			// ignored
 		}
 	}
 

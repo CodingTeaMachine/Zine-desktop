@@ -1,0 +1,241 @@
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.Person
+@using Zine.App.Pages.Library
+
+@implements IDisposable
+
+@inject ReadingPageEventBus EventBus
+@inject IComicBookService ComicBookService
+@inject IPersonService PersonService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+
+<MudDrawer
+	Open="Open"
+	Anchor="Anchor.Right"
+	Elevation="1"
+	Variant="@DrawerVariant.Temporary"
+	OpenChanged="HandleOpenStateChanged"
+	Class="!w-fit max-w-1/3"
+>
+
+	<MudDrawerHeader>
+		<span class="w-full text-center text-xl text-white mt-5">
+			Information
+			@if (!_editMode)
+			{
+				<MudIcon
+					Icon="@Icons.Material.Filled.Edit"
+					Class="h-5 hover:fill-primary cursor-pointer mb-1"
+					@onclick="EnableEditMode"
+				/>
+			}
+			else
+			{
+				<MudIcon
+					Icon="@Icons.Material.Filled.Check"
+					Class="h-5 hover:fill-primary cursor-pointer mb-1"
+					@onclick="SaveChanges"
+				/>
+			}
+
+		</span>
+	</MudDrawerHeader>
+
+	@if (Open && ComicBook != null)
+	{
+		<MudDrawerContainer Class="p-5">
+			<table class="table-auto">
+				<tbody class="[&_th]:p-3 [&_th]:text-left [&_td]:p-3">
+
+				<tr>
+					<th>Title</th>
+					<td>@ComicBook.Title</td>
+				</tr>
+
+				<tr>
+					<th>Pages</th>
+					<td>@ComicBook.Pages.Count</td>
+				</tr>
+
+				<tr>
+					<th>Drawn by</th>
+					<td>
+						<ChipMultiSelect
+							Label="Select a value..."
+							@bind-SelectedPeople="ComicBook.Information.People"
+							SearchRole="Role.Drawer"
+							PersonService="PersonService"
+							EditMode="_editMode"
+						/>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Colored by</th>
+					<td>
+						<ChipMultiSelect
+							Label="Select a value..."
+							@bind-SelectedPeople="ComicBook.Information.People"
+							SearchRole="Role.Colorist"
+							PersonService="PersonService"
+							EditMode="_editMode"
+						/>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Written by</th>
+					<td>
+						<ChipMultiSelect
+							Label="Select a value..."
+							@bind-SelectedPeople="ComicBook.Information.People"
+							SearchRole="Role.Writer"
+							PersonService="PersonService"
+							EditMode="_editMode"
+						/>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Edited by</th>
+					<td>
+						<ChipMultiSelect
+							Label="Select a value..."
+							@bind-SelectedPeople="ComicBook.Information.People"
+							SearchRole="Role.Editor"
+							PersonService="PersonService"
+							EditMode="_editMode"
+						/>
+					</td>
+				</tr>
+
+				<tr>
+					<th>Published by</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Tags</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Series</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Issue #</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				<tr>
+					<th>Release date</th>
+					<td class="text-red-600">TODO</td>
+				</tr>
+
+				</tbody>
+			</table>
+		</MudDrawerContainer>
+	}
+</MudDrawer>
+
+@code {
+	private bool _open;
+	private bool _editMode = false;
+
+	public bool Open
+	{
+		get => _open;
+		set
+		{
+			if (value)
+				DisableBodyScroll();
+			else
+			{
+				DisableEditMode();
+				EnableBodyScroll();
+			}
+
+			_open = value;
+		}
+	}
+
+	private Action? _unsubscribe = null;
+
+	private ComicBook? ComicBook { get; set; }
+
+	private void OpenDrawer(int comicBookId)
+	{
+		Open = true;
+		LoadComic(comicBookId);
+		StateHasChanged();
+	}
+
+	private void HandleOpenStateChanged(bool isOpen)
+	{
+		if (isOpen)
+			return;
+
+		Open = false;
+	}
+
+	private void EnableEditMode()
+	{
+		_editMode = true;
+	}
+
+	private void DisableEditMode()
+	{
+		_editMode = false;
+	}
+
+
+	private void LoadComic(int comicBookId)
+	{
+		try
+		{
+			var comicBook = ComicBookService.GetForInformationDrawer(comicBookId);
+			ComicBook = comicBook;
+		}
+		catch (Exception e)
+		{
+			Snackbar.Add("Could not find comic book", Severity.Error);
+			Open = false;
+		}
+	}
+
+	private void SaveChanges()
+	{
+		ComicBook = ComicBookService.Update(ComicBook!);
+
+		DisableEditMode();
+	}
+
+
+	private void EnableBodyScroll()
+	{
+		JsRuntime.InvokeVoidAsync("document.body.classList.remove", "overflow-hidden");
+	}
+
+	private void DisableBodyScroll()
+	{
+		JsRuntime.InvokeVoidAsync("document.body.classList.add", "overflow-hidden");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+			_unsubscribe = EventBus.Subscribe<int>(EventName.OpenInfoDrawer, OpenDrawer);
+	}
+
+
+	public void Dispose()
+	{
+		_unsubscribe?.Invoke();
+		// ComicBook = null;
+	}
+
+}

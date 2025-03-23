@@ -81,7 +81,6 @@ window.JsFunctions = {
 		 */
 		const invokeScrollMethod = (event) => {
 
-			console.log()
 
 			/** @type ScrollEvent */
 			const eventSettings = {

@@ -7,27 +7,6 @@ namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
-	// public ReadingPageHandler(ReadingPageHandlerParams handlerParams)
-	// {
-	// 	_comicBookService = handlerParams.ComicBookService;
-	// 	_comicBookPageInformationService = handlerParams.ComicBookPageInformationService;
-	// 	_jsRuntime = handlerParams.JsRuntime;
-	// 	_uiUpdateHandler = handlerParams.UiUpdateHandler;
-	// 	_canvasHandler = new CanvasHandler(_jsRuntime, handlerParams.CanvasId);
-	//
-	// 	try
-	// 	{
-	// 		LoadComic(handlerParams.ComicBookId);
-	// 		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(ComicBook.Information.Id);
-	// 	}
-	// 	catch (DataException e)
-	// 	{
-	// 		Console.WriteLine(e.Message);
-	// 		handlerParams.NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(handlerParams.GroupId));
-	// 	}
-	// }
-
-
 	private ComicBook ComicBook { get; set; } = null!;
 
 	public int ZoomScale = 100;

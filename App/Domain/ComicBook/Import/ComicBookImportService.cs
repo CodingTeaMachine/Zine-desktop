@@ -8,8 +8,7 @@ namespace Zine.App.Domain.ComicBook.Import;
 
 public class ComicBookImportService(
 	ImportStrategyFactory importStrategyFactory,
-	ImportEventService eventService,
-	ILoggerService logger) : IComicBookImportService
+	ImportEventService eventService) : IComicBookImportService
 {
 	/// <summary>
 	/// 

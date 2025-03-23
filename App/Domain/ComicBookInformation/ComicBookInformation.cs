@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Domain.Person;
 using Zine.App.Enums;
 using Zine.App.Helpers.Compression;
 
@@ -21,7 +22,25 @@ public class ComicBookInformation
 	[MaxLength(25)]
 	public string SavedCoverImageFileName { get; init; } = null!;
 
+
 	public DateTime? LastOpened { get; set; }
+
+	public ICollection<Person.Person> People { get; set; } = [];
+
+	[NotMapped]
+	public ICollection<Person.Person> Draftsmen => People.Where(p => p.Role == Role.Drawer).ToArray();
+
+	[NotMapped]
+	public ICollection<Person.Person> Colorists => People.Where(p => p.Role == Role.Colorist).ToArray();
+
+	[NotMapped]
+	public ICollection<Person.Person> Writers => People.Where(p => p.Role == Role.Writer).ToArray();
+
+	[NotMapped]
+	public ICollection<Person.Person> Editors => People.Where(p => p.Role == Role.Editor).ToArray();
+
+
+
 
 	[NotMapped]
 	public string SavedCoverImageFullPath => Path.Join(DataPath.ComicBookCoverDirectory, SavedCoverImageFileName);

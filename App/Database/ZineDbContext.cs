@@ -3,6 +3,7 @@ using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
+using Zine.App.Domain.Person;
 using Zine.App.Enums;
 
 namespace Zine.App.Database;
@@ -13,6 +14,7 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
     public DbSet<ComicBookInformation> ComicBookInformation { get; init; }
     public DbSet<ComicBookPageInformation> ComicBookPageInformation { get; init; }
     public DbSet<Group> Groups { get; init; }
+    public DbSet<Person> People { get; init; }
 
     private string DbPath { get; } = Path.Join(
         Directory.GetCurrentDirectory(),
@@ -51,6 +53,11 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
             .WithOne(info => info.ComicBook)
             .HasForeignKey(info => info.ComicBookId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ComicBookInformation - Person relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasMany(i => i.People)
+            .WithMany(p => p.ComicBookInformationList);
 
         base.OnModelCreating(modelBuilder);
     }
