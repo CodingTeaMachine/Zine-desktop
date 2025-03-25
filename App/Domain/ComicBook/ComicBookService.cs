@@ -117,6 +117,12 @@ public class ComicBookService(
 					.Include(c => c.Pages)
 					.Include(c => c.Information)
 					.ThenInclude(cbI => cbI.People)
+					.Include(cb => cb.Information)
+					.ThenInclude(cbI => cbI.Publishers)
+					.Include(cb => cb.Information)
+					.ThenInclude(cbI => cbI.Tags)
+					.Include(cb => cb.Information)
+					.ThenInclude(cbI => cbI.Series)
 				)
 			;
 

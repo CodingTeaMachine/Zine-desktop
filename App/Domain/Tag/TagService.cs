@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Zine.App.Common.Service.DTO;
 using Zine.App.Database;
-using Zine.App.Domain.Publisher.DTO;
 using Zine.App.Domain.Tag.DTO;
 using Zine.App.Exceptions;
 using Zine.App.Logger;
@@ -17,15 +16,15 @@ public class TagService(
 	public Tag Create(object obj)
 	{
 		var dto = (CreateTagDto) obj;
-		var publisherToCreate = new Tag { Name = dto.Name };
+		var tagToCreate = new Tag { Name = dto.Name };
 
-		repository.Insert(publisherToCreate);
+		repository.Insert(tagToCreate);
 
 		try
 		{
 			dbContext.SaveChanges();
-			logger.Information($"TagService.Create: Created publisher: '{dto.Name}'");
-			return publisherToCreate;
+			logger.Information($"TagService.Create: Created tag: '{dto.Name}'");
+			return tagToCreate;
 		}
 		catch (DbUpdateException e)
 		{

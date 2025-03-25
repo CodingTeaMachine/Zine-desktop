@@ -67,7 +67,12 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
         //ComicBookInformation - Tag relationship
         modelBuilder.Entity<ComicBookInformation>()
             .HasMany(i => i.Tags)
-            .WithMany(p => p.ComicBookInformationList);
+            .WithMany(t => t.ComicBookInformationList);
+
+        //ComicBookInformation - Series relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasOne(i => i.Series)
+            .WithMany(s => s.ComicBookInformationList);
 
         base.OnModelCreating(modelBuilder);
     }

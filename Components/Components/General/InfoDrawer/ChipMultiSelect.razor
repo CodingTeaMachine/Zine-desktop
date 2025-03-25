@@ -3,21 +3,46 @@
 @typeparam T where T : Zine.App.Common.FieldInterfaces.IId
 
 <div class="max-w-96 flex flex-row flex-wrap">
-	@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
+	@if (SingleSelect)
 	{
-		@if (ShowInput)
+		@if (SelectedValue != null)
 		{
-			<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(row)">
-				@RowToString.Invoke(row)
-			</MudChip>
-		}
-		else
-		{
-			<MudChip T="string" Color="Color.Primary" Size="Size.Small">
-				@RowToString.Invoke(row)
-			</MudChip>
+			@if (ShowInput)
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(SelectedValue)">
+					@RowToString.Invoke(SelectedValue)
+				</MudChip>
+			}
+			else
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small">
+					@RowToString.Invoke(SelectedValue)
+				</MudChip>
+			}
+
+
 		}
 	}
+	else
+	{
+		@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
+		{
+			@if (ShowInput)
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(row)">
+					@RowToString.Invoke(row)
+				</MudChip>
+			}
+			else
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small">
+					@RowToString.Invoke(row)
+				</MudChip>
+			}
+		}
+	}
+
+
 </div>
 
 @if (ShowInput)
@@ -27,7 +52,7 @@
 		T="T"
 		Label="@Label"
 		Value="@(default(T))"
-		ValueChanged="OnSelectedValuesChanged"
+		ValueChanged="OnUserSelect"
 		SearchFunc="Search"
 		ToStringFunc="RowToString.Invoke"
 		Strict="false"
@@ -104,6 +129,9 @@
 	public bool ShowInput { get; set; }
 
 	[Parameter]
+    public bool SingleSelect { get; set; }
+
+	[Parameter]
 	public required Func<T?, string> RowToString { get; set; }
 
 	//Create
@@ -113,11 +141,20 @@
 
 	//Read
 
+	// If multiselect
 	[Parameter]
-	public required ICollection<T> SelectedValues { get; set; } = [];
+	public List<T> SelectedValues { get; set; } = [];
 
 	[Parameter]
-	public EventCallback<ICollection<T>> SelectedValuesChanged { get; set; }
+	public EventCallback<List<T>> SelectedValuesChanged { get; set; }
+
+
+	//If single select
+	[Parameter]
+    public T? SelectedValue { get; set; }
+
+	[Parameter]
+	public EventCallback<T> SelectedValueChanged { get; set; }
 
 	[Parameter]
 	public required Func<string?, CancellationToken, IEnumerable<T>> SearchFunc { get; set; }
@@ -138,18 +175,26 @@
 	private string _currentSearchTerm = string.Empty;
 
 
-	private async void OnSelectedValuesChanged(T? selection)
+	private async void OnUserSelect(T? selection)
 	{
 		if (selection != null)
 		{
-			SelectedValues.Add(selection);
-			await SelectedValuesChanged.InvokeAsync(SelectedValues);
+			if (SingleSelect)
+			{
+				SelectedValue = selection;
+				await SelectedValueChanged.InvokeAsync(SelectedValue);
+			}
+			else
+			{
+				SelectedValues.Add(selection);
+				await SelectedValuesChanged.InvokeAsync(SelectedValues);
+			}
 		}
+
 
 		await _mudMultiselect.ClearAsync();
 		await _mudMultiselect.BlurAsync();
 	}
-
 
 	private Task<IEnumerable<T>> Search(string? searchTerm, CancellationToken cancellationToken)
 	{
@@ -164,7 +209,7 @@
 
 	private Task OnValueChanged(ChangeEventArgs e)
 	{
-		SelectedValues = (ICollection<T>)Convert.ChangeType(e.Value, typeof(ICollection<T>))!;
+		SelectedValues = (List<T>)Convert.ChangeType(e.Value, typeof(ICollection<T>))!;
 		return SelectedValuesChanged.InvokeAsync(SelectedValues);
 	}
 
@@ -183,8 +228,18 @@
 
 	private void RemoveSelectedValue(T row)
 	{
-		SelectedValues = SelectedValues.Where(p => p.Id != row.Id).ToList();
-		SelectedValuesChanged.InvokeAsync(SelectedValues);
+		if (SingleSelect)
+		{
+			SelectedValue = default(T);
+			SelectedValueChanged.InvokeAsync(SelectedValue);
+		}
+		else
+		{
+			SelectedValues = SelectedValues.Where(p => p.Id != row.Id).ToList();
+			SelectedValuesChanged.InvokeAsync(SelectedValues);
+		}
 	}
+
+
 
 }

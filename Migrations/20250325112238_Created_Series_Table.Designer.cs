@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zine.App.Database;
 
@@ -10,9 +11,11 @@ using Zine.App.Database;
 namespace Zine.Migrations
 {
     [DbContext(typeof(ZineDbContext))]
-    partial class ZineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250325112238_Created_Series_Table")]
+    partial class Created_Series_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.5");
@@ -45,6 +48,21 @@ namespace Zine.Migrations
                     b.HasIndex("PublishersId");
 
                     b.ToTable("ComicBookInformationPublisher");
+                });
+
+            modelBuilder.Entity("ComicBookInformationSeries", b =>
+                {
+                    b.Property<int>("ComicBookInformationListId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SeriesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ComicBookInformationListId", "SeriesId");
+
+                    b.HasIndex("SeriesId");
+
+                    b.ToTable("ComicBookInformationSeries");
                 });
 
             modelBuilder.Entity("ComicBookInformationTag", b =>
@@ -105,15 +123,10 @@ namespace Zine.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("SeriesId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ComicBookId")
                         .IsUnique();
-
-                    b.HasIndex("SeriesId");
 
                     b.ToTable("ComicBookInformation");
                 });
@@ -269,6 +282,21 @@ namespace Zine.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ComicBookInformationSeries", b =>
+                {
+                    b.HasOne("Zine.App.Domain.ComicBookInformation.ComicBookInformation", null)
+                        .WithMany()
+                        .HasForeignKey("ComicBookInformationListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Zine.App.Domain.Series.Series", null)
+                        .WithMany()
+                        .HasForeignKey("SeriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ComicBookInformationTag", b =>
                 {
                     b.HasOne("Zine.App.Domain.ComicBookInformation.ComicBookInformation", null)
@@ -303,13 +331,7 @@ namespace Zine.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Zine.App.Domain.Series.Series", "Series")
-                        .WithMany("ComicBookInformationList")
-                        .HasForeignKey("SeriesId");
-
                     b.Navigation("ComicBook");
-
-                    b.Navigation("Series");
                 });
 
             modelBuilder.Entity("Zine.App.Domain.ComicBookPageInformation.ComicBookPageInformation", b =>
@@ -346,11 +368,6 @@ namespace Zine.Migrations
                     b.Navigation("ChildGroups");
 
                     b.Navigation("ComicBooks");
-                });
-
-            modelBuilder.Entity("Zine.App.Domain.Series.Series", b =>
-                {
-                    b.Navigation("ComicBookInformationList");
                 });
 #pragma warning restore 612, 618
         }

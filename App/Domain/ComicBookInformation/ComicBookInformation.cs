@@ -23,29 +23,32 @@ public class ComicBookInformation : IId
 	[MaxLength(25)]
 	public string SavedCoverImageFileName { get; init; } = null!;
 
-
 	public DateTime? LastOpened { get; set; }
 
-	public ICollection<Person.Person> People { get; set; } = [];
+	public List<Person.Person> People { get; set; } = [];
 
-	public ICollection<Publisher.Publisher> Publishers { get; set; } = [];
+	public List<Publisher.Publisher> Publishers { get; set; } = [];
 
-	public ICollection<Tag.Tag> Tags { get; set; } = [];
+	public List<Tag.Tag> Tags { get; set; } = new();
 
-	[NotMapped]
-	public ICollection<Person.Person> Draftsmen => People.Where(p => p.Role == Role.Drawer).ToArray();
+	public int? SeriesId { get; set; }
+	public Series.Series? Series { get; set; }
 
-	[NotMapped]
-	public ICollection<Person.Person> Colorists => People.Where(p => p.Role == Role.Colorist).ToArray();
-
-	[NotMapped]
-	public ICollection<Person.Person> Writers => People.Where(p => p.Role == Role.Writer).ToArray();
+	// Creator type shortcuts
 
 	[NotMapped]
-	public ICollection<Person.Person> Editors => People.Where(p => p.Role == Role.Editor).ToArray();
+	public List<Person.Person> Draftsmen => People.Where(p => p.Role == Role.Drawer).ToList();
 
+	[NotMapped]
+	public List<Person.Person> Colorists => People.Where(p => p.Role == Role.Colorist).ToList();
 
+	[NotMapped]
+	public List<Person.Person> Writers => People.Where(p => p.Role == Role.Writer).ToList();
 
+	[NotMapped]
+	public List<Person.Person> Editors => People.Where(p => p.Role == Role.Editor).ToList();
+
+	//
 
 	[NotMapped]
 	public string SavedCoverImageFullPath => Path.Join(DataPath.ComicBookCoverDirectory, SavedCoverImageFileName);
