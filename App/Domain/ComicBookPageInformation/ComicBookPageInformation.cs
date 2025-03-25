@@ -1,11 +1,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Database.FieldInterfaces;
 
 namespace Zine.App.Domain.ComicBookPageInformation;
 
 [Table("ComicBookPageInformation")]
-public class ComicBookPageInformation
+public class ComicBookPageInformation : IId
 {
 	public int Id { get; init; }
 

@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Zine.App.Database.FieldInterfaces;
 
 namespace Zine.App.Domain.Person;
 
-public class Person
+public class Person : IId
 {
-	public int Id { get; set; }
+	public int Id { get; init; }
 
 	[MaxLength(255)]
 	public required string Name { get; set; }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Database.FieldInterfaces;
 using Zine.App.Domain.Person;
 using Zine.App.Enums;
 using Zine.App.Helpers.Compression;
@@ -7,7 +8,7 @@ using Zine.App.Helpers.Compression;
 namespace Zine.App.Domain.ComicBookInformation;
 
 [Table("ComicBookInformation")]
-public class ComicBookInformation
+public class ComicBookInformation : IId
 {
 	public int Id { get; init; }
 

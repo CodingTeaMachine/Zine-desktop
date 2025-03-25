@@ -1,3 +1,4 @@
+@using Microsoft.IdentityModel.Tokens
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Person
 @using Zine.App.Exceptions
@@ -64,64 +65,95 @@
 				<tr>
 					<th>Drawn by</th>
 					<td>
-						<ChipMultiSelect
-							@bind-SelectedValues="ComicBook.Information.People"
-							Label="Select a value..."
-							ShowInput="_editMode"
-							RowToString="@Person_ToString"
-							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
-							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Drawer))"
-							OnCreate="@((name) => Person_Create(name, Role.Drawer))"
-							OnDelete="@DeletePerson"
-						/>
+						@if (!_editMode && Person_ChipFilterFunc(ComicBook.Information.People, Role.Drawer).IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="ComicBook.Information.People"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Person_ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
+								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Drawer))"
+								OnCreate="@((name) => Person_Create(name, Role.Drawer))"
+								OnDelete="@DeletePerson" />
+						}
 					</td>
 				</tr>
 
 				<tr>
 					<th>Colored by</th>
 					<td>
-						<ChipMultiSelect
-							@bind-SelectedValues="ComicBook.Information.People"
-							Label="Select a value..."
-							ShowInput="_editMode"
-							RowToString="@Person_ToString"
-							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
-							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Colorist))"
-							OnCreate="@((name) => Person_Create(name, Role.Colorist))"
-							OnDelete="@DeletePerson"
-						/>
+						@if (!_editMode && Person_ChipFilterFunc(ComicBook.Information.People, Role.Colorist).IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="ComicBook.Information.People"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Person_ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
+								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Colorist))"
+								OnCreate="@((name) => Person_Create(name, Role.Colorist))"
+								OnDelete="@DeletePerson" />
+						}
+
 					</td>
 				</tr>
 
 				<tr>
 					<th>Written by</th>
 					<td>
-						<ChipMultiSelect
-							@bind-SelectedValues="ComicBook.Information.People"
-							Label="Select a value..."
-							ShowInput="_editMode"
-							RowToString="@Person_ToString"
-							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
-							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Writer))"
-							OnCreate="@((name) => Person_Create(name, Role.Writer))"
-							OnDelete="@DeletePerson"
-						/>
+
+						@if (!_editMode && Person_ChipFilterFunc(ComicBook.Information.People, Role.Writer).IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="ComicBook.Information.People"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Person_ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
+								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Writer))"
+								OnCreate="@((name) => Person_Create(name, Role.Writer))"
+								OnDelete="@DeletePerson" />
+						}
 					</td>
 				</tr>
 
 				<tr>
 					<th>Edited by</th>
 					<td>
-						<ChipMultiSelect
-							@bind-SelectedValues="ComicBook.Information.People"
-							Label="Select a value..."
-							ShowInput="_editMode"
-							RowToString="@Person_ToString"
-							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
-							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Editor))"
-							OnCreate="@((name) => Person_Create(name, Role.Editor))"
-							OnDelete="@DeletePerson"
-						/>
+						@if (!_editMode && Person_ChipFilterFunc(ComicBook.Information.People, Role.Editor).IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="ComicBook.Information.People"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Person_ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
+								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Editor))"
+								OnCreate="@((name) => Person_Create(name, Role.Editor))"
+								OnDelete="@DeletePerson" />
+						}
 					</td>
 				</tr>
 

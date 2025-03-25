@@ -1,6 +1,6 @@
 @using Microsoft.IdentityModel.Tokens
-@using Zine.App.Domain.Person
 
+@typeparam T where T : Zine.App.Database.FieldInterfaces.IId
 
 <div class="max-w-96 flex flex-row flex-wrap">
 	@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
@@ -24,9 +24,9 @@
 {
 	<MudAutocomplete
 		@ref="_mudMultiselect"
-		T="Person"
+		T="T"
 		Label="@Label"
-		Value="null"
+		Value="@(default(T))"
 		ValueChanged="OnSelectedValuesChanged"
 		SearchFunc="Search"
 		ToStringFunc="RowToString.Invoke"
@@ -37,17 +37,17 @@
 		ResetValueOnEmptyText="true"
 	>
 
-		<ItemTemplate Context="person">
+		<ItemTemplate Context="row">
 			<div class="flex items-center justify-between">
 				<MudText>
-					@RowToString.Invoke(person)
+					@RowToString.Invoke(row)
 				</MudText>
 
 				<div @onclick:stopPropagation="true">
 					<MudIcon
 						Class="hover:fill-red-500"
 						Icon="@Icons.Material.Filled.Clear"
-						@onclick="() => DeleteRow(person)"
+						@onclick="() => DeleteRow(row)"
 
 					/>
 				</div>
@@ -104,7 +104,7 @@
 	public bool ShowInput { get; set; }
 
 	[Parameter]
-	public required Func<Person?, string> RowToString { get; set; }
+	public required Func<T?, string> RowToString { get; set; }
 
 	//Create
 
@@ -114,30 +114,31 @@
 	//Read
 
 	[Parameter]
-	public required ICollection<Person> SelectedValues { get; set; } = [];
+	public required ICollection<T> SelectedValues { get; set; } = [];
 
 	[Parameter]
-	public EventCallback<ICollection<Person>> SelectedValuesChanged { get; set; }
+	public EventCallback<ICollection<T>> SelectedValuesChanged { get; set; }
 
 	[Parameter]
-	public required Func<string?, CancellationToken, IEnumerable<Person>> SearchFunc { get; set; }
+	public required Func<string?, CancellationToken, IEnumerable<T>> SearchFunc { get; set; }
 
 	[Parameter]
-	public Func<IEnumerable<Person>, IEnumerable<Person>> ChipFilterFunc { get; set; } = values => values;
+	public Func<IEnumerable<T>, IEnumerable<T>> ChipFilterFunc { get; set; } = values => values;
 
 	// Delete
 
 	[Parameter]
-	public required EventCallback<Person> OnDelete { get; set; }
+	public required EventCallback<T> OnDelete { get; set; }
 
 
-	private MudAutocomplete<Person> _mudMultiselect = null!;
+	private MudAutocomplete<T> _mudMultiselect = null!;
 
-	private IEnumerable<int> SelectedPeopleIdList => SelectedValues.Select(p => p.Id);
+	private IEnumerable<int> SelectedValuesIdList => SelectedValues.Select(p => p.Id);
 
 	private string _currentSearchTerm = string.Empty;
 
-	private async void OnSelectedValuesChanged(Person? selection)
+
+	private async void OnSelectedValuesChanged(T? selection)
 	{
 		if (selection != null)
 		{
@@ -150,20 +151,20 @@
 	}
 
 
-	private Task<IEnumerable<Person>> Search(string? searchTerm, CancellationToken cancellationToken)
+	private Task<IEnumerable<T>> Search(string? searchTerm, CancellationToken cancellationToken)
 	{
 		_currentSearchTerm = searchTerm ?? string.Empty;
 
 		return Task.FromResult(
 			SearchFunc
 				.Invoke(searchTerm, cancellationToken)
-				.Where(person => !SelectedPeopleIdList.Contains(person.Id))
+				.Where(value => !SelectedValuesIdList.Contains(value.Id))
 		);
 	}
 
 	private Task OnValueChanged(ChangeEventArgs e)
 	{
-		SelectedValues = (ICollection<Person>)Convert.ChangeType(e.Value, typeof(ICollection<Person>))!;
+		SelectedValues = (ICollection<T>)Convert.ChangeType(e.Value, typeof(ICollection<T>))!;
 		return SelectedValuesChanged.InvokeAsync(SelectedValues);
 	}
 
@@ -172,17 +173,17 @@
 		OnCreate.InvokeAsync(_currentSearchTerm);
 	}
 
-	private void DeleteRow(Person person)
+	private void DeleteRow(T row)
 	{
 
-		OnDelete.InvokeAsync(person);
-		RemoveSelectedValue(person);
+		OnDelete.InvokeAsync(row);
+		RemoveSelectedValue(row);
 		_mudMultiselect.ForceUpdate();
 	}
 
-	private void RemoveSelectedValue(Person person)
+	private void RemoveSelectedValue(T row)
 	{
-		SelectedValues = SelectedValues.Where(p => p.Id != person.Id).ToList();
+		SelectedValues = SelectedValues.Where(p => p.Id != row.Id).ToList();
 		SelectedValuesChanged.InvokeAsync(SelectedValues);
 	}
 

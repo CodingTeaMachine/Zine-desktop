@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Database.FieldInterfaces;
 
 namespace Zine.App.Domain.ComicBook;
 
 [Table("ComicBooks")]
-public class ComicBook
+public class ComicBook : IId
 {
 	public int Id { get; init; }
 
