@@ -1,19 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
 using Zine.App.Common.FieldInterfaces;
 
-namespace Zine.App.Domain.Series;
+namespace Zine.App.Domain.Issue;
 
-[Table("Series")]
-public class Series : IId
+[Table("Issues")]
+public class Issue : IId
 {
 	public int Id { get; init; }
 
 	[MaxLength(255)]
-	public required string Name { get; set; }
+	public required string Name { get; init; }
 
-	public List<Issue.Issue> Issues { get; set; } = [];
+	public int SeriesId { get; set; }
+	public Series.Series Series { get; set; } = null!;
 
 	public List<ComicBookInformation.ComicBookInformation> ComicBookInformationList { get; set; } = [];
 }

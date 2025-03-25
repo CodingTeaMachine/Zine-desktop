@@ -4,6 +4,7 @@ using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
 using Zine.App.Domain.Person;
+using Zine.App.Domain.Series;
 using Zine.App.Enums;
 
 namespace Zine.App.Database;
@@ -73,6 +74,16 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
         modelBuilder.Entity<ComicBookInformation>()
             .HasOne(i => i.Series)
             .WithMany(s => s.ComicBookInformationList);
+
+        //ComicBookInformation - Issue relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasOne(i => i.Issue)
+            .WithMany(s => s.ComicBookInformationList);
+
+        //Series - Issue relationship
+        modelBuilder.Entity<Series>()
+            .HasMany(i => i.Issues)
+            .WithOne(s => s.Series);
 
         base.OnModelCreating(modelBuilder);
     }

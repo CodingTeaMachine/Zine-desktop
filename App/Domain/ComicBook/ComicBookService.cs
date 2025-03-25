@@ -123,6 +123,8 @@ public class ComicBookService(
 					.ThenInclude(cbI => cbI.Tags)
 					.Include(cb => cb.Information)
 					.ThenInclude(cbI => cbI.Series)
+					.Include(cb => cb.Information)
+					.ThenInclude(cbi => cbi.Issue)!
 				)
 			;
 

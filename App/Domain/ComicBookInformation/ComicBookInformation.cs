@@ -31,8 +31,9 @@ public class ComicBookInformation : IId
 
 	public List<Tag.Tag> Tags { get; set; } = new();
 
-	public int? SeriesId { get; set; }
 	public Series.Series? Series { get; set; }
+
+	public Issue.Issue? Issue { get; set; }
 
 	// Creator type shortcuts
 

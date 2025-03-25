@@ -1,7 +1,8 @@
 @using Microsoft.IdentityModel.Tokens
 @using Zine.App.Common.Service.DTO
 @using Zine.App.Domain.ComicBook
-@using Zine.App.Domain.ComicBookInformation
+@using Zine.App.Domain.Issue
+@using Zine.App.Domain.Issue.DTO
 @using Zine.App.Domain.Person
 @using Zine.App.Domain.Person.DTO
 @using Zine.App.Domain.Publisher
@@ -22,6 +23,7 @@
 @inject IPublisherService PublisherService
 @inject ITagService TagService
 @inject ISeriesService SeriesService
+@inject IIssueService IssueService
 
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -242,7 +244,27 @@
 
 				<tr>
 					<th>Issue #</th>
-					<td class="text-red-600">TODO</td>
+					<td>
+						@if (!_editMode && Series == null)
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Issue"
+								@bind-SelectedValue="Issue"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								SingleSelect="true"
+								Disabled="Series == null"
+								RowToString="@Issue_ToString"
+								SearchFunc="@Issue_Search"
+								OnCreate="@Issue_Create"
+								OnDelete="@Issue_Delete"
+							/>
+						}
+					</td>
 				</tr>
 
 				<tr>
@@ -267,6 +289,7 @@
 	private List<Publisher> Publishers { get; set; } = [];
 	private List<Tag> Tags { get; set; } = [];
 	private Series? Series { get; set; } = null;
+	private Issue? Issue { get; set; } = null;
 
 	public bool Open
 	{
@@ -326,6 +349,7 @@
 		Publishers = [];
 		Tags = [];
 		Series = null;
+		Issue = null;
 	}
 
 	private void LoadComic(int comicBookId)
@@ -342,9 +366,8 @@
 			Publishers.AddRange(comicBook.Information.Publishers);
 			Tags.AddRange(comicBook.Information.Tags);
 
-			Console.WriteLine(comicBook.Information.Series?.Name);
-
 			Series = comicBook.Information.Series;
+			Issue = comicBook.Information.Issue;
 
 			ComicBook = comicBook;
 		}
@@ -368,8 +391,7 @@
 		ComicBook!.Information.Publishers = Publishers;
 		ComicBook!.Information.Tags = Tags;
 		ComicBook!.Information.Series = Series;
-
-		Console.WriteLine("Save Changes");
+		ComicBook!.Information.Issue = Issue;
 
 		ComicBook = ComicBookService.Update(ComicBook!);
 
@@ -576,9 +598,6 @@
 		try
 		{
 			SeriesService.Delete(series);
-
-			Series = null;
-
 			Snackbar.Add($"Successfully deleted: {series.Name}", Severity.Success);
 		}
 		catch (HandledAppException e)
@@ -586,6 +605,51 @@
 			Snackbar.Add(e.Message, e.Severity);
 		}
 	}
+
+	// Issue
+
+	private string Issue_ToString(Issue? issue)
+	{
+		return issue?.Name ?? "";
+	}
+
+	private void Issue_Create(string name)
+	{
+		try
+		{
+			var createIssueDto = new CreateIssueDto { Name = name, SeriesId = Series!.Id };
+			var createdIssue = IssueService.Create(createIssueDto);
+
+			Issue = createdIssue;
+
+			Snackbar.Add($"Successfully created: {createdIssue.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Issue> Issue_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return IssueService.Search(searchDto);
+	}
+
+	private void Issue_Delete(Issue issue)
+	{
+		try
+		{
+			IssueService.Delete(issue);
+			Snackbar.Add($"Successfully deleted: {issue.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
 
 	// Manage state
 

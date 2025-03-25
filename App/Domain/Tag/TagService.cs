@@ -48,7 +48,6 @@ public class TagService(
 
 	public void Delete(Tag value)
 	{
-
 		repository.Delete(value);
 
 		try
