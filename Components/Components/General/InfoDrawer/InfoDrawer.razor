@@ -1,14 +1,24 @@
 @using Microsoft.IdentityModel.Tokens
+@using Zine.App.Common.Service.DTO
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Person
+@using Zine.App.Domain.Person.DTO
+@using Zine.App.Domain.Publisher
+@using Zine.App.Domain.Publisher.DTO
+@using Zine.App.Domain.Tag
+@using Zine.App.Domain.Tag.DTO
 @using Zine.App.Exceptions
 @using Zine.App.Pages.Library
 
 @implements IDisposable
 
 @inject ReadingPageEventBus EventBus
+
 @inject IComicBookService ComicBookService
 @inject IPersonService PersonService
+@inject IPublisherService PublisherService
+@inject ITagService TagService
+
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 
@@ -71,7 +81,6 @@
 						}
 						else
 						{
-
 							<ChipMultiSelect
 								T="Person"
 								@bind-SelectedValues="ComicBook.Information.People"
@@ -80,8 +89,9 @@
 								RowToString="@Person_ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
 								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Drawer))"
-								OnCreate="@((name) => Person_Create(name, Role.Drawer))"
-								OnDelete="@DeletePerson" />
+								OnCreate="@(name => Person_Create(name, Role.Drawer))"
+								OnDelete="@Person_Delete"
+							/>
 						}
 					</td>
 				</tr>
@@ -103,8 +113,9 @@
 								RowToString="@Person_ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
 								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Colorist))"
-								OnCreate="@((name) => Person_Create(name, Role.Colorist))"
-								OnDelete="@DeletePerson" />
+								OnCreate="@(name => Person_Create(name, Role.Colorist))"
+								OnDelete="@Person_Delete"
+							/>
 						}
 
 					</td>
@@ -128,8 +139,9 @@
 								RowToString="@Person_ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
 								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Writer))"
-								OnCreate="@((name) => Person_Create(name, Role.Writer))"
-								OnDelete="@DeletePerson" />
+								OnCreate="@(name => Person_Create(name, Role.Writer))"
+								OnDelete="@Person_Delete"
+							/>
 						}
 					</td>
 				</tr>
@@ -151,20 +163,57 @@
 								RowToString="@Person_ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
 								ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Editor))"
-								OnCreate="@((name) => Person_Create(name, Role.Editor))"
-								OnDelete="@DeletePerson" />
+								OnCreate="@(name => Person_Create(name, Role.Editor))"
+								OnDelete="@Person_Delete"
+							/>
 						}
 					</td>
 				</tr>
 
 				<tr>
 					<th>Published by</th>
-					<td class="text-red-600">TODO</td>
+					<td>
+						@if (!_editMode && ComicBook.Information.Publishers.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Publisher"
+								@bind-SelectedValues="ComicBook.Information.Publishers"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Publisher_ToString"
+								SearchFunc="@Publisher_Search"
+								OnCreate="@Publisher_Create"
+								OnDelete="@Publisher_Delete"
+							/>
+						}
+					</td>
 				</tr>
 
 				<tr>
 					<th>Tags</th>
-					<td class="text-red-600">TODO</td>
+					<td>
+						@if (!_editMode && ComicBook.Information.Tags.IsNullOrEmpty())
+						{
+							<span class="italic"> None </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Tag"
+								@bind-SelectedValues="ComicBook.Information.Tags"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="@Tag_ToString"
+								SearchFunc="@Tag_Search"
+								OnCreate="@Tag_Create"
+								OnDelete="@Tag_Delete"
+							/>
+						}
+					</td>
 				</tr>
 
 				<tr>
@@ -253,6 +302,15 @@
 		}
 	}
 
+	private void SaveChanges()
+	{
+		ComicBook = ComicBookService.Update(ComicBook!);
+
+		DisableEditMode();
+	}
+
+	// Person
+
 	private string Person_ToString(Person? person)
 	{
 		return person?.Name ?? "";
@@ -262,7 +320,8 @@
 	{
 		try
 		{
-			var createdPerson = PersonService.Create(name, role);
+			var createPersonDto = new CreatePersonDto { Name = name, Role = role };
+			var createdPerson = PersonService.Create(createPersonDto);
 			ComicBook!.Information.People.Add(createdPerson);
 			Snackbar.Add($"Successfully created: {createdPerson.Name}", Severity.Success);
 		}
@@ -274,7 +333,9 @@
 
 	private IEnumerable<Person> Person_SearchByRole(string? searchTerm, CancellationToken cancellationToken, Role role)
 	{
-		return PersonService.Search(searchTerm, role);
+		var searchDto = new SearchPersonDto { Name = searchTerm, Role = role };
+
+		return PersonService.Search(searchDto);
 	}
 
 	private IEnumerable<Person> Person_ChipFilterFunc(IEnumerable<Person> people, Role role)
@@ -282,14 +343,7 @@
 		return people.Where(p => p.Role == role);
 	}
 
-	private void SaveChanges()
-	{
-		ComicBook = ComicBookService.Update(ComicBook!);
-
-		DisableEditMode();
-	}
-
-	private void DeletePerson(Person person)
+	private void Person_Delete(Person person)
 	{
 		try
 		{
@@ -303,6 +357,95 @@
 		}
 	}
 
+	// Publisher
+
+
+	private string Publisher_ToString(Publisher? person)
+	{
+		return person?.Name ?? "";
+	}
+
+	private void Publisher_Create(string name)
+	{
+		try
+		{
+			var createPublisherDto = new CreatePublisherDto { Name = name};
+			var createdPublisher = PublisherService.Create(createPublisherDto);
+			ComicBook!.Information.Publishers.Add(createdPublisher);
+			Snackbar.Add($"Successfully created: {createdPublisher.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Publisher> Publisher_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return PublisherService.Search(searchDto);
+	}
+
+	private void Publisher_Delete(Publisher publisher)
+	{
+		try
+		{
+			PublisherService.Delete(publisher);
+
+			Snackbar.Add($"Successfully deleted: {publisher.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	// Tag
+
+	private string Tag_ToString(Tag? person)
+	{
+		return person?.Name ?? "";
+	}
+
+	private void Tag_Create(string name)
+	{
+		try
+		{
+			var createTagDto = new CreateTagDto() { Name = name};
+			var createdTag = TagService.Create(createTagDto);
+			ComicBook!.Information.Tags.Add(createdTag);
+			Snackbar.Add($"Successfully created: {createdTag.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Tag> Tag_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return TagService.Search(searchDto);
+	}
+
+	private void Tag_Delete(Tag publisher)
+	{
+		try
+		{
+			TagService.Delete(publisher);
+
+			Snackbar.Add($"Successfully deleted: {publisher.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+
+	// Manage state
 
 	private void EnableBodyScroll()
 	{

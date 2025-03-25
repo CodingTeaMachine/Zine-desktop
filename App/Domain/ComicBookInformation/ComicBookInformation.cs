@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Zine.App.Database.FieldInterfaces;
+using Zine.App.Common.FieldInterfaces;
 using Zine.App.Domain.Person;
 using Zine.App.Enums;
 using Zine.App.Helpers.Compression;
@@ -27,6 +27,10 @@ public class ComicBookInformation : IId
 	public DateTime? LastOpened { get; set; }
 
 	public ICollection<Person.Person> People { get; set; } = [];
+
+	public ICollection<Publisher.Publisher> Publishers { get; set; } = [];
+
+	public ICollection<Tag.Tag> Tags { get; set; } = [];
 
 	[NotMapped]
 	public ICollection<Person.Person> Draftsmen => People.Where(p => p.Role == Role.Drawer).ToArray();

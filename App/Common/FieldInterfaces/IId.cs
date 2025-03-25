@@ -1,4 +1,4 @@
-namespace Zine.App.Database.FieldInterfaces;
+namespace Zine.App.Common.FieldInterfaces;
 
 public interface IId
 {

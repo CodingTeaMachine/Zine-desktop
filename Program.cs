@@ -12,6 +12,8 @@ using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
 using Zine.App.Domain.Person;
+using Zine.App.Domain.Publisher;
+using Zine.App.Domain.Tag;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Logger;
@@ -46,6 +48,8 @@ builder.Services.AddScoped<IComicBookInformationService, ComicBookInformationSer
 builder.Services.AddScoped<IComicBookPageInformationService, ComicBookPageInformationService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<ITagService, TagService>();
 
 //Importing comic books
 builder.Services.AddScoped<ImportUnitOfWork>();

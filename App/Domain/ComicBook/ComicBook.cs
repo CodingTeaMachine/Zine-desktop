@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Zine.App.Database.FieldInterfaces;
+using Zine.App.Common.FieldInterfaces;
 
 namespace Zine.App.Domain.ComicBook;
 

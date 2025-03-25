@@ -1,10 +1,7 @@
+using Zine.App.Common.Service;
+
 namespace Zine.App.Domain.Person;
 
-public interface IPersonService
+public interface IPersonService : IDropdownService<Person>
 {
-	public Person Create(string name, Role role);
-
-	public IEnumerable<Person> Search(string? name, Role role);
-
-	public void Delete(Person person);
 }

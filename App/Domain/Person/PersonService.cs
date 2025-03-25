@@ -1,19 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using Zine.App.Database;
+using Zine.App.Domain.Person.DTO;
 using Zine.App.Exceptions;
 using Zine.App.Logger;
 
 namespace Zine.App.Domain.Person;
 
-public class PersonService(GenericRepository<Person> repository, ZineDbContext dbContext, ILoggerService logger) : IPersonService
+public class PersonService(
+	GenericRepository<Person> repository,
+	ZineDbContext dbContext,
+	ILoggerService logger) : IPersonService
 {
-	public Person Create(string name, Role role)
+	public Person Create(object obj)
 	{
+		var dto = (CreatePersonDto)obj;
+
 		var person = new Person
 		{
-			Name = name,
-			Role = role,
+			Name = dto.Name,
+			Role = dto.Role,
 		};
 
 		repository.Insert(person);
@@ -21,24 +27,28 @@ public class PersonService(GenericRepository<Person> repository, ZineDbContext d
 		try
 		{
 			dbContext.SaveChanges();
-			logger.Information($"PersonService.Create: Created person: \"{name}\" with role: {role.ToString()}");
+			logger.Information($"PersonService.Create: Created person: \"{dto.Name}\" with role: {dto.Role.ToString()}");
 			return person;
 		}
 		catch (DbUpdateException e)
 		{
-			throw new HandledAppException($"Failed to create person: \"{name}\"", Severity.Error, e);
+			throw new HandledAppException($"Failed to create person: \"{dto.Name}\"", Severity.Error, e);
 		}
 	}
 
-	public IEnumerable<Person> Search(string? name, Role role)
+	public IEnumerable<Person> Search(object searchParams)
 	{
-		if (string.IsNullOrEmpty(name))
+
+		var dto = (SearchPersonDto)searchParams;
+
+		if (string.IsNullOrEmpty(dto.Name))
 		{
-			return repository.List(filter: p => p.Role == role);
+			return repository.List(filter: p => p.Role == dto.Role);
 		}
-		name = name.ToLower();
+
+		dto.Name = dto.Name.ToLower();
 		return repository.List(
-			filter: p => p.Role == role && p.Name.ToLower().Contains(name));
+			filter: p => p.Role == dto.Role && p.Name.ToLower().Contains(dto.Name));
 	}
 
 	public void Delete(Person person)

@@ -26,28 +26,28 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //Group referencing groups
+        //Group - Group relationship
         modelBuilder.Entity<Group>()
             .HasOne(g => g.ParentGroup)
             .WithMany(g => g.ChildGroups)
             .HasForeignKey(g => g.ParentGroupId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ComicBook group relationship
+        // ComicBook - Group relationship
         modelBuilder.Entity<ComicBook>()
             .HasOne(cb => cb.Group)
             .WithMany(g => g.ComicBooks)
             .HasForeignKey(cb => cb.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ComicBook information relationship
+        // ComicBook - ComicBookInformation relationship
         modelBuilder.Entity<ComicBook>()
             .HasOne(cb => cb.Information)
             .WithOne(info => info.ComicBook)
             .HasForeignKey<ComicBookInformation>(info => info.ComicBookId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // ComicBook page information relationship
+        // ComicBook - ComicBookPageInformation relationship
         modelBuilder.Entity<ComicBook>()
             .HasMany(cb => cb.Pages)
             .WithOne(info => info.ComicBook)
@@ -57,6 +57,16 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
         // ComicBookInformation - Person relationship
         modelBuilder.Entity<ComicBookInformation>()
             .HasMany(i => i.People)
+            .WithMany(p => p.ComicBookInformationList);
+
+        //ComicBookInformation - Publisher relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasMany(i => i.Publishers)
+            .WithMany(p => p.ComicBookInformationList);
+
+        //ComicBookInformation - Tag relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasMany(i => i.Tags)
             .WithMany(p => p.ComicBookInformationList);
 
         base.OnModelCreating(modelBuilder);

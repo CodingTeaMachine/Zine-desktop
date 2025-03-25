@@ -1,6 +1,6 @@
 @using Microsoft.IdentityModel.Tokens
 
-@typeparam T where T : Zine.App.Database.FieldInterfaces.IId
+@typeparam T where T : Zine.App.Common.FieldInterfaces.IId
 
 <div class="max-w-96 flex flex-row flex-wrap">
 	@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
