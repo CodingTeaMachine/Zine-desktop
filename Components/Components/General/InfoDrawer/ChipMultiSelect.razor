@@ -1,54 +1,53 @@
 @using Microsoft.IdentityModel.Tokens
 @using Zine.App.Domain.Person
-@using Zine.App.Exceptions
 
 
 <div class="max-w-96 flex flex-row flex-wrap">
-	@foreach (var person in SelectedPeople.Where(p => p.Role == SearchRole))
+	@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
 	{
-		@if (EditMode)
+		@if (ShowInput)
 		{
-			<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedPerson(person)">
-				@person.Name
+			<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(row)">
+				@RowToString.Invoke(row)
 			</MudChip>
 		}
 		else
 		{
 			<MudChip T="string" Color="Color.Primary" Size="Size.Small">
-				@person.Name
+				@RowToString.Invoke(row)
 			</MudChip>
 		}
 	}
 </div>
 
-@if (EditMode)
+@if (ShowInput)
 {
 	<MudAutocomplete
 		@ref="_mudMultiselect"
 		T="Person"
 		Label="@Label"
 		Value="null"
-		ValueChanged="OnSelectedValueChanged"
-		SearchFunc="SearchPeople"
-		ToStringFunc="PersonToString"
+		ValueChanged="OnSelectedValuesChanged"
+		SearchFunc="Search"
+		ToStringFunc="RowToString.Invoke"
 		Strict="false"
 		ShowProgressIndicator="true"
 		CoerceValue="true"
 		CoerceText="true"
 		ResetValueOnEmptyText="true"
-		>
+	>
 
 		<ItemTemplate Context="person">
 			<div class="flex items-center justify-between">
 				<MudText>
-					@PersonToString(person)
+					@RowToString.Invoke(person)
 				</MudText>
 
 				<div @onclick:stopPropagation="true">
 					<MudIcon
 						Class="hover:fill-red-500"
 						Icon="@Icons.Material.Filled.Clear"
-						@onclick="() => DeletePerson(person)"
+						@onclick="() => DeleteRow(person)"
 
 					/>
 				</div>
@@ -60,7 +59,7 @@
 			@if (!_currentSearchTerm.IsNullOrEmpty())
 			{
 				<div class="pa-2">
-					<MudButton Color="Color.Primary" @onclick="CreatePerson">
+					<MudButton Color="Color.Primary" @onclick="CreateRow">
 						<MudText>
 							Create "@_currentSearchTerm"
 						</MudText>
@@ -73,13 +72,13 @@
 			@if (_currentSearchTerm.IsNullOrEmpty())
 			{
 				<MudText Align="Align.Center" Class="px-4 py-1">
-					No items found
+					@NoMoreDataText
 				</MudText>
 			}
 			else
 			{
 				<div class="pa-2">
-					<MudButton Color="Color.Primary" @onclick="CreatePerson">
+					<MudButton Color="Color.Primary" @onclick="CreateRow">
 						<MudText>
 							Create "@_currentSearchTerm"
 						</MudText>
@@ -96,38 +95,54 @@
 @code {
 
 	[Parameter]
-	public required IPersonService PersonService { get; set; }
-
-	[Inject]
-    public required ISnackbar Snackbar { get; set; }
-
-	[Parameter]
-	public required ICollection<Person> SelectedPeople { get; set; } = [];
-
-	[Parameter]
-	public EventCallback<ICollection<Person>> SelectedPeopleChanged { get; set; }
-
-	[Parameter]
 	public required string Label { get; set; }
 
 	[Parameter]
-	public required Role SearchRole { get; set; }
+	public string NoMoreDataText { get; set; } = "No items found";
 
 	[Parameter]
-	public bool EditMode { get; set; } = false;
+	public bool ShowInput { get; set; }
+
+	[Parameter]
+	public required Func<Person?, string> RowToString { get; set; }
+
+	//Create
+
+	[Parameter]
+	public required EventCallback<string> OnCreate { get; set; }
+
+	//Read
+
+	[Parameter]
+	public required ICollection<Person> SelectedValues { get; set; } = [];
+
+	[Parameter]
+	public EventCallback<ICollection<Person>> SelectedValuesChanged { get; set; }
+
+	[Parameter]
+	public required Func<string?, CancellationToken, IEnumerable<Person>> SearchFunc { get; set; }
+
+	[Parameter]
+	public Func<IEnumerable<Person>, IEnumerable<Person>> ChipFilterFunc { get; set; } = values => values;
+
+	// Delete
+
+	[Parameter]
+	public required EventCallback<Person> OnDelete { get; set; }
+
 
 	private MudAutocomplete<Person> _mudMultiselect = null!;
 
-	private IEnumerable<int> SelectedPeopleIdList => SelectedPeople.Select(p => p.Id);
+	private IEnumerable<int> SelectedPeopleIdList => SelectedValues.Select(p => p.Id);
 
 	private string _currentSearchTerm = string.Empty;
 
-	private async void OnSelectedValueChanged(Person? selection)
+	private async void OnSelectedValuesChanged(Person? selection)
 	{
 		if (selection != null)
 		{
-			SelectedPeople.Add(selection);
-			await SelectedPeopleChanged.InvokeAsync(SelectedPeople);
+			SelectedValues.Add(selection);
+			await SelectedValuesChanged.InvokeAsync(SelectedValues);
 		}
 
 		await _mudMultiselect.ClearAsync();
@@ -135,65 +150,40 @@
 	}
 
 
-	private Task<IEnumerable<Person>> SearchPeople(string? searchTerm, CancellationToken cancellationToken)
+	private Task<IEnumerable<Person>> Search(string? searchTerm, CancellationToken cancellationToken)
 	{
 		_currentSearchTerm = searchTerm ?? string.Empty;
 
 		return Task.FromResult(
-			PersonService
-				.Search(searchTerm, SearchRole)
+			SearchFunc
+				.Invoke(searchTerm, cancellationToken)
 				.Where(person => !SelectedPeopleIdList.Contains(person.Id))
 		);
 	}
 
-	private string PersonToString(Person? person)
-	{
-		return person?.Name ?? "";
-	}
-
-
 	private Task OnValueChanged(ChangeEventArgs e)
 	{
-		SelectedPeople = (ICollection<Person>)Convert.ChangeType(e.Value, typeof(ICollection<Person>))!;
-		return SelectedPeopleChanged.InvokeAsync(SelectedPeople);
+		SelectedValues = (ICollection<Person>)Convert.ChangeType(e.Value, typeof(ICollection<Person>))!;
+		return SelectedValuesChanged.InvokeAsync(SelectedValues);
 	}
 
-	private void CreatePerson()
+	private void CreateRow()
 	{
-		try
-		{
-			var createdPerson = PersonService.Create(_currentSearchTerm, SearchRole);
-			_mudMultiselect.ForceUpdate();
-			OnSelectedValueChanged(createdPerson);
-
-			Snackbar.Add($"Successfully created: {createdPerson.Name}", Severity.Success);
-		}
-		catch (HandledAppException e)
-		{
-			Snackbar.Add(e.Message, e.Severity);
-		}
+		OnCreate.InvokeAsync(_currentSearchTerm);
 	}
 
-	private void DeletePerson(Person person)
+	private void DeleteRow(Person person)
 	{
-		try
-		{
-			PersonService.Delete(person);
-			RemoveSelectedPerson(person);
-			_mudMultiselect.ForceUpdate();
 
-			Snackbar.Add($"Successfully deleted: {person.Name}", Severity.Success);
-		}
-		catch (HandledAppException e)
-		{
-			Snackbar.Add(e.Message, e.Severity);
-		}
+		OnDelete.InvokeAsync(person);
+		RemoveSelectedValue(person);
+		_mudMultiselect.ForceUpdate();
 	}
 
-	private void RemoveSelectedPerson(Person person)
+	private void RemoveSelectedValue(Person person)
 	{
-		SelectedPeople = SelectedPeople.Where(p => p.Id != person.Id).ToList();
-		SelectedPeopleChanged.InvokeAsync(SelectedPeople);
+		SelectedValues = SelectedValues.Where(p => p.Id != person.Id).ToList();
+		SelectedValuesChanged.InvokeAsync(SelectedValues);
 	}
 
 }

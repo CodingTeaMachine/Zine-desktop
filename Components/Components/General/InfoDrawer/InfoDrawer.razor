@@ -1,5 +1,6 @@
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Person
+@using Zine.App.Exceptions
 @using Zine.App.Pages.Library
 
 @implements IDisposable
@@ -47,6 +48,7 @@
 	{
 		<MudDrawerContainer Class="p-5">
 			<table class="table-auto">
+				@* ReSharper disable once Asp.Entity *@
 				<tbody class="[&_th]:p-3 [&_th]:text-left [&_td]:p-3">
 
 				<tr>
@@ -63,11 +65,14 @@
 					<th>Drawn by</th>
 					<td>
 						<ChipMultiSelect
+							@bind-SelectedValues="ComicBook.Information.People"
 							Label="Select a value..."
-							@bind-SelectedPeople="ComicBook.Information.People"
-							SearchRole="Role.Drawer"
-							PersonService="PersonService"
-							EditMode="_editMode"
+							ShowInput="_editMode"
+							RowToString="@Person_ToString"
+							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
+							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Drawer))"
+							OnCreate="@((name) => Person_Create(name, Role.Drawer))"
+							OnDelete="@DeletePerson"
 						/>
 					</td>
 				</tr>
@@ -76,11 +81,14 @@
 					<th>Colored by</th>
 					<td>
 						<ChipMultiSelect
+							@bind-SelectedValues="ComicBook.Information.People"
 							Label="Select a value..."
-							@bind-SelectedPeople="ComicBook.Information.People"
-							SearchRole="Role.Colorist"
-							PersonService="PersonService"
-							EditMode="_editMode"
+							ShowInput="_editMode"
+							RowToString="@Person_ToString"
+							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
+							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Colorist))"
+							OnCreate="@((name) => Person_Create(name, Role.Colorist))"
+							OnDelete="@DeletePerson"
 						/>
 					</td>
 				</tr>
@@ -89,11 +97,14 @@
 					<th>Written by</th>
 					<td>
 						<ChipMultiSelect
+							@bind-SelectedValues="ComicBook.Information.People"
 							Label="Select a value..."
-							@bind-SelectedPeople="ComicBook.Information.People"
-							SearchRole="Role.Writer"
-							PersonService="PersonService"
-							EditMode="_editMode"
+							ShowInput="_editMode"
+							RowToString="@Person_ToString"
+							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
+							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Writer))"
+							OnCreate="@((name) => Person_Create(name, Role.Writer))"
+							OnDelete="@DeletePerson"
 						/>
 					</td>
 				</tr>
@@ -102,11 +113,14 @@
 					<th>Edited by</th>
 					<td>
 						<ChipMultiSelect
+							@bind-SelectedValues="ComicBook.Information.People"
 							Label="Select a value..."
-							@bind-SelectedPeople="ComicBook.Information.People"
-							SearchRole="Role.Editor"
-							PersonService="PersonService"
-							EditMode="_editMode"
+							ShowInput="_editMode"
+							RowToString="@Person_ToString"
+							SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
+							ChipFilterFunc="@(people => Person_ChipFilterFunc(people, Role.Editor))"
+							OnCreate="@((name) => Person_Create(name, Role.Editor))"
+							OnDelete="@DeletePerson"
 						/>
 					</td>
 				</tr>
@@ -200,11 +214,40 @@
 			var comicBook = ComicBookService.GetForInformationDrawer(comicBookId);
 			ComicBook = comicBook;
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
 			Snackbar.Add("Could not find comic book", Severity.Error);
 			Open = false;
 		}
+	}
+
+	private string Person_ToString(Person? person)
+	{
+		return person?.Name ?? "";
+	}
+
+	private void Person_Create(string name, Role role)
+	{
+		try
+		{
+			var createdPerson = PersonService.Create(name, role);
+			ComicBook!.Information.People.Add(createdPerson);
+			Snackbar.Add($"Successfully created: {createdPerson.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Person> Person_SearchByRole(string? searchTerm, CancellationToken cancellationToken, Role role)
+	{
+		return PersonService.Search(searchTerm, role);
+	}
+
+	private IEnumerable<Person> Person_ChipFilterFunc(IEnumerable<Person> people, Role role)
+	{
+		return people.Where(p => p.Role == role);
 	}
 
 	private void SaveChanges()
@@ -212,6 +255,20 @@
 		ComicBook = ComicBookService.Update(ComicBook!);
 
 		DisableEditMode();
+	}
+
+	private void DeletePerson(Person person)
+	{
+		try
+		{
+			PersonService.Delete(person);
+
+			Snackbar.Add($"Successfully deleted: {person.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
 	}
 
 
