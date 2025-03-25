@@ -25,6 +25,8 @@ public class ComicBookInformation : IId
 
 	public DateTime? LastOpened { get; set; }
 
+	public DateTime? ReleaseDate { get; set; }
+
 	public List<Person.Person> People { get; set; } = [];
 
 	public List<Publisher.Publisher> Publishers { get; set; } = [];

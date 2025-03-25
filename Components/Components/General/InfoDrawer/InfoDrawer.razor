@@ -1,4 +1,5 @@
 @using Microsoft.IdentityModel.Tokens
+@using MudBlazor.Extensions
 @using Zine.App.Common.Service.DTO
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Issue
@@ -269,7 +270,23 @@
 
 				<tr>
 					<th>Release date</th>
-					<td class="text-red-600">TODO</td>
+					<td>
+						@if (!_editMode)
+						{
+							@if (ReleaseDate == null)
+							{
+								<span class="italic"> Unknown </span>
+							}
+							else
+							{
+								<span>@ReleaseDate.ToIsoDateString()</span>
+							}
+						}
+						else
+						{
+							<MudDatePicker Label="Release date" @bind-Date="ReleaseDate" />
+						}
+					</td>
 				</tr>
 
 				</tbody>
@@ -290,6 +307,7 @@
 	private List<Tag> Tags { get; set; } = [];
 	private Series? Series { get; set; } = null;
 	private Issue? Issue { get; set; } = null;
+	private DateTime? ReleaseDate { get; set; } = null;
 
 	public bool Open
 	{
@@ -350,6 +368,7 @@
 		Tags = [];
 		Series = null;
 		Issue = null;
+		ReleaseDate = null;
 	}
 
 	private void LoadComic(int comicBookId)
@@ -368,6 +387,8 @@
 
 			Series = comicBook.Information.Series;
 			Issue = comicBook.Information.Issue;
+
+			ReleaseDate = comicBook.Information.ReleaseDate;
 
 			ComicBook = comicBook;
 		}
@@ -392,6 +413,7 @@
 		ComicBook!.Information.Tags = Tags;
 		ComicBook!.Information.Series = Series;
 		ComicBook!.Information.Issue = Issue;
+		ComicBook!.Information.ReleaseDate = ReleaseDate;
 
 		ComicBook = ComicBookService.Update(ComicBook!);
 
