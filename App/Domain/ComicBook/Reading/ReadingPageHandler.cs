@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Helpers.Canvas;
@@ -173,22 +174,22 @@ public class ReadingPageHandler
 		var pageInfoHelper = new PageInfoHelper(ComicBook.Pages);
 
 		var coverImage = pageInfoHelper.GetCover();
-		Images.Add(coverImage.PageFileName);
+		Images.Add(GetFilename(coverImage));
 
 		var coverInside = pageInfoHelper.GetCoverInside();
 		if(coverInside != null)
-			Images.Add(coverInside.PageFileName);
+			Images.Add(GetFilename(coverInside));
 
 		var pages = pageInfoHelper.GetPages().OrderBy(p => p.PageFileName);
-		Images.AddRange(pages.Select(page => page.PageFileName));
+		Images.AddRange(pages.Select(GetFilename));
 
 		var backCoverInside = pageInfoHelper.GetBackCoverInside();
 		if(backCoverInside != null)
-			Images.Add(backCoverInside.PageFileName);
+			Images.Add(GetFilename(backCoverInside));
 
 		var backCover = pageInfoHelper.GetBackCover();
 		if(backCover != null)
-			Images.Add(backCover.PageFileName);
+			Images.Add(GetFilename(backCover));
 
 		Images = Images.Select(path => "/images/Reading/" + Path.GetFileName(path)).ToList();
 	}
@@ -201,6 +202,14 @@ public class ReadingPageHandler
 	private void ScrollImageToViewInSidebar()
 	{
 		_jsRuntime!.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
+	}
+
+	private string GetFilename(ComicBookPageInformation.ComicBookPageInformation pageInfo)
+	{
+		bool needsEscaping = Regex.IsMatch(Path.GetFileName(pageInfo.PageFileName), @"[^a-zA-Z0-9\-_.~ ]");
+		return !needsEscaping
+			? pageInfo.PageFileName
+			: Uri.EscapeDataString(pageInfo.PageFileName);
 	}
 
 }
