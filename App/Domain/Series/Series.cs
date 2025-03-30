@@ -13,7 +13,5 @@ public class Series : IId
 	[MaxLength(255)]
 	public required string Name { get; set; }
 
-	public List<Issue.Issue> Issues { get; set; } = [];
-
 	public List<ComicBookInformation.ComicBookInformation> ComicBookInformationList { get; set; } = [];
 }

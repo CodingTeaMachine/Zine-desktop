@@ -2,8 +2,6 @@
 @using MudBlazor.Extensions
 @using Zine.App.Common.Service.DTO
 @using Zine.App.Domain.ComicBook
-@using Zine.App.Domain.Issue
-@using Zine.App.Domain.Issue.DTO
 @using Zine.App.Domain.Person
 @using Zine.App.Domain.Person.DTO
 @using Zine.App.Domain.Publisher
@@ -24,7 +22,6 @@
 @inject IPublisherService PublisherService
 @inject ITagService TagService
 @inject ISeriesService SeriesService
-@inject IIssueService IssueService
 
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -246,23 +243,25 @@
 				<tr>
 					<th>Issue #</th>
 					<td>
-						@if (!_editMode && Series == null)
+						@if (!_editMode)
 						{
-							<span class="italic"> Unknown </span>
+							@if (Issue == "")
+							{
+								<span class="italic"> Unknown </span>
+							}
+							else
+							{
+								<span> @Issue </span>
+							}
+
 						}
 						else
 						{
-							<ChipMultiSelect
-								T="Issue"
-								@bind-SelectedValue="Issue"
-								Label="Select a value..."
-								ShowInput="_editMode"
-								SingleSelect="true"
+							<MudInput
+								T="string"
+								@bind-Text="Issue"
+								Label="Issue"
 								Disabled="Series == null"
-								RowToString="@Issue_ToString"
-								SearchFunc="@Issue_Search"
-								OnCreate="@Issue_Create"
-								OnDelete="@Issue_Delete"
 							/>
 						}
 					</td>
@@ -284,7 +283,7 @@
 						}
 						else
 						{
-							<MudDatePicker Label="Release date" @bind-Date="ReleaseDate" />
+							<MudDatePicker Label="Release date" @bind-Date="ReleaseDate"/>
 						}
 					</td>
 				</tr>
@@ -306,7 +305,7 @@
 	private List<Publisher> Publishers { get; set; } = [];
 	private List<Tag> Tags { get; set; } = [];
 	private Series? Series { get; set; } = null;
-	private Issue? Issue { get; set; } = null;
+	private string Issue { get; set; } = String.Empty;
 	private DateTime? ReleaseDate { get; set; } = null;
 
 	public bool Open
@@ -367,7 +366,7 @@
 		Publishers = [];
 		Tags = [];
 		Series = null;
-		Issue = null;
+		Issue = String.Empty;
 		ReleaseDate = null;
 	}
 
@@ -401,7 +400,6 @@
 
 	private void SaveChanges()
 	{
-
 		var newPeopleList = new List<Person>();
 		newPeopleList.AddRange(Draftsmen);
 		newPeopleList.AddRange(Colorists);
@@ -507,7 +505,7 @@
 	{
 		try
 		{
-			var createPublisherDto = new CreatePublisherDto { Name = name};
+			var createPublisherDto = new CreatePublisherDto { Name = name };
 			var createdPublisher = PublisherService.Create(createPublisherDto);
 			Publishers.Add(createdPublisher);
 			Snackbar.Add($"Successfully created: {createdPublisher.Name}", Severity.Success);
@@ -552,7 +550,7 @@
 	{
 		try
 		{
-			var createTagDto = new CreateTagDto() { Name = name};
+			var createTagDto = new CreateTagDto() { Name = name };
 			var createdTag = TagService.Create(createTagDto);
 			Tags.Add(createdTag);
 			Snackbar.Add($"Successfully created: {createdTag.Name}", Severity.Success);
@@ -627,51 +625,6 @@
 			Snackbar.Add(e.Message, e.Severity);
 		}
 	}
-
-	// Issue
-
-	private string Issue_ToString(Issue? issue)
-	{
-		return issue?.Name ?? "";
-	}
-
-	private void Issue_Create(string name)
-	{
-		try
-		{
-			var createIssueDto = new CreateIssueDto { Name = name, SeriesId = Series!.Id };
-			var createdIssue = IssueService.Create(createIssueDto);
-
-			Issue = createdIssue;
-
-			Snackbar.Add($"Successfully created: {createdIssue.Name}", Severity.Success);
-		}
-		catch (HandledAppException e)
-		{
-			Snackbar.Add(e.Message, e.Severity);
-		}
-	}
-
-	private IEnumerable<Issue> Issue_Search(string? searchTerm, CancellationToken cancellationToken)
-	{
-		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
-
-		return IssueService.Search(searchDto);
-	}
-
-	private void Issue_Delete(Issue issue)
-	{
-		try
-		{
-			IssueService.Delete(issue);
-			Snackbar.Add($"Successfully deleted: {issue.Name}", Severity.Success);
-		}
-		catch (HandledAppException e)
-		{
-			Snackbar.Add(e.Message, e.Severity);
-		}
-	}
-
 
 	// Manage state
 

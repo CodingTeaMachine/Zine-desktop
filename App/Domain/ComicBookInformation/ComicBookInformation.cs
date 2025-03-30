@@ -35,7 +35,8 @@ public class ComicBookInformation : IId
 
 	public Series.Series? Series { get; set; }
 
-	public Issue.Issue? Issue { get; set; }
+	[MaxLength(50)]
+	public string Issue { get; set; } = String.Empty;
 
 	// Creator type shortcuts
 
