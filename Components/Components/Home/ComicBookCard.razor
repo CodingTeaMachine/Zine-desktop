@@ -1,49 +1,60 @@
 @using Zine.App
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Helpers
+@using Zine.App.Pages.Library
 @using Zine.Components.Components.General
 
 @inject IComicBookService ComicBookService
 @inject NavigationManager NavigationManager
+@inject ReadingPageEventBus EventBus
 
-
-<div @onclick="OpenComicBook" class="md:w-60 w-44 @(ComicBook.Information.FileMovedOrDeleted ? "cursor-default" : "cursor-pointer")">
-	@if (ComicBook.Information.FileMovedOrDeleted)
-	{
-		<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
-			<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
-			Moved / Deleted
-		</MudPaper>
-	}
-	else
-	{
-		<div class="relative">
-			<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true" />
-
-			@if (ComicBook.ReadPercentage == 100)
+<MudMenu @ref="_menuRef" id="@($"Menu-{ComicBook.Id}")" ActivationEvent="MouseEvent.RightClick" PositionAtCursor>
+	<ActivatorContent>
+		<div @onclick="OpenComicBook" class="md:w-60 w-44 @(ComicBook.Information.FileMovedOrDeleted ? "cursor-default" : "cursor-pointer")">
+			@if (ComicBook.Information.FileMovedOrDeleted)
 			{
-				<div class="absolute top-0 right-0">
-					<CheckMarkTriangle />
+				<MudPaper class="cover-image h-[391px] w-full rounded-lg flex items-center justify-center flex-col gap-3">
+					<MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Primary" Size="Size.Large" />
+					Moved / Deleted
+				</MudPaper>
+			}
+			else
+			{
+				<div class="relative">
+					<MudImage Src="@GetCoverImage()" Elevation="25" Class="cover-image rounded-lg h-full" @onclick="() => _openingComicBookForReading = true" />
+
+					@if (ComicBook.ReadPercentage == 100)
+					{
+						<div class="absolute top-0 right-0">
+							<CheckMarkTriangle />
+						</div>
+					}
+
+
+					@if (_openingComicBookForReading)
+					{
+						<div class="absolute inset-0 w-full h-full rounded-lg bg-light/95 flex items-center justify-center">
+							<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+						</div>
+					}
+
+					<div class="absolute w-full bottom-0">
+						<MudProgressLinear Color="Color.Primary" Value="@ComicBook.ReadPercentage" />
+					</div>
+
 				</div>
 			}
 
-
-			@if (_openingComicBookForReading)
-			{
-				<div class="absolute inset-0 w-full h-full rounded-lg bg-light/95 flex items-center justify-center">
-					<MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
-				</div>
-			}
-
-			<div class="absolute w-full bottom-0">
-				<MudProgressLinear Color="Color.Primary" Value="@ComicBook.ReadPercentage" />
-			</div>
-
+			<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title</p>
 		</div>
-	}
+	</ActivatorContent>
 
-	<p class="pt-2 font-lg text-center line-clamp-3">@ComicBook.Title</p>
-</div>
+	<ChildContent>
+		@* View / edit information *@
+		<MudMenuItem Icon="@Icons.Material.Outlined.Info" Disabled="ComicBook.Information.FileMovedOrDeleted" OnClick="OpenInfoDrawer"> Info </MudMenuItem>
+	</ChildContent>
+</MudMenu>
+
 
 @code {
 
@@ -53,6 +64,8 @@
 	string ReadingPageLink => PageManager.GetReadingPageLink(ComicBook.Id, AppConstants.MainGroupId);
 
 	bool _openingComicBookForReading = false;
+
+	MudMenu _menuRef = null!;
 
 	string GetCoverImage()
 	{
@@ -65,6 +78,10 @@
 			NavigationManager.NavigateTo(GetComicBookLink());
 	}
 
+	void OpenInfoDrawer()
+	{
+		EventBus.Publish(EventName.OpenInfoDrawer, ComicBook.Id);
+	}
 
 	private string GetComicBookLink()
 	{
