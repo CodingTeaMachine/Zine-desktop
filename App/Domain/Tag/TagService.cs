@@ -33,6 +33,8 @@ public class TagService(
 
 	}
 
+
+
 	public IEnumerable<Tag> Search(object searchParams)
 	{
 		var dto = (GenericSearchDto)searchParams;
@@ -59,5 +61,10 @@ public class TagService(
 		{
 			throw new HandledAppException($"Error deleting tag: '{value.Name}'", Severity.Error, e);
 		}
+	}
+
+	public IEnumerable<Tag> List()
+	{
+		return repository.List();
 	}
 }

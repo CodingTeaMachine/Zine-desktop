@@ -3,12 +3,16 @@
 @using Zine.App.Common.Service.DTO
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.Person
+@using Zine.App.Domain.Person.Converter
 @using Zine.App.Domain.Person.DTO
 @using Zine.App.Domain.Publisher
+@using Zine.App.Domain.Publisher.Converter
 @using Zine.App.Domain.Publisher.DTO
 @using Zine.App.Domain.Series
+@using Zine.App.Domain.Series.Converter
 @using Zine.App.Domain.Series.DTO
 @using Zine.App.Domain.Tag
+@using Zine.App.Domain.Tag.Converter
 @using Zine.App.Domain.Tag.DTO
 @using Zine.App.Exceptions
 @using Zine.App.Pages.Library
@@ -90,7 +94,7 @@
 								@bind-SelectedValues="Draftsmen"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Person_ToString"
+								RowToString="PersonConvert.ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
 								OnCreate="@(name => Person_Create(name, Role.Drawer))"
 								OnDelete="@Person_Delete"
@@ -113,7 +117,7 @@
 								@bind-SelectedValues="Colorists"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Person_ToString"
+								RowToString="PersonConvert.ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
 								OnCreate="@(name => Person_Create(name, Role.Colorist))"
 								OnDelete="@Person_Delete"
@@ -138,7 +142,7 @@
 								@bind-SelectedValues="Writers"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Person_ToString"
+								RowToString="PersonConvert.ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
 								OnCreate="@(name => Person_Create(name, Role.Writer))"
 								OnDelete="@Person_Delete"
@@ -161,7 +165,7 @@
 								@bind-SelectedValues="Editors"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Person_ToString"
+								RowToString="PersonConvert.ToString"
 								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
 								OnCreate="@(name => Person_Create(name, Role.Editor))"
 								OnDelete="@Person_Delete"
@@ -184,7 +188,7 @@
 								@bind-SelectedValues="Publishers"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Publisher_ToString"
+								RowToString="PublisherConverter.ToString"
 								SearchFunc="@Publisher_Search"
 								OnCreate="@Publisher_Create"
 								OnDelete="@Publisher_Delete"
@@ -207,7 +211,7 @@
 								@bind-SelectedValues="Tags"
 								Label="Select a value..."
 								ShowInput="_editMode"
-								RowToString="@Tag_ToString"
+								RowToString="TagConverter.ToString"
 								SearchFunc="@Tag_Search"
 								OnCreate="@Tag_Create"
 								OnDelete="@Tag_Delete"
@@ -231,7 +235,7 @@
 								Label="Select a value..."
 								ShowInput="_editMode"
 								SingleSelect="true"
-								RowToString="@Series_ToString"
+								RowToString="SeriesConverter.ToString"
 								SearchFunc="@Series_Search"
 								OnCreate="@Series_Create"
 								OnDelete="@Series_Delete"
@@ -421,11 +425,6 @@
 
 	// Person
 
-	private string Person_ToString(Person? person)
-	{
-		return person?.Name ?? "";
-	}
-
 	private void Person_Create(string name, Role role)
 	{
 		try
@@ -496,12 +495,6 @@
 
 	// Publisher
 
-
-	private string Publisher_ToString(Publisher? person)
-	{
-		return person?.Name ?? "";
-	}
-
 	private void Publisher_Create(string name)
 	{
 		try
@@ -542,11 +535,6 @@
 
 	// Tag
 
-	private string Tag_ToString(Tag? person)
-	{
-		return person?.Name ?? "";
-	}
-
 	private void Tag_Create(string name)
 	{
 		try
@@ -586,11 +574,6 @@
 	}
 
 	// Series
-
-	private string Series_ToString(Series? person)
-	{
-		return person?.Name ?? "";
-	}
 
 	private void Series_Create(string name)
 	{

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using MudBlazor;
 using MudBlazor.Services;
+using MudExtensions.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBook.Import;
@@ -33,6 +34,7 @@ builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
 });
+builder.Services.AddMudExtensions();
 
 builder.Services.AddSingleton<ILoggerService, SerilogLogger>();
 

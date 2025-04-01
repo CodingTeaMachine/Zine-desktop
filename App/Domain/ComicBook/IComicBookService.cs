@@ -1,4 +1,6 @@
 
+using Zine.App.Domain.ComicBook.DTO;
+
 namespace Zine.App.Domain.ComicBook;
 
 public interface IComicBookService
@@ -13,7 +15,7 @@ public interface IComicBookService
     public string GetComicBookCoverFromDisc(int comicBookId);
     public ComicBook GetForReadingView(int comicId);
     public ComicBook GetForInformationDrawer(int comicId);
-    public IEnumerable<ComicBook> SearchByTitle(string searchTerm);
+    public IEnumerable<ComicBook> Search(ComicBookSearchDto search);
 
     //Update
     public void AddToGroup(int groupId, int comicBookId);

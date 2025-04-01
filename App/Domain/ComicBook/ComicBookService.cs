@@ -1,8 +1,11 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MudBlazor;
 using SharpCompress;
 using SharpCompress.Archives;
 using Zine.App.Database;
+using Zine.App.Domain.ComicBook.DTO;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Enums;
 using Zine.App.Exceptions;
@@ -20,7 +23,6 @@ public class ComicBookService(
 	ILoggerService logger
 ) : IComicBookService
 {
-
 	// Create
 
 	public ComicBook Create(string title, string fileUri, int groupId)
@@ -71,7 +73,7 @@ public class ComicBookService(
 		{
 			var randomIndex = new Random().Next(0, totalCount - 1);
 
-			if(generatedIndexes.Contains(randomIndex))
+			if (generatedIndexes.Contains(randomIndex))
 				continue;
 
 
@@ -111,19 +113,19 @@ public class ComicBookService(
 	public ComicBook GetForInformationDrawer(int comicId)
 	{
 		var comicBook = repository.First(
-			filter: c => c.Id == comicId,
-			includes: query =>
-				query
-					.Include(c => c.Pages)
-					.Include(c => c.Information)
-					.ThenInclude(cbI => cbI.People)
-					.Include(cb => cb.Information)
-					.ThenInclude(cbI => cbI.Publishers)
-					.Include(cb => cb.Information)
-					.ThenInclude(cbI => cbI.Tags)
-					.Include(cb => cb.Information)
-					.ThenInclude(cbI => cbI.Series)!
-				)
+				filter: c => c.Id == comicId,
+				includes: query =>
+					query
+						.Include(c => c.Pages)
+						.Include(c => c.Information)
+						.ThenInclude(cbI => cbI.People)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Publishers)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Tags)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Series)!
+			)
 			;
 
 		if (comicBook == null)
@@ -136,30 +138,37 @@ public class ComicBookService(
 	/// <summary>
 	///
 	/// </summary>
-	/// <param name="searchTerm"></param>
+	/// <param name="search"></param>
 	/// <returns></returns>
 	/// <exception cref="ArgumentNullException"></exception>
-	public IEnumerable<ComicBook> SearchByTitle(string searchTerm)
+	public IEnumerable<ComicBook> Search(ComicBookSearchDto search)
 	{
-		searchTerm = searchTerm.ToLower();
-		logger.Information($"ComicBookService.SearchByTitle: Searching for comic book by name: \"{searchTerm}\"");
-
 		try
 		{
 			var comicBooks = repository.List(
-				filter: cb => cb.Title.ToLower().Contains(searchTerm),
+				searchQuery: search,
 				includes: query =>
 					query.Include(c => c.Pages)
 						.Include(c => c.Information)
+						.ThenInclude(cbI => cbI.People)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Publishers)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Tags)
+						.Include(cb => cb.Information)
+						.ThenInclude(cbI => cbI.Series)!
 			).ToArray();
+
 			logger.Information(
-				$"ComicBookService.SearchByTitle: Found {comicBooks.Length} comic books for term: \"{searchTerm}\"");
+				$"ComicBookService.Search: Found {comicBooks.Length} comic books for term: \"{search}\"");
+
 			return comicBooks;
 		}
 		catch (Exception e)
 		{
 			throw new HandledAppException("Error searching comic books", Severity.Error, e);
 		}
+
 	}
 
 	// Update

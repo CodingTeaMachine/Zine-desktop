@@ -12,6 +12,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="8.0.0" />
     <PackageReference Include="ElectronNET.API" Version="23.6.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />

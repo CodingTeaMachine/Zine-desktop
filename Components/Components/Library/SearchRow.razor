@@ -1,0 +1,254 @@
+@using Microsoft.IdentityModel.Tokens
+@using Zine.App.Common.Service.DTO
+@using Zine.App.Domain.ComicBook.DTO
+@using Zine.App.Domain.Person
+@using Zine.App.Domain.Person.Converter
+@using Zine.App.Domain.Person.DTO
+@using Zine.App.Domain.Publisher
+@using Zine.App.Domain.Publisher.Converter
+@using Zine.App.Domain.Tag
+@using MudExtensions
+@using Zine.App.Domain.ComicBookInformation.Enum
+@using Zine.App.Domain.Series
+@using Zine.App.Domain.Series.Converter
+@using Zine.App.Domain.Tag.Converter
+
+@inject IPersonService PersonService
+@inject IPublisherService PublisherService
+@inject ITagService TagService
+@inject ISeriesService SeriesService
+
+<MudExpansionPanels Elevation="1">
+	<MudExpansionPanel>
+		<TitleContent>
+			<div class="flex flex-row gap-3">
+				<MudIcon Icon="@Icons.Material.Filled.Search"/>
+				<MudText>Filters</MudText>
+			</div>
+		</TitleContent>
+		<ChildContent>
+			<div class="grid grid-cols-6 gap-3 items-center">
+				@* Name of the comic book or group *@
+				<MudTextField
+					@bind-Value="@_search.Title"
+					Label="Title"
+					Variant="Variant.Outlined"
+					Clearable="true"
+					Adornment="Adornment.Start"
+					AdornmentIcon="@Icons.Material.Filled.Search"
+					DebounceInterval="300"
+					Margin="Margin.Dense"
+					OnDebounceIntervalElapsed="@(_ => UpdateSearch())" />
+
+				@* Draftsmen *@
+				<MudAutocomplete
+					T="Person"
+					Value="@_search.Drawer"
+					Label="Drawn by"
+					ToStringFunc="PersonConvert.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@((searchTerm, cancelToken) => Person_SearchByRole(searchTerm, cancelToken, Role.Drawer))"
+					ValueChanged="@(selectedDrawer => UpdateSearch(() => _search.Drawer = selectedDrawer))" />
+
+				@* Colorists *@
+				<MudAutocomplete
+					T="Person"
+					Value="@_search.Colorist"
+					Label="Colored by"
+					ToStringFunc="PersonConvert.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@((searchTerm, cancelToken) => Person_SearchByRole(searchTerm, cancelToken, Role.Colorist))"
+					ValueChanged="@(selectedColorist => UpdateSearch(() => _search.Colorist = selectedColorist))" />
+
+				@* Writer *@
+				<MudAutocomplete
+					T="Person"
+					Value="@_search.Writer"
+					Label="Written by"
+					ToStringFunc="PersonConvert.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@((searchTerm, cancelToken) => Person_SearchByRole(searchTerm, cancelToken, Role.Writer))"
+					ValueChanged="@(selectedWriter => UpdateSearch(() => _search.Writer = selectedWriter))" />
+
+				@* Editor *@
+				<MudAutocomplete
+					T="Person"
+					Value="@_search.Editor"
+					Label="Edited by"
+					ToStringFunc="PersonConvert.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@((searchTerm, cancelToken) => Person_SearchByRole(searchTerm, cancelToken, Role.Editor))"
+					ValueChanged="@(selectedEditor => UpdateSearch(() => _search.Editor = selectedEditor))" />
+
+				@* Publisher *@
+				<MudAutocomplete
+					T="Publisher"
+					Value="@_search.Publisher"
+					Label="Published by"
+					ToStringFunc="PublisherConverter.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@Publisher_Search"
+					ValueChanged="@(selectedPublisher => UpdateSearch(() => _search.Publisher = selectedPublisher))" />
+
+				@* Tags *@
+				<MudSelectExtended
+					ValuePresenter="ValuePresenter.Chip"
+					MultiSelection="true"
+					T="Tag"
+					ItemCollection="_tags"
+					SelectedValues="_search.Tags"
+					Label="Tags"
+					AnchorOrigin="Origin.BottomCenter"
+					ChipCloseable="true"
+					ChipSize="Size.Small"
+					ChipVariant="Variant.Filled"
+					SearchFunc="@Tag_Search"
+					SearchBox="true"
+					ToStringFunc="TagConverter.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					SelectedValuesChanged="@(selectedTags => UpdateSearch(() => _search.Tags = selectedTags?.ToList() ?? []))"
+					OnOpen="LoadTags" />
+
+				@* Series *@
+				<MudAutocomplete
+					T="Series"
+					Value="@_search.Series"
+					Label="Series"
+					ToStringFunc="SeriesConverter.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@Series_Search"
+					ValueChanged="@(selectedSeries => UpdateSearch(() => _search.Series = selectedSeries))" />
+
+				@* Release date *@
+				<MudDateRangePicker
+					DateRange="_search.ReleaseDateDateRange"
+					Label="Release date"
+					Editable="true"
+					Clearable="true"
+					AutoClose="true"
+					Margin="Margin.Dense"
+					Variant="Variant.Outlined"
+					DateRangeChanged="@(selectedDateRange => UpdateSearch(() => _search.ReleaseDateDateRange = selectedDateRange))" />
+
+				@* Read state *@
+				<MudButtonGroup
+					Size="Size.Medium"
+					Class="mt-1.5"
+					OverrideStyles="false">
+					<MudButton
+						Color="Color.Primary"
+						Variant="@(_search.ReadingState is ReadingState.NotRead ? Variant.Filled : Variant.Outlined)"
+						@onclick="_ => UpdateReadingStateSearch(ReadingState.NotRead)">
+						<div class="py-px px-1 text-center align-middle whitespace-nowrap">Not read</div>
+					</MudButton>
+					<MudButton
+						Color="Color.Primary"
+						Variant="@(_search.ReadingState is ReadingState.Reading ? Variant.Filled : Variant.Outlined)"
+						@onclick="_ => UpdateReadingStateSearch(ReadingState.Reading)">
+						<div class="py-px px-1 text-center align-middle">Reading</div>
+					</MudButton>
+					<MudButton
+						Color="Color.Primary"
+						Variant="@(_search.ReadingState is ReadingState.Read ? Variant.Filled : Variant.Outlined)"
+						@onclick="_ => UpdateReadingStateSearch(ReadingState.Read)">
+						<div class="py-px px-1 text-center align-middle">Read</div>
+					</MudButton>
+				</MudButtonGroup>
+
+			</div>
+		</ChildContent>
+	</MudExpansionPanel>
+</MudExpansionPanels>
+
+
+@code {
+
+	private ComicBookSearchDto _search = new();
+
+	private List<Tag> _tags = [];
+
+	[Parameter]
+	public required Action<ComicBookSearchDto> OnSearchUpdated { get; set; }
+
+	private void UpdateSearch(Action? setterFn = null)
+	{
+		setterFn?.Invoke();
+
+		OnSearchUpdated.Invoke(_search);
+	}
+
+	private void UpdateReadingStateSearch(ReadingState state)
+	{
+		_search.ReadingState = _search.ReadingState != state
+			? state
+			: null;
+
+		UpdateSearch();
+	}
+
+	private Task<IEnumerable<Person>> Person_SearchByRole(string? searchTerm, CancellationToken cancellationToken, Role role)
+	{
+		var searchDto = new SearchPersonDto { Name = searchTerm, Role = role };
+
+		return Task.FromResult(PersonService.Search(searchDto));
+	}
+
+	private Task<IEnumerable<Publisher>> Publisher_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return Task.FromResult(PublisherService.Search(searchDto));
+	}
+
+	private Task<IEnumerable<Series>> Series_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return Task.FromResult(SeriesService.Search(searchDto));
+	}
+
+	private bool Tag_Search(Tag? tag, string? searchTerm)
+	{
+		if (searchTerm.IsNullOrEmpty() || tag == null)
+			return true;
+
+		return tag.Name.Contains(searchTerm!, StringComparison.OrdinalIgnoreCase);
+	}
+
+	private void LoadTags()
+	{
+		_tags = TagService.List().ToList();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		LoadTags();
+	}
+
+}

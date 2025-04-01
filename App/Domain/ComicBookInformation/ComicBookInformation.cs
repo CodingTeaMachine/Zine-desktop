@@ -31,7 +31,7 @@ public class ComicBookInformation : IId
 
 	public List<Publisher.Publisher> Publishers { get; set; } = [];
 
-	public List<Tag.Tag> Tags { get; set; } = new();
+	public List<Tag.Tag> Tags { get; set; } = [];
 
 	public Series.Series? Series { get; set; }
 

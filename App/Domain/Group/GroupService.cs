@@ -4,6 +4,7 @@ using MudBlazor;
 using SharpCompress;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
+using Zine.App.Domain.Group.DTO;
 using Zine.App.Exceptions;
 using Zine.App.Logger;
 
@@ -76,15 +77,11 @@ public class GroupService(
 		return group;
 	}
 
-	public IEnumerable<Group> SearchByName(string searchTerm)
-	{
-		searchTerm = searchTerm.ToLower();
-		logger.Information($"GroupService.SearchByName: Searching for group by name: \"{searchTerm}\"");
-
+	public IEnumerable<Group> Search(GroupSearchDto search){
 		try
 		{
-			var groups = repository.List(filter: g => g.Name.ToLower().Contains(searchTerm)).ToArray();
-			logger.Information($"GroupService.SearchByName: Found {groups.Length} groups for term: \"{searchTerm}\"");
+			var groups = repository.List(searchQuery: search).ToArray();
+			logger.Information($"GroupService.Search: Found {groups.Length} groups for term: \"{search}\"");
 			return groups;
 		}
 		catch (Exception e)
