@@ -135,6 +135,9 @@ namespace Zine.Migrations
                     b.Property<int>("ComicBookId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Index")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("INTEGER");
 
@@ -145,9 +148,6 @@ namespace Zine.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("PageNumberStart")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PageType")
                         .HasColumnType("INTEGER");

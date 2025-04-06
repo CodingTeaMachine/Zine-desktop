@@ -1,0 +1,87 @@
+@using MudBlazor.Utilities
+@using Zine.App.Domain.ComicBookPageInformation
+@using Page = Zine.App.Domain.ComicBook.Reading.Page
+
+<MudDropContainer
+	T="DropItem"
+	Items="_dropzoneItems"
+	@ref="_dropzoneContainer"
+	ItemsSelector="(_, _) => true"
+	ItemDropped="ItemUpdated"
+>
+	<ChildContent>
+		<MudDropZone
+			T="DropItem"
+			Identifier="@_dropZoneIdentifier"
+			AllowReorder="true"
+			Class="flex flex-col gap-2 m-2"
+			ItemDraggingClass="bg-red-500"
+		/>
+	</ChildContent>
+	<ItemRenderer>
+		<MudDynamicDropItem T="DropItem" Item="context">
+			<div>
+				@* <div class="mb-0.5"> *@
+				@* 	@if (dropItem.Page.PageInformation.PageType == PageType.Double) *@
+				@* 	{ *@
+				@* 		<span>@(dropItem.Page.PageNumberStart) - @(dropItem.Page.PageNumberEnd)</span> *@
+				@* 	} *@
+				@* 	else *@
+				@* 	{ *@
+				@* 		<span>@(dropItem.Page.PageNumberStart)</span> *@
+				@* 	} *@
+				@* </div> *@
+
+				<div>
+					<MudImage Src="@(context.Page.Image)"/>
+				</div>
+			</div>
+		</MudDynamicDropItem>
+	</ItemRenderer>
+</MudDropContainer>
+
+@code {
+
+	[Parameter]
+	public List<Page> Pages { get; set; } = [];
+
+	private string _dropZoneIdentifier = "images";
+	private MudDropContainer<DropItem> _dropzoneContainer = null!;
+
+	private List<DropItem> _dropzoneItems = new();
+
+	private void ItemUpdated(MudItemDropInfo<DropItem> dropItem)
+	{
+		_dropzoneItems.UpdateOrder(dropItem, item => item.Order);
+	}
+
+	private void RefreshContainer()
+	{
+		//update the binding to the container
+		StateHasChanged();
+
+		//the container refreshes the internal state
+		_dropzoneContainer.Refresh();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		_dropzoneItems = Pages
+			.OrderBy(p => p.PageInformation.Index)
+			.Select(p => new DropItem
+			{
+				Page = p,
+				Selector = _dropZoneIdentifier,
+				Order = p.PageInformation.Index
+			}).ToList();
+	}
+
+	private struct DropItem
+	{
+		public Page Page { get; init; }
+		public string Selector { get; init; }
+		public int Order { get; set; }
+	}
+
+}

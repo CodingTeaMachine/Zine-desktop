@@ -1,0 +1,39 @@
+@using Zine.App.Domain.ComicBookPageInformation
+@using Page = Zine.App.Domain.ComicBook.Reading.Page
+<div class="flex flex-col gap-2 divide-y divide-white/25 my-2 mx-2">
+	@foreach (var (pageIndex, page) in Pages.Select((image, index) => (index, image)))
+	{
+		<div>
+			<div class="mb-0.5">
+				@if (page.PageInformation.PageType == PageType.Double)
+				{
+					<span>@(page.PageNumberStart) - @(page.PageNumberEnd)</span>
+				}
+				else
+				{
+					<span>@(page.PageNumberStart)</span>
+				}
+			</div>
+
+			<div
+				id="image-@pageIndex"
+				class="cursor-pointer @(_currentPageIndex == pageIndex ? "outline outline-offset-1 outline-primary" : "outline-0")">
+				<MudImage
+					Src="@(page.Image)"
+					Draggable="false"
+					@onclick="() => ImageClicked.InvokeAsync(pageIndex)" />
+			</div>
+		</div>
+	}
+</div>
+@code {
+
+	[Parameter]
+	public List<Page> Pages { get; set; } = [];
+
+	[Parameter]
+	public EventCallback<int> ImageClicked { get; set; }
+
+	private int _currentPageIndex = 0;
+
+}

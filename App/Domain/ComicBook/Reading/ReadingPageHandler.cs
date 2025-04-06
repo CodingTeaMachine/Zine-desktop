@@ -21,14 +21,14 @@ public class ReadingPageHandler
 
 	private Action? _uiUpdateHandler;
 
-	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => ComicBook.Pages.ToList()[_currentPageIndex];
+	public Page CurrentPage => Pages[_currentPageIndex];
 
-	public int MaxPageNumber => ComicBook.Pages.ToList().Last().PageNumberEnd;
+	public int MaxPageNumber => Pages.Last().PageNumberEnd;
+
+	public List<Page> Pages = [];
 
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
-
-	public List<string> Images = [];
 
 
 	/// <summary>
@@ -59,9 +59,9 @@ public class ReadingPageHandler
 		get
 		{
 			// Only update the page read status if navigating to the page for the first time
-			if (CurrentPage.IsRead == false)
+			if (CurrentPage.PageInformation.IsRead == false)
 			{
-				_comicBookPageInformationService!.UpdateReadStatus(CurrentPage.Id);
+				_comicBookPageInformationService!.UpdateReadStatus(CurrentPage.PageInformation.Id);
 			}
 
 			return _currentPageIndex;
@@ -157,45 +157,34 @@ public class ReadingPageHandler
 	{
 		var loadedComicBook = _comicBookService!.GetForReadingView(comicBookId);
 
-		if(loadedComicBook == null)
+		if (loadedComicBook == null)
 			throw new DataException("Comic book not found");
 
 		ComicBook = loadedComicBook;
 
-		LoadImages(comicBookId);
+		CreatePageInfo(ComicBook);
 	}
 
-
-	private void LoadImages(int comicBookId)
+	private void CreatePageInfo(ComicBook comicBook)
 	{
-		_comicBookService!.ExtractImagesOfComicBook(comicBookId);
+		_comicBookService!.ExtractImagesOfComicBook(comicBook.Id);
+		
+		int pageNumber = 1;
 
-		var pageInfoHelper = new PageInfoHelper(ComicBook.Pages);
-
-		var coverImage = pageInfoHelper.GetCover();
-		Images.Add(GetFilename(coverImage));
-
-		var coverInside = pageInfoHelper.GetCoverInside();
-		if(coverInside != null)
-			Images.Add(GetFilename(coverInside));
-
-		var pages = pageInfoHelper.GetPages().OrderBy(p => p.PageFileName);
-		Images.AddRange(pages.Select(GetFilename));
-
-		var backCoverInside = pageInfoHelper.GetBackCoverInside();
-		if(backCoverInside != null)
-			Images.Add(GetFilename(backCoverInside));
-
-		var backCover = pageInfoHelper.GetBackCover();
-		if(backCover != null)
-			Images.Add(GetFilename(backCover));
-
-		Images = Images.Select(path => "/images/Reading/" + Path.GetFileName(path)).ToList();
+		Pages = comicBook.Pages
+			.OrderBy(p => p.Index)
+			.Select(p => new Page
+			{
+				PageInformation = p,
+				PageNumberStart = pageNumber++,
+				Image = GetFilename(p),
+				PageNumberEnd = p.PageType == PageType.Double ? pageNumber++ : pageNumber,
+			}).ToList();
 	}
 
 	private void SetImageOnCanvas(int imageIndex)
 	{
-		_ = _canvasHandler!.DrawImage(Images[imageIndex]);
+		_ = _canvasHandler!.DrawImage(Pages[imageIndex].Image);
 	}
 
 	private void ScrollImageToViewInSidebar()
@@ -207,8 +196,6 @@ public class ReadingPageHandler
 	{
 		var pageName = Path.GetFileName(pageInfo.PageFileName);
 
-		return Uri.EscapeDataString(pageName);
-
+		return "/images/Reading/" + Uri.EscapeDataString(pageName);
 	}
-
 }

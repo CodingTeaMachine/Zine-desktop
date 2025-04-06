@@ -22,17 +22,11 @@ public class ComicBookPageInformation : IId
 	public ComicBook.ComicBook ComicBook { get; init; } = null!;
 
 	[Required]
-	public int PageNumberStart { get; set; }
+	public int Index { get; set; }
 
 	[DefaultValue(false)]
 	public bool IsWidthChecked { get; set; }
 
 	[DefaultValue(false)]
 	public bool IsRead { get; set; }
-
-	[NotMapped]
-	public int PageNumberEnd =>
-		PageType == PageType.Double
-			? PageNumberStart + 1
-			: PageNumberStart;
 }

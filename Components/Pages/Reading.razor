@@ -11,6 +11,7 @@
 @using Zine.App.Helpers
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
+@using Zine.Components.Components.Reading
 
 @inject NavigationManager NavigationManager
 @inject IComicBookService ComicBookService
@@ -27,32 +28,71 @@
 		@* Vertical images *@
 		<div class="relative select-none">
 			<MudDrawer Open="PageExplorerOpen" Variant="DrawerVariant.Persistent" ClipMode="DrawerClipMode.Always">
-				<div>
-					@foreach (var (pageIndex, image) in _readingPageHandler.Images.Select((image, index) => (index, image)))
+				<h2 class="mt-3 w-fit mx-auto flex gap-2 text-lg font-bold">
+					Pages
+					@if (_reorderMode)
 					{
-						<div id="image-@pageIndex" class="mb-2 mx-2 first:mt-2 last:mb-2 cursor-pointer @(_readingPageHandler.CurrentPageIndex == pageIndex ? "outline outline-offset-1 outline-primary" : "outline-0")">
-							<MudImage
-								Src="@image"
-								@onclick="() => _readingPageHandler.GoToPage(pageIndex)" />
-						</div>
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Check"
+							Size="Size.Small"
+							OnClick="FinishReorderingMode"
+						/>
 					}
-				</div>
+					else
+					{
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Edit"
+							Size="Size.Small"
+							OnClick="StartReorderingMode"
+						/>
+					}
+				</h2>
+				@if (_reorderMode)
+				{
+					<ReorderingPageList
+						Pages="_readingPageHandler.Pages"
+					/>
+				}
+				else
+				{
+					<PageList
+						Pages="_readingPageHandler.Pages"
+						ImageClicked="pageIndex => _readingPageHandler.GoToPage(pageIndex)"
+					/>
+				}
+
 			</MudDrawer>
 		</div>
 
 		<main class="h-full w-full flex flex-col gap-3">
 
-			<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8">
+			<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8 mud-elevation-1">
 				<div class="flex items-center gap-2 sm:gap-1">
-					<MudIcon Icon="@Icons.Material.Filled.RotateRight" class="toolbar-icon" @onclick="_readingPageHandler.RotateRight" />
-					<MudIcon Icon="@Icons.Material.Filled.RotateLeft" class="toolbar-icon" @onclick="_readingPageHandler.RotateLeft" />
+					<MudIcon
+						Icon="@Icons.Material.Filled.RotateRight"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.RotateRight"
+					/>
+					<MudIcon
+						Icon="@Icons.Material.Filled.RotateLeft"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.RotateLeft"
+					/>
 				</div>
 
 				<span class="bg-light mx-2 w-[1px] h-4/5"></span>
 
 				<div class="flex items-center gap-2 sm:gap-1">
-					<MudIcon Icon="@Icons.Material.Filled.ZoomIn" class="toolbar-icon" @onclick="_readingPageHandler.ZoomIn" />
-					<MudIcon Icon="@Icons.Material.Filled.ZoomOut" class="toolbar-icon" @onclick="_readingPageHandler.ZoomOut" />
+					<MudIcon
+						Icon="@Icons.Material.Filled.ZoomIn"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.ZoomIn"
+					/>
+					<MudIcon
+						Icon="@Icons.Material.Filled.ZoomOut"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.ZoomOut"
+					/>
 
 					<div class="ml-2 w-10 text-end">
 						@_readingPageHandler.ZoomScale%
@@ -67,13 +107,21 @@
 
 			<div class="h-14 w-full flex flex-row items-center justify-center gap-3 select-none">
 
-				<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="_readingPageHandler.GoToFirstPage" />
-				<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="_readingPageHandler.PrevPage" />
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
+					@onclick="_readingPageHandler.GoToFirstPage"
+				/>
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardArrowLeft"
+					@onclick="_readingPageHandler.PrevPage"
+				/>
 
 				<div>
-					@if (_readingPageHandler.CurrentPage.PageType == PageType.Double)
+					@if (_readingPageHandler.CurrentPage.PageInformation.PageType == PageType.Double)
 					{
-						<span>@(_readingPageHandler.CurrentPage.PageNumberStart) - @(_readingPageHandler.CurrentPage.PageNumberEnd)</span>
+						<span>@_readingPageHandler.CurrentPage.PageNumberStart - @_readingPageHandler.CurrentPage.PageNumberEnd</span>
 					}
 					else
 					{
@@ -82,8 +130,16 @@
 					/ <span> @_readingPageHandler.MaxPageNumber </span>
 				</div>
 
-				<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="_readingPageHandler.NextPage" />
-				<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="_readingPageHandler.GoToLastPage" />
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardArrowRight"
+					@onclick="_readingPageHandler.NextPage"
+				/>
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
+					@onclick="_readingPageHandler.GoToLastPage"
+				/>
 
 			</div>
 		</main>
@@ -107,6 +163,8 @@
 	DotNetObjectReference<Reading>? _componentRef;
 
 	ReadingPageHandler? _readingPageHandler;
+
+	private bool _reorderMode = false;
 
 	[JSInvokable]
 	public void JS_OnKeyDown(KeyboardEventArgs keyboardEvent)
@@ -166,6 +224,17 @@
 				break;
 		}
 	}
+
+	private void StartReorderingMode()
+	{
+		_reorderMode = true;
+	}
+
+	private void FinishReorderingMode()
+	{
+		_reorderMode = false;
+	}
+
 
 	void InitReadingPageHandler()
 	{

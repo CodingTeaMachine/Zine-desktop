@@ -19,7 +19,7 @@ public static class PageInfoListFactory
 			.ToList();
 
 		var pageInfoList = new List<ComicBookPageInformation>();
-		var pageNumber = 1;
+		var pageIndex = 0;
 
 		//Create the cover image
 		var coverKvp = GetCoverImage(pages);
@@ -27,7 +27,7 @@ public static class PageInfoListFactory
 		{
 			PageFileName = coverKvp.Value.Key!,
 			PageType = PageType.Cover,
-			PageNumberStart = pageNumber++,
+			Index = pageIndex++,
 			ComicBookId = comicBookId,
 			IsWidthChecked = true
 		});
@@ -40,7 +40,7 @@ public static class PageInfoListFactory
 			{
 				PageFileName = coverInside,
 				PageType = PageType.CoverInside,
-				PageNumberStart = pageNumber++,
+				Index = pageIndex++,
 				ComicBookId = comicBookId,
 				IsWidthChecked = true
 			});
@@ -73,7 +73,7 @@ public static class PageInfoListFactory
 			// Calculating weather the image is double with takes a lot of time (approx 29x longer)
 			// so it is only calculated when the comic is first opened
 			PageType = PageType.Single,
-			PageNumberStart = pageNumber++,
+			Index = pageIndex++,
 			ComicBookId = comicBookId,
 			IsWidthChecked = false
 		}));
@@ -87,7 +87,7 @@ public static class PageInfoListFactory
 				{
 					PageFileName = backCoverInside,
 					PageType = PageType.BackCoverInside,
-					PageNumberStart = pageNumber++,
+					Index = pageIndex++,
 					ComicBookId = comicBookId,
 					IsWidthChecked = true
 				});
@@ -97,7 +97,7 @@ public static class PageInfoListFactory
 			{
 				PageFileName = backCover.Value.Value,
 				PageType = PageType.BackCover,
-				PageNumberStart = pageNumber++,
+				Index = pageIndex++,
 				ComicBookId = comicBookId,
 				IsWidthChecked = true
 			});
