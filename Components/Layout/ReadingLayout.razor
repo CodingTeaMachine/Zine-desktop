@@ -1,8 +1,6 @@
 ﻿@inherits LayoutComponentBase
-@using Zine.App
+
 @using Zine.App.Domain.ComicBook
-@using Zine.App.Helpers
-@using Page = Zine.App.Enums.Page
 
 <MudThemeProvider IsDarkMode="true" />
 <MudDialogProvider  />
@@ -16,10 +14,10 @@
 <MudLayout>
     <MudAppBar>
         <h1 class="font-bold text-2xl flex items-center gap-3">
-            <a href="@GetBackLocation()" class="flex items-center" @onclick="ComicBookService.CleanReadingDirectory">
+            <a href="#" class="flex items-center cursor-pointer" @onclick="CloseReadingView">
                 <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Primary"/>
+                Back
             </a>
-            Zine
         </h1>
     </MudAppBar>
     <MudMainContent>
@@ -28,18 +26,16 @@
 </MudLayout>
 
 @code {
-    private string GetBackLocation()
+
+    [SupplyParameterFromQuery]
+    private string? ReturnTo { get; set; }
+
+    private void CloseReadingView()
     {
-        var currentPage = Page.Reading.Replace("/", "");
-        var urlParams = NavigationManager.Uri.Replace($"{NavigationManager.BaseUri}{currentPage}/", "").Split('/');
+        if (ReturnTo == null)
+            return;
 
-        if (urlParams.Length != 2)
-        {
-            return PageManager.GetLibraryGroupLink(AppConstants.MainGroupId);
-        }
-
-        return int.TryParse(urlParams[1], out var groupId)
-            ? PageManager.GetLibraryGroupLink(groupId)
-            : PageManager.GetLibraryGroupLink(AppConstants.MainGroupId);
+        ComicBookService.CleanReadingDirectory();
+        NavigationManager.NavigateTo(ReturnTo);
     }
 }
