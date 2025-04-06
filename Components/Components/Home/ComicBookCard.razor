@@ -74,8 +74,15 @@
 
 	private void OpenComicBook()
 	{
-		if(!ComicBook.Information.FileMovedOrDeleted)
-			NavigationManager.NavigateTo(GetComicBookLink());
+		if(ComicBook.Information.FileMovedOrDeleted)
+			return;
+
+		var currentUri = NavigationManager.Uri;
+		var readingPageLink = GetComicBookLink();
+
+		readingPageLink.Query = $"ReturnTo={Uri.EscapeDataString(currentUri)}";
+
+		NavigationManager.NavigateTo(readingPageLink.ToString());
 	}
 
 	void OpenInfoDrawer()
@@ -83,8 +90,10 @@
 		EventBus.Publish(EventName.OpenInfoDrawer, ComicBook.Id);
 	}
 
-	private string GetComicBookLink()
+	private UriBuilder GetComicBookLink()
 	{
-		return PageManager.GetReadingPageLink(ComicBook.Id, ComicBook.GroupId);
+		var comicBookLink = PageManager.GetReadingPageLink(ComicBook.Id, ComicBook.GroupId).Remove(0, 1);
+
+		return new UriBuilder(NavigationManager.BaseUri + comicBookLink);
 	}
 }

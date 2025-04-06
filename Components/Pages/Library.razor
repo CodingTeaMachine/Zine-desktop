@@ -26,7 +26,7 @@
 <div class="mx-5">
 
 	@* Navigation *@
-	<MudLink class="flex items-center w-fit" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
+	<MudLink class="flex items-center w-fit mb-4" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
 		<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
 		<p class="pt-0.5">Back</p>
 	</MudLink>
@@ -346,8 +346,15 @@
 
 	private void OpenComicBook(ComicBook comicBook)
 	{
-		if(!comicBook.Information.FileMovedOrDeleted)
-			NavigationManager.NavigateTo(GetComicBookLink(comicBook.Id));
+		if(comicBook.Information.FileMovedOrDeleted)
+			return;
+
+		var currentUri = NavigationManager.Uri;
+		var readingPageLink = GetComicBookLink(comicBook.Id);
+
+		readingPageLink.Query = $"ReturnTo={Uri.EscapeDataString(currentUri)}";
+
+		NavigationManager.NavigateTo(readingPageLink.ToString());
 	}
 
 
@@ -362,9 +369,11 @@
 	}
 
 
-	private string GetComicBookLink(int comicBookId)
+	private UriBuilder GetComicBookLink(int comicBookId)
 	{
-		return PageManager.GetReadingPageLink(comicBookId, GroupId);
+		var comicBookLink = PageManager.GetReadingPageLink(comicBookId, GroupId).Remove(0, 1);
+
+		return new UriBuilder(NavigationManager.BaseUri + comicBookLink);
 	}
 
 	protected override void OnInitialized()

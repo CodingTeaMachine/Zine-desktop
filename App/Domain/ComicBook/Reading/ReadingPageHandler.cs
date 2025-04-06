@@ -1,5 +1,4 @@
 using System.Data;
-using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Helpers.Canvas;
@@ -204,12 +203,12 @@ public class ReadingPageHandler
 		_jsRuntime!.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
 	}
 
-	private string GetFilename(ComicBookPageInformation.ComicBookPageInformation pageInfo)
+	private static string GetFilename(ComicBookPageInformation.ComicBookPageInformation pageInfo)
 	{
-		bool needsEscaping = Regex.IsMatch(Path.GetFileName(pageInfo.PageFileName), @"[^a-zA-Z0-9\-_.~ ]");
-		return !needsEscaping
-			? pageInfo.PageFileName
-			: Uri.EscapeDataString(pageInfo.PageFileName);
+		var pageName = Path.GetFileName(pageInfo.PageFileName);
+
+		return Uri.EscapeDataString(pageName);
+
 	}
 
 }
