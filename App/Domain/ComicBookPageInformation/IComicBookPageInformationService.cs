@@ -6,4 +6,6 @@ public interface IComicBookPageInformationService
 	public void CheckPageTypes(ComicBook.ComicBook comicBook);
 
 	public void UpdateReadStatus(int comicBookPageInformationId);
+
+	public void UpdateMany(List<ComicBookPageInformation> pages);
 }

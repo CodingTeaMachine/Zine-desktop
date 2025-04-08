@@ -121,6 +121,12 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 		context.Entry(entity).State = EntityState.Modified;
 	}
 
+	public void UpdateMany(List<TEntity> entity)
+	{
+		_dbSet.AttachRange(entity);
+		entity.ForEach(entry => context.Entry(entry).State = EntityState.Modified);
+	}
+
 	public void Delete(int id)
 	{
 		TEntity? entity = _dbSet.Find(id);

@@ -27,6 +27,8 @@ public class ReadingPageHandler
 
 	public List<Page> Pages = [];
 
+	private Dictionary<int, int> _originalPageOrder = new();
+
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
 
@@ -147,13 +149,13 @@ public class ReadingPageHandler
 		_uiUpdateHandler!();
 	}
 
-	public async void SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
+	public async Task SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
 	{
 		await _canvasHandler!.SetDotnetHelperReference(dotNetObjectReference);
 	}
 
 
-	private void LoadComic(int comicBookId)
+	public void LoadComic(int comicBookId)
 	{
 		var loadedComicBook = _comicBookService!.GetForReadingView(comicBookId);
 
@@ -162,16 +164,37 @@ public class ReadingPageHandler
 
 		ComicBook = loadedComicBook;
 
-		CreatePageInfo(ComicBook);
+		_comicBookService!.ExtractImagesOfComicBook(ComicBook.Id);
+		Pages = CreatePageInfo(ComicBook.Pages);
+
+		foreach (var page in Pages)
+		{
+			var key = page.PageInformation.Id;
+			var value = page.PageInformation.Index;
+
+			//If the dictionarry already contains the key, this removes it
+            _originalPageOrder.Remove(key);
+
+            _originalPageOrder.Add(key, value);
+		}
 	}
 
-	private void CreatePageInfo(ComicBook comicBook)
+	public void ResetPageOrder()
 	{
-		_comicBookService!.ExtractImagesOfComicBook(comicBook.Id);
-		
+		Pages = Pages.Select(p =>
+		{
+			p.PageInformation.Index = _originalPageOrder[p.PageInformation.Id];
+			return p;
+		})
+			.OrderBy(p => p.PageInformation.Index)
+			.ToList();
+	}
+
+	public static List<Page> CreatePageInfo(IEnumerable<ComicBookPageInformation.ComicBookPageInformation> pages)
+	{
 		int pageNumber = 1;
 
-		Pages = comicBook.Pages
+		return pages
 			.OrderBy(p => p.Index)
 			.Select(p => new Page
 			{

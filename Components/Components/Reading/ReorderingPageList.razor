@@ -1,87 +1,94 @@
-@using MudBlazor.Utilities
+@using Zine.App.Domain.ComicBook.Reading
 @using Zine.App.Domain.ComicBookPageInformation
 @using Page = Zine.App.Domain.ComicBook.Reading.Page
 
-<MudDropContainer
-	T="DropItem"
-	Items="_dropzoneItems"
-	@ref="_dropzoneContainer"
-	ItemsSelector="(_, _) => true"
-	ItemDropped="ItemUpdated"
->
-	<ChildContent>
-		<MudDropZone
-			T="DropItem"
-			Identifier="@_dropZoneIdentifier"
-			AllowReorder="true"
-			Class="flex flex-col gap-2 m-2"
-			ItemDraggingClass="bg-red-500"
-		/>
-	</ChildContent>
-	<ItemRenderer>
-		<MudDynamicDropItem T="DropItem" Item="context">
-			<div>
-				@* <div class="mb-0.5"> *@
-				@* 	@if (dropItem.Page.PageInformation.PageType == PageType.Double) *@
-				@* 	{ *@
-				@* 		<span>@(dropItem.Page.PageNumberStart) - @(dropItem.Page.PageNumberEnd)</span> *@
-				@* 	} *@
-				@* 	else *@
-				@* 	{ *@
-				@* 		<span>@(dropItem.Page.PageNumberStart)</span> *@
-				@* 	} *@
-				@* </div> *@
+@inject IJSRuntime JsRuntime
 
-				<div>
-					<MudImage Src="@(context.Page.Image)"/>
+<script src="js/slideReorder.js"></script>
+
+<div class="drop-container">
+	<div class="flex flex-col gap-2 m-2">
+		@foreach (var page in Pages)
+		{
+			<div>
+				<div class="mb-0.5">
+					@if (page.PageInformation.PageType == PageType.Double)
+					{
+						<span>@(page.PageNumberStart) - @(page.PageNumberEnd)</span>
+					}
+					else
+					{
+						<span>@(page.PageNumberStart)</span>
+					}
+				</div>
+				<div
+					id="@(page.PageInformation.Id)"
+					@key="page.PageInformation.Id"
+					@ref="_elementRefs[page.PageInformation.Id]"
+					draggable="true"
+					tabindex="1"
+					@ondrag="@(() => ItemDragStart(page))"
+					@ondragenter="@(() => ItemDragEnter(page))">
+					<MudImage Src="@(page.Image)" />
 				</div>
 			</div>
-		</MudDynamicDropItem>
-	</ItemRenderer>
-</MudDropContainer>
+		}
+	</div>
+</div>
 
 @code {
 
 	[Parameter]
 	public List<Page> Pages { get; set; } = [];
 
-	private string _dropZoneIdentifier = "images";
-	private MudDropContainer<DropItem> _dropzoneContainer = null!;
+	[Parameter]
+    public EventCallback<List<Page>> PagesChanged { get; set; }
 
-	private List<DropItem> _dropzoneItems = new();
+	private int _currentlyDraggedIndex = -1;
 
-	private void ItemUpdated(MudItemDropInfo<DropItem> dropItem)
+	private bool CurrentlyDraggingItem => _currentlyDraggedIndex != -1;
+
+	private Dictionary<int, ElementReference> _elementRefs = new();
+
+	void ItemDragStart(Page dropItem)
 	{
-		_dropzoneItems.UpdateOrder(dropItem, item => item.Order);
+		_currentlyDraggedIndex = GetIndex(dropItem);
 	}
 
-	private void RefreshContainer()
+	async Task ItemDragEnter(Page hoveredItem)
 	{
-		//update the binding to the container
-		StateHasChanged();
+		if (!CurrentlyDraggingItem)
+			return;
 
-		//the container refreshes the internal state
-		_dropzoneContainer.Refresh();
+		int hoveredIndex = GetIndex(hoveredItem);
+		if (hoveredIndex == _currentlyDraggedIndex)
+			return;
+
+		var draggedItem = Pages[_currentlyDraggedIndex];
+
+		// Animate current and hovered items
+		var draggedRef = _elementRefs[draggedItem.PageInformation.Id];
+		var hoveredRef = _elementRefs[hoveredItem.PageInformation.Id];
+		await JsRuntime.InvokeVoidAsync("reorder.animateSwapTwoImages", draggedRef, hoveredRef);
+
+		// Swap them in the displayed list
+		Pages[_currentlyDraggedIndex] = hoveredItem;
+		Pages[hoveredIndex] = draggedItem;
+
+		// Update their indexes
+		Pages[_currentlyDraggedIndex].PageInformation.Index = _currentlyDraggedIndex;
+		Pages[hoveredIndex].PageInformation.Index = hoveredIndex;
+
+		_currentlyDraggedIndex = hoveredIndex;
+
+		Pages = ReadingPageHandler.CreatePageInfo(Pages.Select(p => p.PageInformation));
+
+		await PagesChanged.InvokeAsync(Pages);
 	}
 
-	protected override void OnInitialized()
-	{
-		base.OnInitialized();
-		_dropzoneItems = Pages
-			.OrderBy(p => p.PageInformation.Index)
-			.Select(p => new DropItem
-			{
-				Page = p,
-				Selector = _dropZoneIdentifier,
-				Order = p.PageInformation.Index
-			}).ToList();
-	}
 
-	private struct DropItem
+	int GetIndex(Page item)
 	{
-		public Page Page { get; init; }
-		public string Selector { get; init; }
-		public int Order { get; set; }
+		return Pages.FindIndex(p => p.PageInformation.Id == item.PageInformation.Id);
 	}
-
 }

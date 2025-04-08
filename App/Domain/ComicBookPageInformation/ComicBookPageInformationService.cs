@@ -86,6 +86,12 @@ public class ComicBookPageInformationService(
 
 	}
 
+	public void UpdateMany(List<ComicBookPageInformation> pages)
+	{
+		repository.UpdateMany(pages);
+		dbContext.SaveChanges();
+	}
+
 	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
 	{
 		try

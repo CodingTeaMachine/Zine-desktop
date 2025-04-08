@@ -12,6 +12,7 @@
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
 @using Zine.Components.Components.Reading
+@using Page = Zine.App.Domain.ComicBook.Reading.Page
 
 @inject NavigationManager NavigationManager
 @inject IComicBookService ComicBookService
@@ -37,11 +38,17 @@
 							Size="Size.Small"
 							OnClick="FinishReorderingMode"
 						/>
+
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Cancel"
+							Size="Size.Small"
+							OnClick="CancelReordering"
+							/>
 					}
 					else
 					{
 						<MudIconButton
-							Icon="@Icons.Material.Filled.Edit"
+							Icon="@Icons.Material.Filled.Reorder"
 							Size="Size.Small"
 							OnClick="StartReorderingMode"
 						/>
@@ -49,15 +56,14 @@
 				</h2>
 				@if (_reorderMode)
 				{
-					<ReorderingPageList
-						Pages="_readingPageHandler.Pages"
-					/>
+					<ReorderingPageList Pages="_readingPageHandler.Pages"/>
 				}
 				else
 				{
 					<PageList
 						Pages="_readingPageHandler.Pages"
 						ImageClicked="pageIndex => _readingPageHandler.GoToPage(pageIndex)"
+						CurrentPageIndex="_readingPageHandler.CurrentPageIndex"
 					/>
 				}
 
@@ -233,6 +239,23 @@
 	private void FinishReorderingMode()
 	{
 		_reorderMode = false;
+		UpdatePageOrder(_readingPageHandler!.Pages);
+		_readingPageHandler.GoToFirstPage();
+	}
+
+	private void CancelReordering()
+	{
+		_reorderMode = false;
+		_readingPageHandler!.ResetPageOrder();
+	}
+
+	private void UpdatePageOrder(List<Page> pages)
+	{
+		var pagesToUpdate = pages.Select(p => p.PageInformation).ToList();
+		ComicBookPageInformationService.UpdateMany(pagesToUpdate);
+
+		_readingPageHandler!.LoadComic(ComicBookId);
+		StateHasChanged();
 	}
 
 
