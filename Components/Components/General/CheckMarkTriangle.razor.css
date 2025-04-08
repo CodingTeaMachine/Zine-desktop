@@ -1,0 +1,16 @@
+.triangle {
+
+	--size: 50px;
+
+	width: var(--size);
+	height: var(--size);
+	clip-path: polygon(0 0, 100% 100%, 100% 0);
+	background: var(--mud-palette-primary);
+	display: flex;
+	align-items: start;
+	justify-content: right;
+	padding: 2px;
+	color: white;
+	font-weight: bold;
+	border-top-right-radius: 4px; /* Rounded top corner */
+}

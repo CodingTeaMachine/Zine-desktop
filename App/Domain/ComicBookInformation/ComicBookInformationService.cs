@@ -33,4 +33,17 @@ public class ComicBookInformationService(
 			throw new HandledAppException("Error creating comic book information", Severity.Error, e);
 		}
 	}
+
+	public void UpdateLastReadTimeToCurrentTime(int comicBookInformationId)
+	{
+		var comicBookInformation = repository.GetById(comicBookInformationId);
+
+		if(comicBookInformation == null)
+			throw new HandledAppException("Comic book information doesn't exist", Severity.Error);
+
+		comicBookInformation.LastOpened = DateTime.Now;
+
+		repository.Update(comicBookInformation);
+		dbContext.SaveChanges();
+	}
 }

@@ -1,58 +1,73 @@
 using System.Data;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
-using Zine.App.Helpers;
 using Zine.App.Helpers.Canvas;
 
 namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
-	public ReadingPageHandler(
-		NavigationManager navigationManager,
-		IComicBookService comicBookService,
-		IJSRuntime jsRuntime,
-		string canvasId,
-		int groupId,
-		int comicBookId,
-		Action uiUpdateHandler)
-	{
-		_comicBookService = comicBookService;
-		_jsRuntime = jsRuntime;
-		_uiUpdateHandler = uiUpdateHandler;
-		_canvasHandler = new CanvasHandler(jsRuntime, canvasId);
-
-		try
-		{
-			LoadComic(comicBookId);
-		}
-		catch (DataException)
-		{
-			navigationManager.NavigateTo(PageManager.GetLibraryGroupLink(groupId));
-		}
-
-	}
-
 	private ComicBook ComicBook { get; set; } = null!;
 
 	public int ZoomScale = 100;
 
-	private readonly IComicBookService _comicBookService;
+	private IComicBookService? _comicBookService;
 
-	private readonly CanvasHandler _canvasHandler;
+	private IComicBookPageInformationService? _comicBookPageInformationService;
 
-	private readonly IJSRuntime _jsRuntime;
+	private CanvasHandler? _canvasHandler;
 
-	private readonly Action _uiUpdateHandler;
+	private IJSRuntime? _jsRuntime;
 
-	public ComicBookPageInformation.ComicBookPageInformation CurrentPage => ComicBook.Pages.ToList()[_currentPageIndex];
+	private Action? _uiUpdateHandler;
 
-	public int MaxPageNumber => ComicBook.Pages.ToList().Last().PageNumberEnd;
+	public Page CurrentPage => Pages[_currentPageIndex];
+
+	public int MaxPageNumber => Pages.Last().PageNumberEnd;
+
+	public List<Page> Pages = [];
+
+	private Dictionary<int, int> _originalPageOrder = new();
+
+	// ReSharper disable once RedundantDefaultMemberInitializer
+	private int _currentPageIndex = 0;
+
+
+	/// <summary>
+	///
+	/// </summary>
+	/// <param name="handlerParams"></param>
+	/// <exception cref="DataException"></exception>
+	/// <returns></returns>
+	public static ReadingPageHandler Create(ReadingPageHandlerParams handlerParams)
+	{
+		var handler = new ReadingPageHandler
+		{
+			_comicBookService = handlerParams.ComicBookService,
+			_comicBookPageInformationService = handlerParams.ComicBookPageInformationService,
+			_jsRuntime = handlerParams.JsRuntime,
+			_uiUpdateHandler = handlerParams.UiUpdateHandler,
+			_canvasHandler = new CanvasHandler(handlerParams.JsRuntime, handlerParams.CanvasId)
+		};
+
+		handler.LoadComic(handlerParams.ComicBookId);
+		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(handler.ComicBook.Information.Id);
+
+		return handler;
+	}
 
 	public int CurrentPageIndex
 	{
-		get => _currentPageIndex;
+		get
+		{
+			// Only update the page read status if navigating to the page for the first time
+			if (CurrentPage.PageInformation.IsRead == false)
+			{
+				_comicBookPageInformationService!.UpdateReadStatus(CurrentPage.PageInformation.Id);
+			}
+
+			return _currentPageIndex;
+		}
 		private set
 		{
 			if (value == _currentPageIndex)
@@ -65,12 +80,6 @@ public class ReadingPageHandler
 			_ = UpdateZoomScale();
 		}
 	}
-
-	// ReSharper disable once RedundantDefaultMemberInitializer
-	private int _currentPageIndex = 0;
-
-	public List<string> Images = [];
-
 
 	public void GoToPage(int pageIndex)
 	{
@@ -114,86 +123,102 @@ public class ReadingPageHandler
 
 	public async Task RotateRight()
 	{
-		await _canvasHandler.RotateRight();
+		await _canvasHandler!.RotateRight();
 	}
 
 	public async Task RotateLeft()
 	{
-		await _canvasHandler.RotateLeft();
+		await _canvasHandler!.RotateLeft();
 	}
 
 	public async Task ZoomIn()
 	{
-		await _canvasHandler.ZoomIn();
+		await _canvasHandler!.ZoomIn();
 		await UpdateZoomScale();
 	}
 
 	public async Task ZoomOut()
 	{
-		await _canvasHandler.ZoomOut();
+		await _canvasHandler!.ZoomOut();
 		await UpdateZoomScale();
 	}
 
 	public async Task UpdateZoomScale()
 	{
-		ZoomScale = await _canvasHandler.GetZoomScale();
-		_uiUpdateHandler();
+		ZoomScale = await _canvasHandler!.GetZoomScale();
+		_uiUpdateHandler!();
 	}
 
-	public async void SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
+	public async Task SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
 	{
-		await _canvasHandler.SetDotnetHelperReference(dotNetObjectReference);
+		await _canvasHandler!.SetDotnetHelperReference(dotNetObjectReference);
 	}
 
 
-	private void LoadComic(int comicBookId)
+	public void LoadComic(int comicBookId)
 	{
-		var loadedComicBook = _comicBookService.GetForReadingView(comicBookId);
+		var loadedComicBook = _comicBookService!.GetForReadingView(comicBookId);
 
-		if(loadedComicBook == null)
+		if (loadedComicBook == null)
 			throw new DataException("Comic book not found");
 
 		ComicBook = loadedComicBook;
 
-		LoadImages(comicBookId);
+		_comicBookService!.ExtractImagesOfComicBook(ComicBook.Id);
+		Pages = CreatePageInfo(ComicBook.Pages);
+
+		foreach (var page in Pages)
+		{
+			var key = page.PageInformation.Id;
+			var value = page.PageInformation.Index;
+
+			//If the dictionarry already contains the key, this removes it
+            _originalPageOrder.Remove(key);
+
+            _originalPageOrder.Add(key, value);
+		}
 	}
 
-
-	private void LoadImages(int comicBookId)
+	public void ResetPageOrder()
 	{
-		_comicBookService.ExtractImagesOfComicBook(comicBookId);
+		Pages = Pages.Select(p =>
+		{
+			p.PageInformation.Index = _originalPageOrder[p.PageInformation.Id];
+			return p;
+		})
+			.OrderBy(p => p.PageInformation.Index)
+			.ToList();
+	}
 
-		var pageInfoHelper = new PageInfoHelper(ComicBook.Pages);
+	public static List<Page> CreatePageInfo(IEnumerable<ComicBookPageInformation.ComicBookPageInformation> pages)
+	{
+		int pageNumber = 1;
 
-		var coverImage = pageInfoHelper.GetCover();
-		Images.Add(coverImage.PageFileName);
-
-		var coverInside = pageInfoHelper.GetCoverInside();
-		if(coverInside != null)
-			Images.Add(coverInside.PageFileName);
-
-		var pages = pageInfoHelper.GetPages().OrderBy(p => p.PageFileName);
-		Images.AddRange(pages.Select(page => page.PageFileName));
-
-		var backCoverInside = pageInfoHelper.GetBackCoverInside();
-		if(backCoverInside != null)
-			Images.Add(backCoverInside.PageFileName);
-
-		var backCover = pageInfoHelper.GetBackCover();
-		if(backCover != null)
-			Images.Add(backCover.PageFileName);
-
-		Images = Images.Select(path => "/images/Reading/" + Path.GetFileName(path)).ToList();
+		return pages
+			.OrderBy(p => p.Index)
+			.Select(p => new Page
+			{
+				PageInformation = p,
+				PageNumberStart = pageNumber++,
+				Image = GetFilename(p),
+				PageNumberEnd = p.PageType == PageType.Double ? pageNumber++ : pageNumber,
+			}).ToList();
 	}
 
 	private void SetImageOnCanvas(int imageIndex)
 	{
-		_ = _canvasHandler.DrawImage(Images[imageIndex]);
+		_ = _canvasHandler!.DrawImage(Pages[imageIndex].Image);
 	}
 
 	private void ScrollImageToViewInSidebar()
 	{
-		_jsRuntime.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
+		_jsRuntime!.InvokeVoidAsync("scrollElementIntoView", "image-" + CurrentPageIndex);
 	}
 
+	private static string GetFilename(ComicBookPageInformation.ComicBookPageInformation pageInfo)
+	{
+		var pageName = Path.GetFileName(pageInfo.PageFileName);
+
+		return "/images/Reading/" + Uri.EscapeDataString(pageName);
+	}
 }

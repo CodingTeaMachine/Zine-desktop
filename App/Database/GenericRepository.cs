@@ -9,26 +9,74 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 {
 	private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
+	public int Count(Expression<Func<TEntity, bool>>? filter = null)
+	{
+		return filter != null
+			? _dbSet.Count(filter)
+			: _dbSet.Count();
+	}
+
 	public IEnumerable<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,
-		Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null)
+		Expression<Func<TEntity, object>>? orderBy = null,
+		Expression<Func<TEntity, object>>? orderByDescending = null,
+		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null,
+		int? skip = null,
+		int? take = null)
 	{
 		IQueryable<TEntity> query = _dbSet;
 
 		if (filter != null)
-		{
 			query = query.Where(filter);
-		}
+
+		if(skip != null)
+			query = query.Skip(skip.Value);
+
+		if(take != null)
+			query = query.Take(take.Value);
 
 		if (includes != null)
-		{
 			query = includes(query);
-		}
 
-		return orderBy != null
-			? orderBy(query).ToList()
-			: query.ToList();
+		if(orderBy != null)
+			query = query.OrderBy(orderBy);
+
+		if(orderByDescending != null)
+			query = query.OrderByDescending(orderByDescending);
+
+		return query.ToList();
+	}
+
+	public IEnumerable<TEntity> List(
+		ASearchDto<TEntity> searchQuery,
+		Expression<Func<TEntity, object>>? orderBy = null,
+		Expression<Func<TEntity, object>>? orderByDescending = null,
+		Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? includes = null,
+		int? skip = null,
+		int? take = null)
+	{
+		IQueryable<TEntity> query = _dbSet;
+
+		query = searchQuery.ToServerQuery(query);
+
+		if(skip != null)
+			query = query.Skip(skip.Value);
+
+		if(take != null)
+			query = query.Take(take.Value);
+
+		if (includes != null)
+			query = includes(query);
+
+		if(orderBy != null)
+			query = query.OrderBy(orderBy);
+
+		if(orderByDescending != null)
+			query = query.OrderByDescending(orderByDescending);
+
+		var result = query.ToList();
+
+		return searchQuery.ToClientQuery(result);
 	}
 
 	public TEntity? First(
@@ -71,6 +119,12 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 	{
 		_dbSet.Attach(entity);
 		context.Entry(entity).State = EntityState.Modified;
+	}
+
+	public void UpdateMany(List<TEntity> entity)
+	{
+		_dbSet.AttachRange(entity);
+		entity.ForEach(entry => context.Entry(entry).State = EntityState.Modified);
 	}
 
 	public void Delete(int id)

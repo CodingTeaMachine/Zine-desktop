@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using SharpCompress;
@@ -32,6 +33,8 @@ public class ComicBookPageInformationService(
 
 	public void CheckPageTypes(ComicBook.ComicBook comicBook)
 	{
+		const double aspectRatio = 0.7;
+
 		var pageInfoHelper = new PageInfoHelper(comicBook.Pages);
 
 		var comicBookFile = ArchiveFactory.Open(comicBook.FileUri);
@@ -39,55 +42,65 @@ public class ComicBookPageInformationService(
 		var coverImage = pageInfoHelper.GetFileFromArchiveByPage(comicBookFile, coverPage.PageFileName);
 
 		float coverAspectRatio = Image.GetAspectRatio(coverImage);
-		double minAspectRatio = coverAspectRatio * 0.7;
+		double minAspectRatio = coverAspectRatio * aspectRatio;
 
+		var pages = pageInfoHelper
+			.GetPages()
+			.Where(page => page.IsWidthChecked == false);
 
-		var pageNumber = 1;
-
-		if (pageInfoHelper.GetCoverInside() != null)
-			pageNumber++;
-
-		foreach (var page in pageInfoHelper.GetPages())
+		foreach (var page in pages)
 		{
 			if(page.IsWidthChecked)
 				continue;
 
 			var pageAsArchiveEntry = pageInfoHelper.GetFileFromArchiveByPage(comicBookFile, page.PageFileName);
 			var isDoubleImage = IsDoubleImage(pageAsArchiveEntry, minAspectRatio);
-
 			page.PageType = isDoubleImage ? PageType.Double : PageType.Single;
-			page.PageNumberStart = pageNumber;
-
-			pageNumber += isDoubleImage ? 2 : 1;
-
 			page.IsWidthChecked = true;
-
 			repository.Update(page);
 		}
 
-		var backCoverInsideImage = pageInfoHelper.GetBackCoverInside();
-		if (backCoverInsideImage != null && backCoverInsideImage.PageNumberStart != pageNumber)
-		{
-			pageNumber += 1;
-			backCoverInsideImage.PageNumberStart = pageNumber;
-
-			repository.Update(backCoverInsideImage);
-		}
-
-		var backCoverImage = pageInfoHelper.GetBackCover();
-		if (backCoverImage != null && backCoverImage.PageNumberStart != pageNumber)
-		{
-			pageNumber += 1;
-			backCoverImage.PageNumberStart = pageNumber;
-			repository.Update(backCoverImage);
-		}
 
 		dbContext.SaveChanges();
 		comicBookFile.Dispose();
 	}
 
+	public void UpdateReadStatus(int comicBookPageInformationId)
+	{
+		var pageToUpdate = repository.GetById(comicBookPageInformationId);
+
+		if(pageToUpdate == null)
+			throw new HandledAppException("Did not find comic book page information", Severity.Error, $"Could not find comic book page information by id: ${comicBookPageInformationId}");
+
+		pageToUpdate.IsRead = true;
+
+		try
+		{
+			repository.Update(pageToUpdate);
+			dbContext.SaveChanges();
+		}
+		catch (Exception e)
+		{
+			throw new HandledAppException("Failed to update comic book page information", Severity.Error, e);
+		}
+
+	}
+
+	public void UpdateMany(List<ComicBookPageInformation> pages)
+	{
+		repository.UpdateMany(pages);
+		dbContext.SaveChanges();
+	}
+
 	private static bool IsDoubleImage(IArchiveEntry page, double minAspectRatio)
 	{
-		return Image.GetAspectRatio(page) <= minAspectRatio;
+		try
+		{
+			return Image.GetAspectRatio(page) <= minAspectRatio;
+		}
+		catch (DataException)
+		{
+			return false;
+		}
 	}
 }

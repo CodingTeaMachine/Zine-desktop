@@ -1,0 +1,29 @@
+@using Zine.App.Domain.ComicBook
+@inject IComicBookService ComicBookService
+
+<div class="min-h-64">
+	<h2 class="row-title">Recommendations</h2>
+
+	<div class="flex gap-6 flex-wrap">
+		@foreach (var comicBook in _recommendations)
+		{
+			<ComicBookCard ComicBook="comicBook"/>
+		}
+	</div>
+</div>
+
+@code {
+	IEnumerable<ComicBook> _recommendations = [];
+
+	private void LoadCurrentlyReadComicBook()
+	{
+		_recommendations = ComicBookService.GetRecommendations();
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		LoadCurrentlyReadComicBook();
+	}
+
+}

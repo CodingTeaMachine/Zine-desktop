@@ -1,0 +1,31 @@
+@using Zine.App.Domain.ComicBook
+@inject IComicBookService ComicBookService
+
+<div class="min-h-64">
+	<h2 class="row-title">20 last read comic books</h2>
+
+	<div class="flex flex-wrap gap-6 justify-start">
+		@foreach (var comicBook in _currentlyReadComicBooks)
+		{
+			<ComicBookCard ComicBook="comicBook" />
+		}
+	</div>
+</div>
+
+@code {
+	const int ComicBooksToDisplay = 20;
+
+	IEnumerable<ComicBook> _currentlyReadComicBooks = [];
+
+	private void LoadCurrentlyReadComicBook()
+	{
+		_currentlyReadComicBooks = ComicBookService.GetCurrentlyReadComicBooks(ComicBooksToDisplay);
+	}
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		LoadCurrentlyReadComicBook();
+	}
+
+}

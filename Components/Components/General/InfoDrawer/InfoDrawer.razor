@@ -1,0 +1,638 @@
+@using Microsoft.IdentityModel.Tokens
+@using MudBlazor.Extensions
+@using Zine.App.Common.Service.DTO
+@using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.Person
+@using Zine.App.Domain.Person.Converter
+@using Zine.App.Domain.Person.DTO
+@using Zine.App.Domain.Publisher
+@using Zine.App.Domain.Publisher.Converter
+@using Zine.App.Domain.Publisher.DTO
+@using Zine.App.Domain.Series
+@using Zine.App.Domain.Series.Converter
+@using Zine.App.Domain.Series.DTO
+@using Zine.App.Domain.Tag
+@using Zine.App.Domain.Tag.Converter
+@using Zine.App.Domain.Tag.DTO
+@using Zine.App.Exceptions
+@using Zine.App.Pages.Library
+
+@implements IDisposable
+
+@inject ReadingPageEventBus EventBus
+
+@inject IComicBookService ComicBookService
+@inject IPersonService PersonService
+@inject IPublisherService PublisherService
+@inject ITagService TagService
+@inject ISeriesService SeriesService
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+
+
+<MudDrawer
+	Open="Open"
+	Anchor="Anchor.Right"
+	Elevation="1"
+	Variant="@DrawerVariant.Temporary"
+	OpenChanged="HandleOpenStateChanged"
+	Class="!w-fit max-w-1/3"
+>
+
+	<MudDrawerHeader>
+		<span class="w-full text-center text-xl text-white mt-5">
+			Information
+			@if (!_editMode)
+			{
+				<MudIcon
+					Icon="@Icons.Material.Filled.Edit"
+					Class="h-5 hover:fill-primary cursor-pointer mb-1"
+					@onclick="EnableEditMode"
+				/>
+			}
+			else
+			{
+				<MudIcon
+					Icon="@Icons.Material.Filled.Check"
+					Class="h-5 hover:fill-primary cursor-pointer mb-1"
+					@onclick="SaveChanges"
+				/>
+			}
+
+		</span>
+	</MudDrawerHeader>
+
+	@if (Open && ComicBook != null)
+	{
+		<MudDrawerContainer Class="p-5">
+			<table class="table-auto">
+				@* ReSharper disable once Asp.Entity *@
+				<tbody class="[&_th]:p-3 [&_th]:text-left [&_td]:p-3">
+
+				<tr>
+					<th>Title</th>
+					<td>@ComicBook.Title</td>
+				</tr>
+
+				<tr>
+					<th>Pages</th>
+					<td>@ComicBook.Pages.Count</td>
+				</tr>
+
+				<tr>
+					<th>Drawn by</th>
+					<td>
+						@if (!_editMode && Draftsmen.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="Draftsmen"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="PersonConvert.ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Drawer))"
+								OnCreate="@(name => Person_Create(name, Role.Drawer))"
+								OnDelete="@Person_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Colored by</th>
+					<td>
+						@if (!_editMode && Colorists.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="Colorists"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="PersonConvert.ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Colorist))"
+								OnCreate="@(name => Person_Create(name, Role.Colorist))"
+								OnDelete="@Person_Delete"
+							/>
+						}
+
+					</td>
+				</tr>
+
+				<tr>
+					<th>Written by</th>
+					<td>
+
+						@if (!_editMode && Writers.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="Writers"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="PersonConvert.ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Writer))"
+								OnCreate="@(name => Person_Create(name, Role.Writer))"
+								OnDelete="@Person_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Edited by</th>
+					<td>
+						@if (!_editMode && Editors.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Person"
+								@bind-SelectedValues="Editors"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="PersonConvert.ToString"
+								SearchFunc="@((searchTerm, cancellationToken) => Person_SearchByRole(searchTerm, cancellationToken, Role.Editor))"
+								OnCreate="@(name => Person_Create(name, Role.Editor))"
+								OnDelete="@Person_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Published by</th>
+					<td>
+						@if (!_editMode && Publishers.IsNullOrEmpty())
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Publisher"
+								@bind-SelectedValues="Publishers"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="PublisherConverter.ToString"
+								SearchFunc="@Publisher_Search"
+								OnCreate="@Publisher_Create"
+								OnDelete="@Publisher_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Tags</th>
+					<td>
+						@if (!_editMode && Tags.IsNullOrEmpty())
+						{
+							<span class="italic"> None </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Tag"
+								@bind-SelectedValues="Tags"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								RowToString="TagConverter.ToString"
+								SearchFunc="@Tag_Search"
+								OnCreate="@Tag_Create"
+								OnDelete="@Tag_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Series</th>
+					<td>
+						@if (!_editMode && Series == null)
+						{
+							<span class="italic"> Unknown </span>
+						}
+						else
+						{
+							<ChipMultiSelect
+								T="Series"
+								@bind-SelectedValue="Series"
+								Label="Select a value..."
+								ShowInput="_editMode"
+								SingleSelect="true"
+								RowToString="SeriesConverter.ToString"
+								SearchFunc="@Series_Search"
+								OnCreate="@Series_Create"
+								OnDelete="@Series_Delete"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Issue #</th>
+					<td>
+						@if (!_editMode)
+						{
+							@if (Issue == "")
+							{
+								<span class="italic"> Unknown </span>
+							}
+							else
+							{
+								<span> @Issue </span>
+							}
+
+						}
+						else
+						{
+							<MudInput
+								T="string"
+								@bind-Text="Issue"
+								Label="Issue"
+								Disabled="Series == null"
+								MaxLength="50"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
+					<th>Release date</th>
+					<td>
+						@if (!_editMode)
+						{
+							@if (ReleaseDate == null)
+							{
+								<span class="italic"> Unknown </span>
+							}
+							else
+							{
+								<span>@ReleaseDate.ToIsoDateString()</span>
+							}
+						}
+						else
+						{
+							<MudDatePicker Label="Release date" @bind-Date="ReleaseDate"/>
+						}
+					</td>
+				</tr>
+
+				</tbody>
+			</table>
+		</MudDrawerContainer>
+	}
+</MudDrawer>
+
+@code {
+	private bool _open;
+	private bool _editMode = false;
+
+	private List<Person> Draftsmen { get; set; } = [];
+	private List<Person> Colorists { get; set; } = [];
+	private List<Person> Writers { get; set; } = [];
+	private List<Person> Editors { get; set; } = [];
+	private List<Publisher> Publishers { get; set; } = [];
+	private List<Tag> Tags { get; set; } = [];
+	private Series? Series { get; set; } = null;
+	private string Issue { get; set; } = String.Empty;
+	private DateTime? ReleaseDate { get; set; } = null;
+
+	public bool Open
+	{
+		get => _open;
+		set
+		{
+			if (value)
+			{
+				DisableBodyScroll();
+			}
+			else
+			{
+				DisableEditMode();
+				EnableBodyScroll();
+				ResetInfoPanelValues();
+			}
+
+			_open = value;
+		}
+	}
+
+	private Action? _unsubscribe = null;
+
+	private ComicBook? ComicBook { get; set; }
+
+	private void OpenDrawer(int comicBookId)
+	{
+		Open = true;
+		LoadComic(comicBookId);
+		StateHasChanged();
+	}
+
+	private void HandleOpenStateChanged(bool isOpen)
+	{
+		if (isOpen)
+			return;
+
+		Open = false;
+	}
+
+	private void EnableEditMode()
+	{
+		_editMode = true;
+	}
+
+	private void DisableEditMode()
+	{
+		_editMode = false;
+	}
+
+	private void ResetInfoPanelValues()
+	{
+		Draftsmen = [];
+		Colorists = [];
+		Writers = [];
+		Editors = [];
+		Publishers = [];
+		Tags = [];
+		Series = null;
+		Issue = String.Empty;
+		ReleaseDate = null;
+	}
+
+	private void LoadComic(int comicBookId)
+	{
+		try
+		{
+			Console.WriteLine("Loading comic");
+			var comicBook = ComicBookService.GetForInformationDrawer(comicBookId);
+
+			Draftsmen.AddRange(comicBook.Information.Draftsmen);
+			Colorists.AddRange(comicBook.Information.Colorists);
+			Writers.AddRange(comicBook.Information.Writers);
+			Editors.AddRange(comicBook.Information.Editors);
+			Publishers.AddRange(comicBook.Information.Publishers);
+			Tags.AddRange(comicBook.Information.Tags);
+
+			Series = comicBook.Information.Series;
+			Issue = comicBook.Information.Issue;
+
+			ReleaseDate = comicBook.Information.ReleaseDate;
+
+			ComicBook = comicBook;
+		}
+		catch (Exception)
+		{
+			Snackbar.Add("Could not find comic book", Severity.Error);
+			Open = false;
+		}
+	}
+
+	private void SaveChanges()
+	{
+		var newPeopleList = new List<Person>();
+		newPeopleList.AddRange(Draftsmen);
+		newPeopleList.AddRange(Colorists);
+		newPeopleList.AddRange(Writers);
+		newPeopleList.AddRange(Editors);
+		ComicBook!.Information.People = newPeopleList;
+
+		ComicBook!.Information.Publishers = Publishers;
+		ComicBook!.Information.Tags = Tags;
+		ComicBook!.Information.Series = Series;
+		ComicBook!.Information.Issue = Issue;
+		ComicBook!.Information.ReleaseDate = ReleaseDate;
+
+		ComicBook = ComicBookService.Update(ComicBook!);
+
+		DisableEditMode();
+	}
+
+	// Person
+
+	private void Person_Create(string name, Role role)
+	{
+		try
+		{
+			var createPersonDto = new CreatePersonDto { Name = name, Role = role };
+			var createdPerson = PersonService.Create(createPersonDto);
+
+			switch (role)
+			{
+				case Role.Drawer:
+					Draftsmen.Add(createdPerson);
+					break;
+				case Role.Colorist:
+					Colorists.Add(createdPerson);
+					break;
+				case Role.Writer:
+					Writers.Add(createdPerson);
+					break;
+				case Role.Editor:
+					Editors.Add(createdPerson);
+					break;
+			}
+
+			Snackbar.Add($"Successfully created: {createdPerson.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Person> Person_SearchByRole(string? searchTerm, CancellationToken cancellationToken, Role role)
+	{
+		var searchDto = new SearchPersonDto { Name = searchTerm, Role = role };
+
+		return PersonService.Search(searchDto);
+	}
+
+	private void Person_Delete(Person person)
+	{
+		try
+		{
+			PersonService.Delete(person);
+
+			switch (person.Role)
+			{
+				case Role.Drawer:
+					Draftsmen.Remove(person);
+					break;
+				case Role.Colorist:
+					Colorists.Remove(person);
+					break;
+				case Role.Writer:
+					Writers.Remove(person);
+					break;
+				case Role.Editor:
+					Editors.Remove(person);
+					break;
+			}
+
+			Snackbar.Add($"Successfully deleted: {person.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	// Publisher
+
+	private void Publisher_Create(string name)
+	{
+		try
+		{
+			var createPublisherDto = new CreatePublisherDto { Name = name };
+			var createdPublisher = PublisherService.Create(createPublisherDto);
+			Publishers.Add(createdPublisher);
+			Snackbar.Add($"Successfully created: {createdPublisher.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Publisher> Publisher_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return PublisherService.Search(searchDto);
+	}
+
+	private void Publisher_Delete(Publisher publisher)
+	{
+		try
+		{
+			PublisherService.Delete(publisher);
+
+			Publishers.Remove(publisher);
+
+			Snackbar.Add($"Successfully deleted: {publisher.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	// Tag
+
+	private void Tag_Create(string name)
+	{
+		try
+		{
+			var createTagDto = new CreateTagDto() { Name = name };
+			var createdTag = TagService.Create(createTagDto);
+			Tags.Add(createdTag);
+			Snackbar.Add($"Successfully created: {createdTag.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Tag> Tag_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return TagService.Search(searchDto);
+	}
+
+	private void Tag_Delete(Tag tag)
+	{
+		try
+		{
+			TagService.Delete(tag);
+
+			Tags.Remove(tag);
+
+			Snackbar.Add($"Successfully deleted: {tag.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	// Series
+
+	private void Series_Create(string name)
+	{
+		try
+		{
+			var createSeriesDto = new CreateSeriesDto { Name = name };
+			var createdSeries = SeriesService.Create(createSeriesDto);
+			Series = createdSeries;
+			Snackbar.Add($"Successfully created: {createdSeries.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	private IEnumerable<Series> Series_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return SeriesService.Search(searchDto);
+	}
+
+	private void Series_Delete(Series series)
+	{
+		try
+		{
+			SeriesService.Delete(series);
+			Snackbar.Add($"Successfully deleted: {series.Name}", Severity.Success);
+		}
+		catch (HandledAppException e)
+		{
+			Snackbar.Add(e.Message, e.Severity);
+		}
+	}
+
+	// Manage state
+
+	private void EnableBodyScroll()
+	{
+		JsRuntime.InvokeVoidAsync("document.body.classList.remove", "overflow-hidden");
+	}
+
+	private void DisableBodyScroll()
+	{
+		JsRuntime.InvokeVoidAsync("document.body.classList.add", "overflow-hidden");
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+			_unsubscribe = EventBus.Subscribe<int>(EventName.OpenInfoDrawer, OpenDrawer);
+	}
+
+
+	public void Dispose()
+	{
+		_unsubscribe?.Invoke();
+		ComicBook = null;
+	}
+
+}

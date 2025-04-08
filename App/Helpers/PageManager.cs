@@ -29,7 +29,7 @@ public static class PageManager
             .ToString();
     }
 
-    public static string GetLibraryComicBookLink(int comicBookId, int groupId)
+    public static string GetReadingPageLink(int comicBookId, int groupId)
     {
         return new StringBuilder(Page.Reading)
             .Append('/')
@@ -38,4 +38,5 @@ public static class PageManager
             .Append(groupId)
             .ToString();
     }
+
 }

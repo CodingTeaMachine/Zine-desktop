@@ -1,0 +1,249 @@
+@using Microsoft.IdentityModel.Tokens
+
+@typeparam T where T : Zine.App.Common.FieldInterfaces.IId
+
+<div class="max-w-96 flex flex-row flex-wrap">
+	@if (SingleSelect)
+	{
+		@if (SelectedValue != null)
+		{
+			@if (ShowInput)
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(SelectedValue)">
+					@RowToString.Invoke(SelectedValue)
+				</MudChip>
+			}
+			else
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small">
+					@RowToString.Invoke(SelectedValue)
+				</MudChip>
+			}
+
+
+		}
+	}
+	else
+	{
+		@foreach (var row in ChipFilterFunc.Invoke(SelectedValues))
+		{
+			@if (ShowInput)
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small" OnClose="() => RemoveSelectedValue(row)">
+					@RowToString.Invoke(row)
+				</MudChip>
+			}
+			else
+			{
+				<MudChip T="string" Color="Color.Primary" Size="Size.Small">
+					@RowToString.Invoke(row)
+				</MudChip>
+			}
+		}
+	}
+
+
+</div>
+
+@if (ShowInput)
+{
+	<MudAutocomplete
+		@ref="_mudMultiselect"
+		T="T"
+		Value="@(default(T))"
+		Label="@Label"
+		Disabled="Disabled"
+		ValueChanged="OnUserSelect"
+		SearchFunc="Search"
+		ToStringFunc="RowToString.Invoke"
+		Strict="false"
+		ShowProgressIndicator="true"
+		CoerceValue="true"
+		CoerceText="true"
+		ResetValueOnEmptyText="true"
+	>
+
+		<ItemTemplate Context="row">
+			<div class="flex items-center justify-between">
+				<MudText>
+					@RowToString.Invoke(row)
+				</MudText>
+
+				<div @onclick:stopPropagation="true">
+					<MudIcon
+						Class="hover:fill-red-500"
+						Icon="@Icons.Material.Filled.Clear"
+						@onclick="() => DeleteRow(row)"
+
+					/>
+				</div>
+			</div>
+
+		</ItemTemplate>
+
+		<AfterItemsTemplate>
+			@if (!_currentSearchTerm.IsNullOrEmpty())
+			{
+				<div class="pa-2">
+					<MudButton Color="Color.Primary" @onclick="CreateRow">
+						<MudText>
+							Create "@_currentSearchTerm"
+						</MudText>
+					</MudButton>
+				</div>
+			}
+		</AfterItemsTemplate>
+
+		<NoItemsTemplate>
+			@if (_currentSearchTerm.IsNullOrEmpty())
+			{
+				<MudText Align="Align.Center" Class="px-4 py-1">
+					@NoMoreDataText
+				</MudText>
+			}
+			else
+			{
+				<div class="pa-2">
+					<MudButton Color="Color.Primary" @onclick="CreateRow">
+						<MudText>
+							Create "@_currentSearchTerm"
+						</MudText>
+					</MudButton>
+				</div>
+			}
+
+		</NoItemsTemplate>
+
+	</MudAutocomplete>
+}
+
+
+@code {
+
+	[Parameter]
+	public required string Label { get; set; }
+
+	[Parameter]
+	public string NoMoreDataText { get; set; } = "No items found";
+
+	[Parameter]
+	public bool ShowInput { get; set; }
+
+	[Parameter]
+    public bool SingleSelect { get; set; }
+
+	[Parameter]
+    public bool Disabled { get; set; }
+
+	[Parameter]
+	public required Func<T?, string> RowToString { get; set; }
+
+	//Create
+
+	[Parameter]
+	public required EventCallback<string> OnCreate { get; set; }
+
+	//Read
+
+	// If multiselect
+	[Parameter]
+	public List<T> SelectedValues { get; set; } = [];
+
+	[Parameter]
+	public EventCallback<List<T>> SelectedValuesChanged { get; set; }
+
+
+	//If single select
+	[Parameter]
+    public T? SelectedValue { get; set; }
+
+	[Parameter]
+	public EventCallback<T> SelectedValueChanged { get; set; }
+
+	[Parameter]
+	public required Func<string?, CancellationToken, IEnumerable<T>> SearchFunc { get; set; }
+
+	[Parameter]
+	public Func<IEnumerable<T>, IEnumerable<T>> ChipFilterFunc { get; set; } = values => values;
+
+	// Delete
+
+	[Parameter]
+	public required EventCallback<T> OnDelete { get; set; }
+
+
+	private MudAutocomplete<T> _mudMultiselect = null!;
+
+	private IEnumerable<int> SelectedValuesIdList => SelectedValues.Select(p => p.Id);
+
+	private string _currentSearchTerm = string.Empty;
+
+
+	private async void OnUserSelect(T? selection)
+	{
+		if (selection != null)
+		{
+			if (SingleSelect)
+			{
+				SelectedValue = selection;
+				await SelectedValueChanged.InvokeAsync(SelectedValue);
+			}
+			else
+			{
+				SelectedValues.Add(selection);
+				await SelectedValuesChanged.InvokeAsync(SelectedValues);
+			}
+		}
+
+
+		await _mudMultiselect.ClearAsync();
+		await _mudMultiselect.BlurAsync();
+	}
+
+	private Task<IEnumerable<T>> Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		_currentSearchTerm = searchTerm ?? string.Empty;
+
+		return Task.FromResult(
+			SearchFunc
+				.Invoke(searchTerm, cancellationToken)
+				.Where(value => !SelectedValuesIdList.Contains(value.Id))
+		);
+	}
+
+	private Task OnValueChanged(ChangeEventArgs e)
+	{
+		SelectedValues = (List<T>)Convert.ChangeType(e.Value, typeof(ICollection<T>))!;
+		return SelectedValuesChanged.InvokeAsync(SelectedValues);
+	}
+
+	private void CreateRow()
+	{
+		OnCreate.InvokeAsync(_currentSearchTerm);
+	}
+
+	private void DeleteRow(T row)
+	{
+
+		OnDelete.InvokeAsync(row);
+		RemoveSelectedValue(row);
+		_mudMultiselect.ForceUpdate();
+	}
+
+	private void RemoveSelectedValue(T row)
+	{
+		if (SingleSelect)
+		{
+			SelectedValue = default(T);
+			SelectedValueChanged.InvokeAsync(SelectedValue);
+		}
+		else
+		{
+			SelectedValues = SelectedValues.Where(p => p.Id != row.Id).ToList();
+			SelectedValuesChanged.InvokeAsync(SelectedValues);
+		}
+	}
+
+
+
+}

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using MudBlazor;
 using MudBlazor.Services;
+using MudExtensions.Services;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBook.Import;
@@ -11,9 +12,14 @@ using Zine.App.Domain.ComicBook.Import.Strategies;
 using Zine.App.Domain.ComicBookInformation;
 using Zine.App.Domain.ComicBookPageInformation;
 using Zine.App.Domain.Group;
+using Zine.App.Domain.Person;
+using Zine.App.Domain.Publisher;
+using Zine.App.Domain.Series;
+using Zine.App.Domain.Tag;
 using Zine.App.Enums;
 using Zine.App.Helpers;
 using Zine.App.Logger;
+using Zine.App.Pages.Library;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +34,7 @@ builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
 });
+builder.Services.AddMudExtensions();
 
 builder.Services.AddSingleton<ILoggerService, SerilogLogger>();
 
@@ -43,6 +50,10 @@ builder.Services.AddScoped<IComicBookImportService, ComicBookImportService>();
 builder.Services.AddScoped<IComicBookInformationService, ComicBookInformationService>();
 builder.Services.AddScoped<IComicBookPageInformationService, ComicBookPageInformationService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<ISeriesService, SeriesService>();
 
 //Importing comic books
 builder.Services.AddScoped<ImportUnitOfWork>();
@@ -54,6 +65,7 @@ builder.Services.AddScoped<IncludeSubdirectoriesImportStrategy>();
 builder.Services.AddScoped<KeepStructureImportStrategy>();
 builder.Services.AddScoped<ImportStrategyFactory>();
 
+builder.Services.AddSingleton<ReadingPageEventBus>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

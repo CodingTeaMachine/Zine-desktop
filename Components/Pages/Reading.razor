@@ -3,84 +3,156 @@
 @implements IJsKeyEventListener
 @implements IJsScrollEventListener
 @implements IDisposable
+@using System.Data
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
+@using Zine.App.Domain.ComicBookInformation
 @using Zine.App.Domain.ComicBookPageInformation
+@using Zine.App.Helpers
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
+@using Zine.Components.Components.Reading
+@using Page = Zine.App.Domain.ComicBook.Reading.Page
 
-@inject NavigationManager NavigationManager;
+@inject NavigationManager NavigationManager
 @inject IComicBookService ComicBookService
-@inject IJSRuntime JsRuntime;
+@inject IComicBookInformationService ComicBookInformationService
+@inject IComicBookPageInformationService ComicBookPageInformationService
+@inject IJSRuntime JsRuntime
+@inject ISnackbar Snackbar
 
 <script src="js/Reading.js"></script>
 
-<div Class="px-5 py-5 h-[calc(100vh-64px)] w-full">
-	@* Vertical images *@
-	<div class="relative select-none">
-		<MudDrawer Open="PageExplorerOpen" Variant="DrawerVariant.Persistent" ClipMode="DrawerClipMode.Always">
-			<div>
-				@foreach (var (pageIndex, image) in _readingPageHandler.Images.Select((image, index) => (index, image)))
+@if (_readingPageHandler != null)
+{
+	<div Class="px-5 py-5 h-[calc(100vh-64px)] w-full">
+		@* Vertical images *@
+		<div class="relative select-none">
+			<MudDrawer Open="PageExplorerOpen" Variant="DrawerVariant.Persistent" ClipMode="DrawerClipMode.Always">
+				<h2 class="mt-3 w-fit mx-auto flex gap-2 text-lg font-bold">
+					Pages
+					@if (_reorderMode)
+					{
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Check"
+							Size="Size.Small"
+							OnClick="FinishReorderingMode"
+						/>
+
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Cancel"
+							Size="Size.Small"
+							OnClick="CancelReordering"
+							/>
+					}
+					else
+					{
+						<MudIconButton
+							Icon="@Icons.Material.Filled.Reorder"
+							Size="Size.Small"
+							OnClick="StartReorderingMode"
+						/>
+					}
+				</h2>
+				@if (_reorderMode)
 				{
-					<div id="image-@pageIndex" class="mb-2 mx-2 first:mt-2 last:mb-2 cursor-pointer @(_readingPageHandler.CurrentPageIndex == pageIndex ? "outline outline-offset-1 outline-primary" : "outline-0")">
-						<MudImage
-							Src="@image"
-							@onclick="() => _readingPageHandler.GoToPage(pageIndex)" />
-					</div>
-				}
-			</div>
-		</MudDrawer>
-	</div>
-
-	<main class="h-full w-full flex flex-col gap-3">
-
-		<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8">
-			<div class="flex items-center gap-2 sm:gap-1">
-				<MudIcon Icon="@Icons.Material.Filled.RotateRight" class="toolbar-icon" @onclick="_readingPageHandler.RotateRight"/>
-				<MudIcon Icon="@Icons.Material.Filled.RotateLeft" class="toolbar-icon" @onclick="_readingPageHandler.RotateLeft"/>
-			</div>
-
-			<span class="bg-light mx-2 w-[1px] h-4/5"></span>
-
-			<div class="flex items-center gap-2 sm:gap-1">
-				<MudIcon Icon="@Icons.Material.Filled.ZoomIn" class="toolbar-icon" @onclick="_readingPageHandler.ZoomIn" />
-				<MudIcon Icon="@Icons.Material.Filled.ZoomOut" class="toolbar-icon" @onclick="_readingPageHandler.ZoomOut" />
-
-				<div class="ml-2 w-10 text-end">
-					@_readingPageHandler.ZoomScale%
-				</div>
-			</div>
-
-		</div>
-
-		<div class="w-full h-full flex justify-center items-center overflow-hidden relative">
-			<canvas id="@CanvasId" ></canvas>
-		</div>
-
-		<div class="h-14 w-full flex flex-row items-center justify-center gap-3 select-none">
-
-			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" @onclick="_readingPageHandler.GoToFirstPage" />
-			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowLeft" @onclick="_readingPageHandler.PrevPage" />
-
-			<div>
-				@if (_readingPageHandler.CurrentPage.PageType == PageType.Double)
-				{
-					<span>@(_readingPageHandler.CurrentPage.PageNumberStart) - @(_readingPageHandler.CurrentPage.PageNumberEnd)</span>
+					<ReorderingPageList Pages="_readingPageHandler.Pages"/>
 				}
 				else
 				{
-					<span>@_readingPageHandler.CurrentPage.PageNumberStart</span>
+					<PageList
+						Pages="_readingPageHandler.Pages"
+						ImageClicked="pageIndex => _readingPageHandler.GoToPage(pageIndex)"
+						CurrentPageIndex="_readingPageHandler.CurrentPageIndex"
+					/>
 				}
-				/ <span> @_readingPageHandler.MaxPageNumber </span>
+
+			</MudDrawer>
+		</div>
+
+		<main class="h-full w-full flex flex-col gap-3">
+
+			<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8 mud-elevation-1">
+				<div class="flex items-center gap-2 sm:gap-1">
+					<MudIcon
+						Icon="@Icons.Material.Filled.RotateRight"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.RotateRight"
+					/>
+					<MudIcon
+						Icon="@Icons.Material.Filled.RotateLeft"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.RotateLeft"
+					/>
+				</div>
+
+				<span class="bg-light mx-2 w-[1px] h-4/5"></span>
+
+				<div class="flex items-center gap-2 sm:gap-1">
+					<MudIcon
+						Icon="@Icons.Material.Filled.ZoomIn"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.ZoomIn"
+					/>
+					<MudIcon
+						Icon="@Icons.Material.Filled.ZoomOut"
+						class="toolbar-icon"
+						@onclick="_readingPageHandler.ZoomOut"
+					/>
+
+					<div class="ml-2 w-10 text-end">
+						@_readingPageHandler.ZoomScale%
+					</div>
+				</div>
+
 			</div>
 
-			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardArrowRight" @onclick="_readingPageHandler.NextPage" />
-			<MudIcon Class="cursor-pointer" Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" @onclick="_readingPageHandler.GoToLastPage" />
+			<div class="w-full h-full flex justify-center items-center overflow-hidden relative">
+				<canvas id="@CanvasId"></canvas>
+			</div>
 
-		</div>
-	</main>
+			<div class="h-14 w-full flex flex-row items-center justify-center gap-3 select-none">
 
-</div>
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
+					@onclick="_readingPageHandler.GoToFirstPage"
+				/>
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardArrowLeft"
+					@onclick="_readingPageHandler.PrevPage"
+				/>
+
+				<div>
+					@if (_readingPageHandler.CurrentPage.PageInformation.PageType == PageType.Double)
+					{
+						<span>@_readingPageHandler.CurrentPage.PageNumberStart - @_readingPageHandler.CurrentPage.PageNumberEnd</span>
+					}
+					else
+					{
+						<span>@_readingPageHandler.CurrentPage.PageNumberStart</span>
+					}
+					/ <span> @_readingPageHandler.MaxPageNumber </span>
+				</div>
+
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardArrowRight"
+					@onclick="_readingPageHandler.NextPage"
+				/>
+				<MudIcon
+					Class="cursor-pointer"
+					Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
+					@onclick="_readingPageHandler.GoToLastPage"
+				/>
+
+			</div>
+		</main>
+
+	</div>
+}
+
 
 @code {
 
@@ -96,7 +168,9 @@
 
 	DotNetObjectReference<Reading>? _componentRef;
 
-	ReadingPageHandler _readingPageHandler = null!;
+	ReadingPageHandler? _readingPageHandler;
+
+	private bool _reorderMode = false;
 
 	[JSInvokable]
 	public void JS_OnKeyDown(KeyboardEventArgs keyboardEvent)
@@ -110,23 +184,23 @@
 	[JSInvokable]
 	public void JS_ElementScrolledAsync(ScrollEvent scrollEvent)
 	{
-		if(scrollEvent.Modifier == KeyModifier.None)
+		if (scrollEvent.Modifier == KeyModifier.None)
 			HandlePageChangeByScroll(scrollEvent.Direction);
 	}
 
 	[JSInvokable]
-	public async void JS_UpdatePageZoomDisplay()
+	public async Task JS_UpdatePageZoomDisplay()
 	{
-		await _readingPageHandler.UpdateZoomScale();
+		await _readingPageHandler?.UpdateZoomScale()!;
 		StateHasChanged();
 	}
 
 	void HandlePageChangeByScroll(ScrollDirection direction)
 	{
-		if(direction == ScrollDirection.Down)
-			_readingPageHandler.NextPage();
+		if (direction == ScrollDirection.Down)
+			_readingPageHandler?.NextPage();
 		else
-			_readingPageHandler.PrevPage();
+			_readingPageHandler?.PrevPage();
 	}
 
 	void HandleNormalKeyPress(KeyboardEventArgs keyboardEvent)
@@ -135,11 +209,11 @@
 		{
 			case "ArrowUp":
 			case "ArrowLeft":
-				_readingPageHandler.PrevPage();
+				_readingPageHandler?.PrevPage();
 				break;
 			case "ArrowRight":
 			case "ArrowDown":
-				_readingPageHandler.NextPage();
+				_readingPageHandler?.NextPage();
 				break;
 		}
 	}
@@ -149,30 +223,78 @@
 		switch (keyboardEvent.Key)
 		{
 			case "=":
-				_ = _readingPageHandler.ZoomIn();
+				_ = _readingPageHandler?.ZoomIn();
 				break;
 			case "-":
-				_ = _readingPageHandler.ZoomOut();
+				_ = _readingPageHandler?.ZoomOut();
 				break;
 		}
 	}
 
-	void InitReadingPageHandler(IComicBookService comicBookService)
+	private void StartReorderingMode()
 	{
-		_readingPageHandler = new ReadingPageHandler(
-			NavigationManager,
-			comicBookService,
-			JsRuntime,
-			CanvasId,
-			GroupId,
-			ComicBookId,
-			StateHasChanged);
+		_reorderMode = true;
+	}
+
+	private void FinishReorderingMode()
+	{
+		_reorderMode = false;
+		UpdatePageOrder(_readingPageHandler!.Pages);
+		_readingPageHandler.GoToFirstPage();
+	}
+
+	private void CancelReordering()
+	{
+		_reorderMode = false;
+		_readingPageHandler!.ResetPageOrder();
+	}
+
+	private void UpdatePageOrder(List<Page> pages)
+	{
+		var pagesToUpdate = pages.Select(p => p.PageInformation).ToList();
+		ComicBookPageInformationService.UpdateMany(pagesToUpdate);
+
+		_readingPageHandler!.LoadComic(ComicBookId);
+		StateHasChanged();
+	}
+
+
+	void InitReadingPageHandler()
+	{
+		var handlerParams = new ReadingPageHandlerParams
+		{
+			JsRuntime = JsRuntime,
+			NavigationManager = NavigationManager,
+			UiUpdateHandler = StateHasChanged,
+
+			ComicBookService = ComicBookService,
+			ComicBookInformationService = ComicBookInformationService,
+			ComicBookPageInformationService = ComicBookPageInformationService,
+
+			CanvasId = CanvasId,
+			GroupId = GroupId,
+			ComicBookId = ComicBookId,
+		};
+
+		try
+		{
+			_readingPageHandler = ReadingPageHandler.Create(handlerParams);
+		}
+		catch (DataException e)
+		{
+			Snackbar.Add(e.Message, Severity.Error);
+			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(GroupId));
+		}
+		catch (Exception)
+		{
+			// ignored
+		}
 	}
 
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		InitReadingPageHandler(ComicBookService);
+		InitReadingPageHandler();
 	}
 
 
@@ -182,8 +304,8 @@
 		{
 			_componentRef = DotNetObjectReference.Create(this);
 
-			_readingPageHandler.SetDotnetHelperReference(_componentRef);
-			_readingPageHandler.RefreshCanvasImage();
+			_readingPageHandler?.SetDotnetHelperReference(_componentRef);
+			_readingPageHandler?.RefreshCanvasImage();
 
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerKeyDownEventListener", _componentRef);
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerOnScrollListener", CanvasId, _componentRef, HandlerType.Async);

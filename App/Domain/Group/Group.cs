@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Common.FieldInterfaces;
 
 namespace Zine.App.Domain.Group;
 
@@ -8,7 +9,7 @@ namespace Zine.App.Domain.Group;
 /// </summary>
 
 [Table("Groups")]
-public class Group
+public class Group : IId
 {
 	public int Id { get; init; }
 

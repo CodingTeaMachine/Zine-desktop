@@ -1,8 +1,10 @@
+using Zine.App.Domain.Group.DTO;
+
 namespace Zine.App.Domain.Group;
 
 public interface IGroupService
 {
-	public IEnumerable<Group> SearchByName(string searchTerm);
+	public IEnumerable<Group> Search(GroupSearchDto search);
 	public Group? LoadForLibraryPage(int parentId);
 
 

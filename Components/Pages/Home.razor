@@ -1,11 +1,23 @@
 ﻿@page "/"
 @using Zine.App.Helpers
+@using Zine.Components.Components.Home
 @using Page = Zine.App.Enums.Page
+@using Zine.Components.Components.General.InfoDrawer
 @rendermode InteractiveServer
 
-<h1 class="text-blue-400">Hello, world!</h1>
+<link rel="stylesheet" href="css/pages/Home.css" />
 
-Welcome to your new app.
+<InfoDrawer />
+
+<div class="flex flex-col gap-6">
+
+    <Row_ConinueReading />
+    <Row_LastRead />
+    <Row_Recommendations />
+
+</div>
+
+
 
 @code
 {

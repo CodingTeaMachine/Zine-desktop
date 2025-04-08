@@ -12,7 +12,7 @@ public class PageInfoHelper(IEnumerable<ComicBookPageInformation> pages)
 	public IArchiveEntry GetFileFromArchiveByPage(IArchive archive, string pageName)
 	{
 		//The key may contain some path parts that we don't store in the DB
-		return archive.Entries.First(entry => !entry.IsDirectory && Path.GetFileName(entry.Key)!.Equals(pageName));
+		return archive.Entries.First(entry => !entry.IsDirectory && entry.Key!.Equals(pageName));
 	}
 
 	public ComicBookPageInformation? GetCoverInside()

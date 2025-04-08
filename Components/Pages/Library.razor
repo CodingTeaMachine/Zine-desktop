@@ -1,15 +1,19 @@
 @page "/Library/{GroupId:int}"
 
+@using Microsoft.IdentityModel.Tokens
 @using Zine.App
 @using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.ComicBook.DTO
 @using Zine.App.Domain.ComicBook.Import
 @using Zine.App.Domain.Group
-@using Zine.App.Enums
+@using Zine.App.Domain.Group.DTO
 @using Zine.App.Exceptions
 @using Zine.App.Helpers
+@using Zine.App.Pages.Library
 @using Zine.Assets.Icons
 @using Zine.Components.Components.Library
 @using Page = Zine.App.Enums.Page
+@using Zine.Components.Components.General.InfoDrawer
 
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
@@ -17,78 +21,82 @@
 @inject IComicBookService ComicBookService
 @inject IComicBookImportService ComicBookImportService
 
+<InfoDrawer />
 
-<MudLink class="flex items-center mx-5 w-fit" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
-	<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
-	<p class="pt-0.5">Back</p>
-</MudLink>
+<div class="mx-5">
 
-@* Action row with import, create directory and search *@
-<div class="grid grid-cols-3 items-center mb-4 mx-5">
+	@* Navigation *@
+	<MudLink class="flex items-center w-fit mb-4" Href="#" Disabled="GroupId == AppConstants.MainGroupId" OnClick="NavigateToParentGroup">
+		<MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="GroupId == AppConstants.MainGroupId ? Color.Surface : Color.Primary" />
+		<p class="pt-0.5">Back</p>
+	</MudLink>
 
-	<div class="flex items-center gap-3">
-		<CreateGroupButton CreateGroup="@CreateGroup" />
-		<ImportComicButton Import="@Import" />
+	@* Action row with import and create directory *@
+	<div class="grid grid-cols-3 items-center mb-4">
+
+		<div class="flex items-center gap-3">
+			<CreateGroupButton CreateGroup="@CreateGroup" />
+			<ImportComicButton Import="@Import" />
+		</div>
+
+		<h2 class="text-2xl font-bold justify-self-center tracking-wider">
+			@(_currentGroup != null ? _currentGroup.Name : "Library")
+		</h2>
+
 	</div>
 
-	<h2 class="text-2xl font-bold justify-self-center tracking-wider">
-		@(_currentGroup != null ? _currentGroup.Name : "Library")
-	</h2>
+	@* Search bar *@
+	<SearchRow OnSearchUpdated="@Search"/>
 
-	<MudTextField
-		@bind-Value="@_searchWord"
-		class="max-w-xs justify-self-end"
-		Label="Search everywhere"
-		Variant="Variant.Outlined"
-		Clearable="true"
-		Adornment="Adornment.Start"
-		AdornmentIcon="@Icons.Material.Filled.Search"
-		DebounceInterval="300"
-		OnDebounceIntervalElapsed="SearchByTitle" />
-</div>
+	@* Group and card grid display *@
+	<MudDropContainer
+		@ref="_dropContainer"
+		T="DropItem"
+		Items="_comicBookList"
+		ItemsSelector="(item, dropzone) => item.Identifier == dropzone"
+		ItemDropped="ComicBookDropped">
 
-<MudDropContainer
-	@ref="_dropContainer"
-	T="DropItem"
-	Items="_comicBookList"
-	ItemsSelector="(item, dropzone) => item.Identifier == dropzone"
-	ItemDropped="ComicBookDropped">
-
-	<ChildContent>
-		<MudListSubheader class="text-xl mb-3">Groups</MudListSubheader>
-		<MudGrid class="mx-auto gap-6 px-10" Justify="Justify.FlexStart">
-			@foreach (var group in _groupList)
-			{
-				<MudDropZone T="DropItem" OnlyZone="true" CanDropClass="outline outline-primary outline-offset-4 duration-75" Class="rounded-lg" Identifier="@GetGroupIdentifier(group.Id)">
-					<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
-						<GroupCard
-							GroupService="GroupService"
-							ComicBookService="ComicBookService"
-							Group="group"
-							Groups="_contextMenuGroups"
-							ContextMenuDisabled="_editingInProgress"
-							UpdatedGroup="@LoadCurrentGroup"
-							EditStateChanged="newState => _editingInProgress = newState" />
-					</div>
-				</MudDropZone>
-			}
-		</MudGrid>
-
-		<MudListSubheader class="text-xl mt-10">Comic Books</MudListSubheader>
-		<div class="flex flex-wrap flex-grow mx-auto gap-6 px-10">
-			@if (_comicBookList.Any())
-			{
-				@foreach (var dropItem in _comicBookList)
+		<ChildContent>
+			<MudListSubheader class="text-xl mb-3 px-0">Groups</MudListSubheader>
+			<MudGrid class="mx-auto gap-6 px-5" Justify="Justify.FlexStart">
+				@foreach (var group in _groupList)
 				{
-					<MudDropZone
-						T="DropItem"
-						CanDropClass="outline outline-primary outline-offset-4 duration-75"
-						Class="rounded-lg"
-						CanDrop="@((item) => !item.Identifier.Equals(GetComicBookIdentifier(dropItem.ComicBook.Id)))"
-						Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
-						<ChildContent>
-							<a href="@GetComicBookLink(dropItem.ComicBook.Id)">
-								<MudDynamicDropItem T="DropItem" Item="dropItem" Disabled="dropItem.ComicBook.Information.FileMovedOrDeleted" DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg">
+					<MudDropZone T="DropItem" OnlyZone="true" CanDropClass="outline outline-primary outline-offset-4 duration-75" Class="rounded-lg" Identifier="@GetGroupIdentifier(group.Id)">
+						<div class="cursor-pointer" @onclick="() => NavigateToGroup(group.Id)">
+							<GroupCard
+								GroupService="GroupService"
+								ComicBookService="ComicBookService"
+								Group="group"
+								Groups="_contextMenuGroups"
+								ContextMenuDisabled="_editingInProgress"
+								UpdatedGroup="@LoadCurrentGroup"
+								EditStateChanged="newState => _editingInProgress = newState" />
+						</div>
+					</MudDropZone>
+				}
+			</MudGrid>
+
+			<MudListSubheader class="text-xl mt-10 px-0">Comic Books</MudListSubheader>
+			<div class="flex flex-wrap flex-grow mx-auto gap-6 px-5">
+				@if (_comicBookList.Any())
+				{
+					@foreach (var dropItem in _comicBookList)
+					{
+						<MudDropZone
+							T="DropItem"
+							CanDropClass="outline outline-primary outline-offset-4 duration-75"
+							Class="rounded-lg"
+							CanDrop="@((item) => !item.Identifier.Equals(GetComicBookIdentifier(dropItem.ComicBook.Id)))"
+							Identifier="@GetComicBookIdentifier(dropItem.ComicBook.Id)">
+
+							<ChildContent>
+								<MudDynamicDropItem
+									T="DropItem"
+									Item="dropItem"
+									Disabled="dropItem.ComicBook.Information.FileMovedOrDeleted"
+									DraggingClass="dragging-item outline outline-offset-8 outline-2 outline-primary rounded-lg"
+									@onclick="() => OpenComicBook(dropItem.ComicBook)">
+
 									<ComicBookCard
 										GroupService="GroupService"
 										ComicBookService="ComicBookService"
@@ -97,25 +105,27 @@
 										ContextMenuDisabled="_editingInProgress"
 										UpdatedComicBook="@LoadCurrentGroup"
 										EditStateChanged="newState => _editingInProgress = newState" />
+
 								</MudDynamicDropItem>
-							</a>
-						</ChildContent>
-					</MudDropZone>
+
+							</ChildContent>
+						</MudDropZone>
+					}
 				}
-			}
-			else
-			{
-				<div class="flex flex-col justify-center align-center gap-5 mx-auto">
-					<div class="flex justify-center align-center gap-3">
-						<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary" />
-						<span> No comic books found</span>
+				else
+				{
+					<div class="flex flex-col justify-center align-center gap-5 mx-auto">
+						<div class="flex justify-center align-center gap-3">
+							<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary" />
+							<span> No comic books found</span>
+						</div>
+						<ImportComicButton Import="@Import" />
 					</div>
-					<ImportComicButton Import="@Import" />
-				</div>
-			}
-		</div>
-	</ChildContent>
-</MudDropContainer>
+				}
+			</div>
+		</ChildContent>
+	</MudDropContainer>
+</div>
 
 @code
 
@@ -126,16 +136,8 @@
 	[Inject]
 	IGroupService GroupService { get; set; } = null!;
 
-	private class DropItem
-	{
-		public ComicBook ComicBook { get; init; } = null!;
-		public string Identifier { get; set; } = null!;
-	}
-
 	MudDropContainer<DropItem>? _dropContainer;
 
-	// ReSharper disable once NotAccessedField.Local used in template for an input bind
-	string _searchWord = string.Empty;
 	bool _editingInProgress = false;
 	private const string ComicBookDropZoneIdentifier = "ComicBook";
 
@@ -145,24 +147,41 @@
 	List<Group> _groupList = [];
 	List<Group> _contextMenuGroups = [];
 
-	private void SearchByTitle(string searchTerm)
+
+	private void Search(ComicBookSearchDto search)
 	{
-		if (searchTerm.Length == 0)
+		var allSearchKeysAreNull = search.AllKeysAreNullOrEmpty();
+
+		if (allSearchKeysAreNull)
 		{
 			LoadCurrentGroup();
 			ReloadDropzone();
+			StateHasChanged();
 			return;
 		}
+
 
 		try
 		{
 			_comicBookList = ComicBookService
-				.SearchByTitle(searchTerm)
+				.Search(search)
 				.Select(book => new DropItem { ComicBook = book, Identifier = ComicBookDropZoneIdentifier })
 				.ToList();
 
-			_groupList = GroupService.SearchByName(searchTerm).ToList();
+			if (!search.Title.IsNullOrEmpty())
+			{
+				var groupSearchDto = new GroupSearchDto
+				{
+					Name = search.Title,
+				};
+
+				_groupList = GroupService.Search(groupSearchDto).ToList();
+			}
+
 			_contextMenuGroups = GroupService.List().ToList();
+
+			StateHasChanged();
+
 		}
 		catch (HandledAppException e)
 		{
@@ -287,8 +306,6 @@
 
 	private void LoadCurrentGroup()
 	{
-		_searchWord = string.Empty;
-
 		try
 		{
 			_currentGroup = GroupService.LoadForLibraryPage(GroupId);
@@ -321,6 +338,20 @@
 		return "Group " + identifier;
 	}
 
+	private void OpenComicBook(ComicBook comicBook)
+	{
+		if(comicBook.Information.FileMovedOrDeleted)
+			return;
+
+		var currentUri = NavigationManager.Uri;
+		var readingPageLink = GetComicBookLink(comicBook.Id);
+
+		readingPageLink.Query = $"ReturnTo={Uri.EscapeDataString(currentUri)}";
+
+		NavigationManager.NavigateTo(readingPageLink.ToString());
+	}
+
+
 
 	/// <summary>
 	/// The dropzone doesn't automatically update, when data updates
@@ -332,9 +363,11 @@
 	}
 
 
-	private string GetComicBookLink(int comicBookId)
+	private UriBuilder GetComicBookLink(int comicBookId)
 	{
-		return PageManager.GetLibraryComicBookLink(comicBookId, GroupId);
+		var comicBookLink = PageManager.GetReadingPageLink(comicBookId, GroupId).Remove(0, 1);
+
+		return new UriBuilder(NavigationManager.BaseUri + comicBookLink);
 	}
 
 	protected override void OnInitialized()
@@ -343,4 +376,5 @@
 		PageManager.SetPageTitle(Page.Library);
 		LoadCurrentGroup();
 	}
+
 }

@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Common.FieldInterfaces;
 
 namespace Zine.App.Domain.ComicBook;
 
 [Table("ComicBooks")]
-public class ComicBook
+public class ComicBook : IId
 {
 	public int Id { get; init; }
 
@@ -30,4 +31,14 @@ public class ComicBook
 	public ComicBookInformation.ComicBookInformation Information { get; init; } = null!;
 
 	public ICollection<ComicBookPageInformation.ComicBookPageInformation> Pages { get; init; } = null!;
+
+	[NotMapped]
+	public int ReadPercentage
+	{
+		get {
+			var readPages = Pages.Count(p => p.IsRead);
+			var readPageRatio = readPages / (double)Pages.Count;
+			return (int)Math.Round(readPageRatio * 100, 0);
+		}
+	}
 }

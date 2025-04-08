@@ -1,11 +1,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Zine.App.Common.FieldInterfaces;
 
 namespace Zine.App.Domain.ComicBookPageInformation;
 
 [Table("ComicBookPageInformation")]
-public class ComicBookPageInformation
+public class ComicBookPageInformation : IId
 {
 	public int Id { get; init; }
 
@@ -21,14 +22,11 @@ public class ComicBookPageInformation
 	public ComicBook.ComicBook ComicBook { get; init; } = null!;
 
 	[Required]
-	public int PageNumberStart { get; set; }
+	public int Index { get; set; }
 
 	[DefaultValue(false)]
 	public bool IsWidthChecked { get; set; }
 
-	[NotMapped]
-	public int PageNumberEnd =>
-		PageType == PageType.Double
-			? PageNumberStart + 1
-			: PageNumberStart;
+	[DefaultValue(false)]
+	public bool IsRead { get; set; }
 }

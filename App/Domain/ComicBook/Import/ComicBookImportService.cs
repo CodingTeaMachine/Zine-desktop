@@ -1,5 +1,6 @@
 using MudBlazor;
 using Zine.App.Domain.ComicBook.Import.Events;
+using Zine.App.Enums;
 using Zine.App.Exceptions;
 using Zine.App.Logger;
 
@@ -7,8 +8,7 @@ namespace Zine.App.Domain.ComicBook.Import;
 
 public class ComicBookImportService(
 	ImportStrategyFactory importStrategyFactory,
-	ImportEventService eventService,
-	ILoggerService logger) : IComicBookImportService
+	ImportEventService eventService) : IComicBookImportService
 {
 	/// <summary>
 	/// 
@@ -22,8 +22,13 @@ public class ComicBookImportService(
 	public void ImportFromDisk(ImportAction action, int groupId)
 	{
 
-		if(!Directory.Exists(action.FilePath))
-			throw new DirectoryNotFoundException("Directory or file doesn't exist: " + action.FilePath);
+		switch (action.Type)
+		{
+			case ImportType.File when !File.Exists(action.FilePath):
+				throw new DirectoryNotFoundException("File doesn't exist: " + action.FilePath);
+			case ImportType.Directory when !Directory.Exists(action.FilePath):
+				throw new DirectoryNotFoundException("Directory doesn't exist: " + action.FilePath);
+		}
 
 		var strategy =
 			importStrategyFactory.GetStrategy(action.Type, action.IsRecursiveImport, action.KeepFoldersAsGroups);
