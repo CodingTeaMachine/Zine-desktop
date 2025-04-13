@@ -68,6 +68,15 @@ builder.Services.AddScoped<ImportStrategyFactory>();
 builder.Services.AddSingleton<ReadingPageEventBus>();
 
 var app = builder.Build();
+
+//TODO: Move this to an update manager when the app update logic is done.
+using (var scope = app.Services.CreateScope())
+{
+    Console.WriteLine("Running migrations...");
+    var db = scope.ServiceProvider.GetRequiredService<ZineDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -75,6 +84,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 
