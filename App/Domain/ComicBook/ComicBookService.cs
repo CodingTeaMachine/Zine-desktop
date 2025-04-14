@@ -61,9 +61,8 @@ public class ComicBookService(
 			take: count);
 	}
 
-	public IEnumerable<ComicBook> GetRecommendations()
+	public IEnumerable<ComicBook> GetRecommendations(int recommendationCount)
 	{
-		const int recommendationCount = 8;
 		var totalCount = repository.Count(cb => cb.Information.LastOpened == null);
 
 		List<ComicBook> recommendations = [];
@@ -334,6 +333,7 @@ public class ComicBookService(
 		comicBookFile
 			.Entries
 			.Where(entry => !entry.IsDirectory && Image.IsSupported(entry.Key!))
+			.ToList()
 			.ForEach(entry => entry.WriteToDirectory(DataPath.ComicBookReadingDirectory));
 	}
 

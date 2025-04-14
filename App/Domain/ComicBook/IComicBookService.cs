@@ -11,7 +11,7 @@ public interface IComicBookService
     //Read
     public ComicBook? GetById(int comicId);
     public IEnumerable<ComicBook> GetCurrentlyReadComicBooks(int count);
-    public IEnumerable<ComicBook> GetRecommendations();
+    public IEnumerable<ComicBook> GetRecommendations(int recommendationCount);
     public string GetComicBookCoverFromDisc(int comicBookId);
     public ComicBook GetForReadingView(int comicId);
     public ComicBook GetForInformationDrawer(int comicId);

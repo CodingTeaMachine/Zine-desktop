@@ -1,0 +1,40 @@
+@using Zine.App.Domain.Settings
+
+<div class="flex">
+	<MudNumericField
+		T="int"
+		Value="Setting.Value"
+		ValueChanged="@(val => OnValueChanged(val))"
+		Min="@Min"
+	/>
+
+	@if (Setting.Value != Setting.DefaultValue)
+	{
+		<MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="ResetValue"/>
+	}
+</div>
+
+@code {
+
+	[Parameter]
+	public required Setting<int> Setting { get; set; }
+
+	[Parameter]
+	public EventCallback OnChanged { get; set; }
+
+	[Parameter]
+	public int Min { get; set; } = 0;
+
+	private async Task ResetValue()
+	{
+		Setting.Value = Setting.DefaultValue;
+		await OnValueChanged(Setting.DefaultValue);
+	}
+
+	private async Task OnValueChanged(int value)
+	{
+		Setting.Value = value;
+		await OnChanged.InvokeAsync();
+	}
+
+}

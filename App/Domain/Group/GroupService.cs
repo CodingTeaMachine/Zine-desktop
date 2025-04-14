@@ -200,6 +200,7 @@ public class GroupService(
 				g.ParentGroupId = newParentGroupId;
 				return g;
 			})
+			.ToList()
 			.ForEach(repository.Update);
 
 		try

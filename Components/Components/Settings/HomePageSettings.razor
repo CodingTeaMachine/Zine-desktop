@@ -1,0 +1,57 @@
+@using Zine.App.Domain.Settings
+@using Zine.Components.Components.Settings.Inputs
+
+@implements Zine.App.Pages.Settings.ISettingsSection
+
+<style>
+	.row {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+</style>
+
+<section class="w-full">
+	<h2 class="text-2xl font-bold mb-3"> Home </h2>
+
+	<div class="flex flex-col pl-4 gap-4">
+		<div class="row">
+			<div>Recommendations to show:</div>
+			<div>
+				<NumericSettingsInput
+					Setting="SettingsValues.HomaPageRecommendationCount"
+					Min="1"
+					OnChanged="@UpdateSettings"
+				/>
+			</div>
+		</div>
+
+		<div class="row">
+			<div>Recently read to show:</div>
+			<div>
+				<NumericSettingsInput
+					Setting="SettingsValues.HomePageRecentlyReadCountCount"
+					Min="1"
+					OnChanged="@UpdateSettings"
+				/>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+@code {
+
+	[Parameter]
+    public required Settings SettingsValues { get; set; }
+
+	[Parameter]
+	public required EventCallback<Settings> SettingsValuesChanged { get; set; }
+
+
+	private void UpdateSettings()
+	{
+		SettingsValuesChanged.InvokeAsync(SettingsValues);
+	}
+}

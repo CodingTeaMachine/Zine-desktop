@@ -38,8 +38,8 @@ public class TopLevelImportStrategy(ImportUnitOfWork unitOfWork, ImportEventServ
 			throw new DataException("Error importing the following comic books: " + string.Join(", ", unsupportedComicBookList));
 	}
 
-	private IEnumerable<string> GetComicBookPaths(string directoryPath)
+	private List<string> GetComicBookPaths(string directoryPath)
 	{
-		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.TopDirectoryOnly);
+		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.TopDirectoryOnly).ToList();
 	}
 }

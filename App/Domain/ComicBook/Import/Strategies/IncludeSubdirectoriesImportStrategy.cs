@@ -37,8 +37,8 @@ public class IncludeSubdirectoriesImportStrategy(ImportUnitOfWork unitOfWork, Im
 			throw new DataException("Error importing the following comic books: " + string.Join(", ", importErrorList));
 	}
 
-	private IEnumerable<string> GetComicBookPaths(string directoryPath)
+	private List<string> GetComicBookPaths(string directoryPath)
 	{
-		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.AllDirectories);
+		return Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.AllDirectories).ToList();
 	}
 }

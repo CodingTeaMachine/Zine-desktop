@@ -65,7 +65,7 @@ public class CanvasHandler : IAsyncDisposable
 
 
 
-	public async Task SetDotnetHelperReference(DotNetObjectReference<Reading> dotNetObjectReference)
+	public async Task SetDotnetHelperReference(DotNetObjectReference<ReadingPage> dotNetObjectReference)
 	{
 		var module = await _moduleTask.Value;
 		await module.InvokeVoidAsync("setDotnetHelper", dotNetObjectReference);

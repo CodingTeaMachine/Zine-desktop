@@ -16,7 +16,7 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 			: _dbSet.Count();
 	}
 
-	public IEnumerable<TEntity> List(
+	public List<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,
 		Expression<Func<TEntity, object>>? orderByDescending = null,

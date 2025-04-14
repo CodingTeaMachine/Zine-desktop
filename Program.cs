@@ -15,6 +15,7 @@ using Zine.App.Domain.Group;
 using Zine.App.Domain.Person;
 using Zine.App.Domain.Publisher;
 using Zine.App.Domain.Series;
+using Zine.App.Domain.Settings;
 using Zine.App.Domain.Tag;
 using Zine.App.Enums;
 using Zine.App.Helpers;
@@ -42,6 +43,8 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString(ConfigKeys.DbContext)
                   ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 
+SettingsJsonConverter.WriteDefaultIfNeeded(builder.Configuration.GetConnectionString(ConfigKeys.SettingsLocation)!);
+
 builder.Services.AddScoped(typeof(GenericRepository<>));
 
 //Services
@@ -54,6 +57,7 @@ builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 //Importing comic books
 builder.Services.AddScoped<ImportUnitOfWork>();

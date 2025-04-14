@@ -149,7 +149,7 @@ public class ReadingPageHandler
 		_uiUpdateHandler!();
 	}
 
-	public async Task SetDotnetHelperReference(DotNetObjectReference<Components.Pages.Reading> dotNetObjectReference)
+	public async Task SetDotnetHelperReference(DotNetObjectReference<Components.Pages.ReadingPage> dotNetObjectReference)
 	{
 		await _canvasHandler!.SetDotnetHelperReference(dotNetObjectReference);
 	}

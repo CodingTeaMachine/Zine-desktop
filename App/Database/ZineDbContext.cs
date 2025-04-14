@@ -28,7 +28,8 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
     );
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+        => options
+            .UseSqlite($"Data Source={DbPath}");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +80,7 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
         modelBuilder.Entity<ComicBookInformation>()
             .HasOne(i => i.Series)
             .WithMany(s => s.ComicBookInformationList);
+
 
         base.OnModelCreating(modelBuilder);
     }

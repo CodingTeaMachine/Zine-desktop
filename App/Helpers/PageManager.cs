@@ -9,7 +9,8 @@ public static class PageManager
     {
         {Page.Home, "Home"},
         {Page.Reading, "Reading"},
-        {Page.Library, "Library"}
+        {Page.Library, "Library"},
+        {Page.Settings, "settings"},
     };
 
     public static string PageTitle { get; private set; } = Pages[Page.Home];

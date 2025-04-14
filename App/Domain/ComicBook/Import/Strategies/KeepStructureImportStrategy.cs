@@ -36,7 +36,7 @@ public class KeepStructureImportStrategy(ImportUnitOfWork unitOfWork, ImportEven
 	private void ImportDirectoryContent(string directoryPath, int parentGroupId)
 	{
 		_unitOfWork.Logger.Information($"KeepStructureImportStrategy.ImportDirectoryContent: Importing directory {directoryPath}");
-		var directories = Directory.GetDirectories(directoryPath);
+		var directories = Directory.GetDirectories(directoryPath).ToList();
 
 		directories.ForEach(directory =>
 		{
@@ -46,6 +46,7 @@ public class KeepStructureImportStrategy(ImportUnitOfWork unitOfWork, ImportEven
 		});
 
 		Directory.EnumerateFiles(directoryPath, "*.cb?", SearchOption.TopDirectoryOnly)
+			.ToList()
 			.ForEach(filePath =>
 			{
 				try

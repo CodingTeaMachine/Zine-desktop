@@ -1,5 +1,7 @@
 @using Zine.App.Domain.ComicBook
+@using Zine.App.Domain.Settings
 @inject IComicBookService ComicBookService
+@inject ISettingsService SettingsService
 
 <div class="min-h-64">
 	<h2 class="row-title">Recommendations</h2>
@@ -17,7 +19,8 @@
 
 	private void LoadCurrentlyReadComicBook()
 	{
-		_recommendations = ComicBookService.GetRecommendations();
+		var settings = SettingsService.Get();
+		_recommendations = ComicBookService.GetRecommendations(settings.HomaPageRecommendationCount.Value);
 	}
 
 	protected override void OnInitialized()
