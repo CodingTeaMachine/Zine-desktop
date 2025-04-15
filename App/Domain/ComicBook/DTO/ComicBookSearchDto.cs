@@ -17,6 +17,7 @@ public class ComicBookSearchDto : ASearchDto<ComicBook>
 	public Publisher.Publisher? Publisher { get; set; }
 	public Series.Series? Series { get; set; }
 	public List<Tag.Tag> Tags { get; set; } = [];
+	public StatusTag.StatusTag? StatusTag { get; set; }
 	public DateRange? ReleaseDateDateRange { get; set; }
 	public ReadingStateEnum? ReadingState { get; set; }
 
@@ -51,6 +52,9 @@ public class ComicBookSearchDto : ASearchDto<ComicBook>
 			var tagIds = Tags.Select(tag => tag.Id);
 			query = query.Where(cb => tagIds.All(tagId => cb.Information.Tags.Any(cbTag => cbTag.Id == tagId)));
 		}
+
+		if(StatusTag != null)
+			query = query.Where(cb => cb.Information.StatusTag != null && cb.Information.StatusTag.Id == StatusTag.Id);
 
 		if (ReleaseDateDateRange != null && ReleaseDateDateRange.Start != null && ReleaseDateDateRange.End != null)
 			query = query.Where(cb =>

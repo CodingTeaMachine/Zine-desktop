@@ -6,6 +6,7 @@ using Zine.App.Domain.Group;
 using Zine.App.Domain.Person;
 using Zine.App.Domain.Publisher;
 using Zine.App.Domain.Series;
+using Zine.App.Domain.StatusTag;
 using Zine.App.Domain.Tag;
 using Zine.App.Enums;
 
@@ -21,6 +22,7 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
     public DbSet<Publisher> Publishers { get; init; }
     public DbSet<Series> Series { get; init; }
     public DbSet<Tag> Tags { get; init; }
+    public DbSet<StatusTag> StatusTags { get; init; }
 
     private string DbPath { get; } = Path.Join(
         Directory.GetCurrentDirectory(),
@@ -76,11 +78,19 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
             .HasMany(i => i.Tags)
             .WithMany(t => t.ComicBookInformationList);
 
+        //ComicBookInformation - Status Tag relationship
+        modelBuilder.Entity<ComicBookInformation>()
+            .HasOne(cbi => cbi.StatusTag)
+            .WithMany(t => t.ComicBookInformationList);
+
         //ComicBookInformation - Series relationship
         modelBuilder.Entity<ComicBookInformation>()
             .HasOne(i => i.Series)
             .WithMany(s => s.ComicBookInformationList);
 
+
+        modelBuilder.Entity<StatusTag>()
+            .HasData(BaseStatusTags.StatusTags);
 
         base.OnModelCreating(modelBuilder);
     }

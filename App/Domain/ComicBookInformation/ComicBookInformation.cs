@@ -33,6 +33,8 @@ public class ComicBookInformation : IId
 
 	public List<Tag.Tag> Tags { get; set; } = [];
 
+	public StatusTag.StatusTag? StatusTag { get; set; }
+
 	public Series.Series? Series { get; set; }
 
 	[MaxLength(50)]

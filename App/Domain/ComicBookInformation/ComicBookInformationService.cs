@@ -10,7 +10,8 @@ namespace Zine.App.Domain.ComicBookInformation;
 
 public class ComicBookInformationService(
 	ZineDbContext dbContext,
-	GenericRepository<ComicBookInformation> repository) : IComicBookInformationService
+	GenericRepository<ComicBookInformation> repository,
+	GenericRepository<StatusTag.StatusTag> statusTagRepository) : IComicBookInformationService
 {
 	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
 	{
@@ -45,5 +46,22 @@ public class ComicBookInformationService(
 
 		repository.Update(comicBookInformation);
 		dbContext.SaveChanges();
+	}
+
+	public void SetStatusTagToFinished(ComicBookInformation comicBookInformation)
+	{
+		var statusTag = statusTagRepository.First(st => st.Name == "Finished");
+
+		comicBookInformation.StatusTag = statusTag;
+
+		try
+		{
+			dbContext.Update(comicBookInformation);
+		}
+		catch (DbUpdateException e)
+		{
+			throw new HandledAppException("Error updating comic book status to finished", Severity.Error, e);
+		}
+
 	}
 }

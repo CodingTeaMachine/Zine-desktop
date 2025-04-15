@@ -1,6 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
+@implements IAsyncDisposable
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using MudBlazor.Extensions
+@using Zine.App
 @using Zine.App.Domain.ComicBook
+@using Zine.App.Helpers
 
 <MudThemeProvider IsDarkMode="true" />
 <MudDialogProvider  />
@@ -14,10 +20,10 @@
 <MudLayout>
     <MudAppBar>
         <h1 class="font-bold text-2xl flex items-center gap-3">
-            <a href="#" class="flex items-center cursor-pointer" @onclick="CloseReadingView">
+            <MudButton @onclick="CloseReadingView">
                 <MudIcon Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Primary"/>
                 Back
-            </a>
+            </MudButton>
         </h1>
     </MudAppBar>
     <MudMainContent>
@@ -27,15 +33,43 @@
 
 @code {
 
-    [SupplyParameterFromQuery]
-    private string? ReturnTo { get; set; }
 
-    private void CloseReadingView()
+
+    private HubConnection? _hubConnection;
+
+    private bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
+
+    private async Task CloseReadingView()
     {
-        if (ReturnTo == null)
-            return;
 
-        ComicBookService.CleanReadingDirectory();
-        NavigationManager.NavigateTo(ReturnTo);
+        if (IsConnected)
+        {
+            await SendCloseComicBook();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/CloseComicBookHub"))
+            .Build();
+
+        await _hubConnection.StartAsync();
+    }
+
+    private async Task SendCloseComicBook()
+    {
+        if (_hubConnection != null)
+        {
+            await _hubConnection.SendAsync("SendCloseComicBookSignal");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection != null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
     }
 }

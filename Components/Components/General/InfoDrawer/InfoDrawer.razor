@@ -11,6 +11,8 @@
 @using Zine.App.Domain.Series
 @using Zine.App.Domain.Series.Converter
 @using Zine.App.Domain.Series.DTO
+@using Zine.App.Domain.StatusTag
+@using Zine.App.Domain.StatusTag.Converter
 @using Zine.App.Domain.Tag
 @using Zine.App.Domain.Tag.Converter
 @using Zine.App.Domain.Tag.DTO
@@ -26,6 +28,7 @@
 @inject IPublisherService PublisherService
 @inject ITagService TagService
 @inject ISeriesService SeriesService
+@inject IStatusTagService StatusTagService
 
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
@@ -221,6 +224,37 @@
 				</tr>
 
 				<tr>
+					<th>Status</th>
+					<td>
+						@if (!_editMode)
+						{
+							@if (StatusTag == null)
+							{
+								<span class="italic"> None </span>
+							}
+							else
+							{
+								<MudChip T="string" Variant="Variant.Filled" Color="@StatusTag.Color">
+									@StatusTag.Name
+								</MudChip>
+							}
+						}
+						else
+						{
+							<MudAutocomplete
+								T="StatusTag"
+								@bind-Value="StatusTag"
+								Label="Select a value..."
+								ToStringFunc="StatusTagConverter.ToString"
+								SearchFunc="@StatusTag_Search"
+								Clearable="true"
+								Strict="false"
+							/>
+						}
+					</td>
+				</tr>
+
+				<tr>
 					<th>Series</th>
 					<td>
 						@if (!_editMode && Series == null)
@@ -309,6 +343,7 @@
 	private List<Person> Editors { get; set; } = [];
 	private List<Publisher> Publishers { get; set; } = [];
 	private List<Tag> Tags { get; set; } = [];
+	private StatusTag? StatusTag { get; set; } = null;
 	private Series? Series { get; set; } = null;
 	private string Issue { get; set; } = String.Empty;
 	private DateTime? ReleaseDate { get; set; } = null;
@@ -370,6 +405,7 @@
 		Editors = [];
 		Publishers = [];
 		Tags = [];
+		StatusTag = null;
 		Series = null;
 		Issue = String.Empty;
 		ReleaseDate = null;
@@ -388,6 +424,8 @@
 			Editors.AddRange(comicBook.Information.Editors);
 			Publishers.AddRange(comicBook.Information.Publishers);
 			Tags.AddRange(comicBook.Information.Tags);
+
+			StatusTag = comicBook.Information.StatusTag;
 
 			Series = comicBook.Information.Series;
 			Issue = comicBook.Information.Issue;
@@ -417,6 +455,7 @@
 		ComicBook!.Information.Series = Series;
 		ComicBook!.Information.Issue = Issue;
 		ComicBook!.Information.ReleaseDate = ReleaseDate;
+		ComicBook!.Information.StatusTag = StatusTag;
 
 		ComicBook = ComicBookService.Update(ComicBook!);
 
@@ -571,6 +610,15 @@
 		{
 			Snackbar.Add(e.Message, e.Severity);
 		}
+	}
+
+	// Status Tag
+
+	private Task<IEnumerable<StatusTag>> StatusTag_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return Task.FromResult(StatusTagService.Search(searchDto));
 	}
 
 	// Series

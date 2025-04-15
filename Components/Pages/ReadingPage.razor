@@ -3,12 +3,15 @@
 @layout ReadingLayout
 @implements IJsKeyEventListener
 @implements IJsScrollEventListener
-@implements IDisposable
+@implements IAsyncDisposable
 @using System.Data
+@using Microsoft.AspNetCore.SignalR.Client
+@using Zine.App
 @using Zine.App.Domain.ComicBook
 @using Zine.App.Domain.ComicBook.Reading
 @using Zine.App.Domain.ComicBookInformation
 @using Zine.App.Domain.ComicBookPageInformation
+@using Zine.App.Exceptions
 @using Zine.App.Helpers
 @using Zine.App.Helpers.JsHelpers
 @using Zine.Components.Layout
@@ -21,6 +24,7 @@
 @inject IComicBookPageInformationService ComicBookPageInformationService
 @inject IJSRuntime JsRuntime
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <script src="js/Reading.js"></script>
 
@@ -44,7 +48,7 @@
 							Icon="@Icons.Material.Filled.Cancel"
 							Size="Size.Small"
 							OnClick="CancelReordering"
-							/>
+						/>
 					}
 					else
 					{
@@ -157,6 +161,9 @@
 
 @code {
 
+	[SupplyParameterFromQuery]
+	private string? ReturnTo { get; set; }
+
 	[Parameter]
 	public int ComicBookId { get; set; }
 
@@ -172,6 +179,8 @@
 	ReadingPageHandler? _readingPageHandler;
 
 	private bool _reorderMode = false;
+
+	private HubConnection? _hubConnection;
 
 	[JSInvokable]
 	public void JS_OnKeyDown(KeyboardEventArgs keyboardEvent)
@@ -292,10 +301,59 @@
 		}
 	}
 
-	protected override void OnInitialized()
+	async Task HandleCloseComicBook()
 	{
-		base.OnInitialized();
+		if (_readingPageHandler!.ComicBook.ReadPercentage != 100 || _readingPageHandler.ComicBook.Information.StatusTag is { Name: "Finished" })
+		{
+			NavigateBack();
+			return;
+		}
+
+		bool? changeStatus = await DialogService.ShowMessageBox(
+			"Congratulations!",
+			$"You have finished the comic book! Would you like to move '{_readingPageHandler!.ComicBook.Title}' to the 'Finished' status?",
+				yesText: "Yes!", noText: "No"
+		);
+
+		if (changeStatus is true)
+		{
+			try
+			{
+				ComicBookInformationService.SetStatusTagToFinished(_readingPageHandler.ComicBook.Information);
+			}
+			catch (HandledAppException e)
+			{
+				Snackbar.Add(e.Message, e.Severity);
+			}
+		}
+
+		NavigateBack();
+	}
+
+	void NavigateBack()
+	{
+		if (ReturnTo == null)
+		{
+		    NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(AppConstants.MainGroupId));
+		}
+		else
+		{
+		    Zine.App.Domain.ComicBook.ComicBookService.CleanReadingDirectory();
+		    NavigationManager.NavigateTo(ReturnTo);
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
 		InitReadingPageHandler();
+
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl(NavigationManager.ToAbsoluteUri("/CloseComicBookHub"))
+			.Build();
+
+		_hubConnection.On("ReceiveCloseComicBookSignal", HandleCloseComicBook);
+
+		await _hubConnection.StartAsync();
 	}
 
 
@@ -313,9 +371,14 @@
 		}
 	}
 
-	public void Dispose()
+	public async ValueTask DisposeAsync()
 	{
 		_componentRef?.Dispose();
+
+		if (_hubConnection != null)
+		{
+			await _hubConnection.DisposeAsync();
+		}
 	}
 
 }

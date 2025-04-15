@@ -15,7 +15,7 @@ namespace Zine.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
 
             modelBuilder.Entity("ComicBookInformationPerson", b =>
                 {
@@ -116,12 +116,17 @@ namespace Zine.Migrations
                     b.Property<int?>("SeriesId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("StatusTagId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ComicBookId")
                         .IsUnique();
 
                     b.HasIndex("SeriesId");
+
+                    b.HasIndex("StatusTagId");
 
                     b.ToTable("ComicBookInformation");
                 });
@@ -231,6 +236,57 @@ namespace Zine.Migrations
                     b.ToTable("Series");
                 });
 
+            modelBuilder.Entity("Zine.App.Domain.StatusTag.StatusTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Color")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StatusTags");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Color = 5,
+                            Name = "Finished"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Color = 4,
+                            Name = "Reading"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Color = 1,
+                            Name = "Archived"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Color = 2,
+                            Name = "Want to read"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Color = 7,
+                            Name = "Retired"
+                        });
+                });
+
             modelBuilder.Entity("Zine.App.Domain.Tag.Tag", b =>
                 {
                     b.Property<int>("Id")
@@ -315,9 +371,15 @@ namespace Zine.Migrations
                         .WithMany("ComicBookInformationList")
                         .HasForeignKey("SeriesId");
 
+                    b.HasOne("Zine.App.Domain.StatusTag.StatusTag", "StatusTag")
+                        .WithMany("ComicBookInformationList")
+                        .HasForeignKey("StatusTagId");
+
                     b.Navigation("ComicBook");
 
                     b.Navigation("Series");
+
+                    b.Navigation("StatusTag");
                 });
 
             modelBuilder.Entity("Zine.App.Domain.ComicBookPageInformation.ComicBookPageInformation", b =>
@@ -357,6 +419,11 @@ namespace Zine.Migrations
                 });
 
             modelBuilder.Entity("Zine.App.Domain.Series.Series", b =>
+                {
+                    b.Navigation("ComicBookInformationList");
+                });
+
+            modelBuilder.Entity("Zine.App.Domain.StatusTag.StatusTag", b =>
                 {
                     b.Navigation("ComicBookInformationList");
                 });

@@ -7,7 +7,7 @@ namespace Zine.App.Domain.ComicBook.Reading;
 
 public class ReadingPageHandler
 {
-	private ComicBook ComicBook { get; set; } = null!;
+	public ComicBook ComicBook { get; set; } = null!;
 
 	public int ZoomScale = 100;
 

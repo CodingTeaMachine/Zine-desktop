@@ -1,4 +1,5 @@
 using ElectronNET.API;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using MudBlazor;
@@ -16,12 +17,13 @@ using Zine.App.Domain.Person;
 using Zine.App.Domain.Publisher;
 using Zine.App.Domain.Series;
 using Zine.App.Domain.Settings;
+using Zine.App.Domain.StatusTag;
 using Zine.App.Domain.Tag;
 using Zine.App.Enums;
 using Zine.App.Helpers;
+using Zine.App.Hubs;
 using Zine.App.Logger;
 using Zine.App.Pages.Library;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,13 @@ builder.Services.AddScoped<IPublisherService, PublisherService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<IStatusTagService, StatusTagService>();
+
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
+});
 
 //Importing comic books
 builder.Services.AddScoped<ImportUnitOfWork>();
@@ -72,6 +81,9 @@ builder.Services.AddScoped<ImportStrategyFactory>();
 builder.Services.AddSingleton<ReadingPageEventBus>();
 
 var app = builder.Build();
+
+app.UseResponseCompression();
+app.MapHub<CloseComicBookHub>("/CloseComicBookHub");
 
 //TODO: Move this to an update manager when the app update logic is done.
 using (var scope = app.Services.CreateScope())
