@@ -16,6 +16,7 @@ public interface IComicBookService
     public ComicBook GetForReadingView(int comicId);
     public ComicBook GetForInformationDrawer(int comicId);
     public IEnumerable<ComicBook> Search(ComicBookSearchDto search);
+    public bool Any();
 
     //Update
     public void AddToGroup(int groupId, int comicBookId);

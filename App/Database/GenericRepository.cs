@@ -16,6 +16,13 @@ public sealed class GenericRepository<TEntity>(ZineDbContext context) where TEnt
 			: _dbSet.Count();
 	}
 
+	public bool Any(Expression<Func<TEntity, bool>>? filter = null)
+	{
+		return filter != null
+			? _dbSet.Any(filter)
+			: _dbSet.Any();
+	}
+
 	public List<TEntity> List(
 		Expression<Func<TEntity, bool>>? filter = null,
 		Expression<Func<TEntity, object>>? orderBy = null,

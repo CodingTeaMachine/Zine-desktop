@@ -1,29 +1,42 @@
 ﻿@page "/"
+
+@using Zine.App.Domain.ComicBook
 @using Zine.App.Helpers
 @using Zine.Components.Components.Home
 @using Page = Zine.App.Enums.Page
 @using Zine.Components.Components.General.InfoDrawer
-@rendermode InteractiveServer
+
+@inject IComicBookService ComicBookService
 
 <link rel="stylesheet" href="css/pages/Home.css" />
 
 <InfoDrawer />
 
 <div class="flex flex-col gap-6">
-
-    <Row_ConinueReading />
-    <Row_LastRead />
-    <Row_Recommendations />
-
+    @if (_anyComicBooksImported)
+    {
+        <Row_ConinueReading />
+        <Row_LastRead />
+        <Row_Recommendations />
+    }
+    else
+    {
+        <NoComicBooksImported />
+    }
 </div>
 
 
 
 @code
 {
+
+    bool _anyComicBooksImported = false;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
         PageManager.SetPageTitle(Page.Home);
+
+        _anyComicBooksImported = ComicBookService.Any();
     }
 }

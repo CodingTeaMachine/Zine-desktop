@@ -6,12 +6,20 @@
 <div class="min-h-64">
 	<h2 class="row-title">Recommendations</h2>
 
-	<div class="flex gap-6 flex-wrap">
-		@foreach (var comicBook in _recommendations)
-		{
-			<ComicBookCard ComicBook="comicBook"/>
-		}
-	</div>
+	@if (_recommendations.Any())
+	{
+		<div class="flex gap-6 flex-wrap">
+			@foreach (var comicBook in _recommendations)
+			{
+				<ComicBookCard ComicBook="comicBook"/>
+			}
+		</div>
+	}
+	else
+	{
+		<NoComicBooksInTheCategory />
+	}
+
 </div>
 
 @code {

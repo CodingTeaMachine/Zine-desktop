@@ -170,6 +170,11 @@ public class ComicBookService(
 
 	}
 
+	public bool Any()
+	{
+		return repository.Any();
+	}
+
 	// Update
 
 	public void AddToGroup(int groupId, int comicBookId)

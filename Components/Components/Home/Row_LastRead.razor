@@ -6,12 +6,20 @@
 <div class="min-h-64">
 	<h2 class="row-title">@_comicBooksToDisplay last read comic books</h2>
 
-	<div class="flex flex-wrap gap-6 justify-start">
-		@foreach (var comicBook in _currentlyReadComicBooks)
-		{
-			<ComicBookCard ComicBook="comicBook" />
-		}
-	</div>
+	@if (_currentlyReadComicBooks.Any())
+	{
+		<div class="flex flex-wrap gap-6 justify-start">
+			@foreach (var comicBook in _currentlyReadComicBooks)
+			{
+				<ComicBookCard ComicBook="comicBook" />
+			}
+		</div>
+	}
+	else
+	{
+		<NoComicBooksInTheCategory/>
+	}
+
 </div>
 
 @code {

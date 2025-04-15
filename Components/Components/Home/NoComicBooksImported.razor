@@ -1,0 +1,29 @@
+@using Zine.App
+@using Zine.App.Helpers
+@using Zine.Assets.Icons
+
+@inject NavigationManager Navigation
+
+<div class="flex flex-col justify-center align-center gap-5 mx-auto mt-20">
+	<div class="flex justify-center align-center gap-3">
+		<MudIcon Icon="@CustomIcons.ComicBookNotFound" Size="Size.Large" Color="Color.Primary"/>
+		<span> No comic books imported yet. </span>
+	</div>
+	<div class="max-w-96 text-center">
+		<span class="font-bold mb-2">
+			But don't worry!
+			<MudIcon Class="mb-1" Color="Color.Primary" Icon="@CustomIcons.Heart"/>
+		</span>
+		<br/>
+		<span>You can head over to the library page and start importing your favourite comics right away!</span>
+	</div>
+	<MudButton
+		Class="font-bold"
+		Variant="Variant.Filled"
+		Color="Color.Primary"
+		OnClick="@(() => Navigation.NavigateTo(PageManager.GetLibraryGroupLink(AppConstants.MainGroupId)))"
+	>
+		Library
+		<MudIcon Class="ml-2" Icon="@Icons.Material.Filled.Book"/>
+	</MudButton>
+</div>
