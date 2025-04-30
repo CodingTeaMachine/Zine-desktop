@@ -214,12 +214,20 @@ public class ReadingPageHandler : IAsyncDisposable
 
 		return pages
 			.OrderBy(p => p.Index)
-			.Select(p => new Page
+			.Select(p =>
 			{
-				PageInformation = p,
-				PageNumberStart = pageNumber++,
-				Image = GetFilename(p),
-				PageNumberEnd = p.PageType == PageType.Double ? pageNumber++ : pageNumber,
+				
+				var page = new Page
+				{
+					PageInformation = p,
+					PageNumberStart = pageNumber,
+					Image = GetFilename(p),
+					PageNumberEnd = p.PageType == PageType.Double ? ++pageNumber : pageNumber,
+				};
+
+				pageNumber++;
+				
+				return page;
 			}).ToList();
 	}
 

@@ -1,54 +1,49 @@
 window.reorder = {
-
-	swapDuration: 300,
-
 	/**
-	 * 
-	 * @param {HTMLElement} element1 
-	 * @param {HTMLElement} element2 
+	 * Animates swapping positions of two elements
+	 * @param {HTMLElement} element1
+	 * @param {HTMLElement} element2
+	 * @param {int} swapDuration
 	 */
-	animateSwapTwoImages: function(element1, element2) {
+	animateSwapTwoImages: function(element1, element2, swapDuration) {
+		console.log("Starting swap animation");
 
-		element1.style.zIndex = 2;
-		element2.style.zIndex = 1;
+		if (!element1 || !element2) {
+			console.error("Invalid elements provided for swap");
+			return;
+		}
 
-		this.animateSwap(element1)
-				.then(() => this.animateSwap(element2))
-				.then(() => {
-					element1.style.zIndex = 0;
-					element2.style.zIndex = 0;
-				});
-	},
+		// Get initial positions of both elements
+		const rect1 = element1.getBoundingClientRect();
+		const rect2 = element2.getBoundingClientRect();
 
-	/**
-	 * @return {Promise}
-	 * @param {HTMLElement} element 
-	 */
-	animateSwap: function (element) {
-		return new Promise(resolve => {
-			const firstRect = element.getBoundingClientRect();
+		// Calculate the distances to move each element
+		const xDistance = rect2.left - rect1.left;
+		const yDistance = rect2.top - rect1.top;
 
-			requestAnimationFrame(() => {
-				const lastRect = element.getBoundingClientRect();
-				const dx = firstRect.left - lastRect.left;
-				const dy = firstRect.top - lastRect.top;
-	
-				if (dx !== 0 || dy !== 0) {
-					element.style.transform = `translate(${dx}px, ${dy}px)`;
-					element.style.transition = 'transform 0s';
-	
-					requestAnimationFrame(() => {
-						element.style.transform = '';
-						element.style.transition = `transform ${this.swapDuration}ms ease`;
+		// Apply higher z-index to elements being animated
+		element2.style.zIndex = "1";
+		element1.style.zIndex = (Number(element2.style.zIndex) + 1).toString();
 
-						setTimeout(() => {
-							resolve();
-						}, this.swapDuration);
-					});
-				}else {
-					resolve();
-				}
-			});
-		});
+		// Apply transitions
+		element1.style.transition = `transform ${swapDuration}ms ease`;
+		element2.style.transition = `transform ${swapDuration}ms ease`;
+
+		// Move elements
+		element1.style.transform = `translate(${xDistance}px, ${yDistance}px)`;
+		element2.style.transform = `translate(${-xDistance}px, ${-yDistance}px)`;
+
+		// Reset after animation completes
+		setTimeout(() => {
+			// Reset transforms and transitions
+			element1.style.transition = "";
+			element2.style.transition = "";
+			element1.style.transform = "";
+			element2.style.transform = "";
+			element1.style.zIndex = "";
+			element2.style.zIndex = "";
+
+			console.log("Swap animation completed");
+		}, swapDuration);
 	}
 };

@@ -10,20 +10,20 @@
 	<div class="flex flex-col gap-2 m-2">
 		@foreach (var page in Pages)
 		{
-			<div>
+			<div @key="page.PageInformation.Id">
 				<div class="mb-0.5">
+					<span>@(page.PageInformation.Index)</span>
 					@if (page.PageInformation.PageType == PageType.Double)
 					{
 						<span>@(page.PageNumberStart) - @(page.PageNumberEnd)</span>
 					}
 					else
 					{
-						<span>@(page.PageNumberStart)</span>
+						<span>@(page.PageNumberStart) -> @(page.PageNumberEnd)</span>
 					}
 				</div>
 				<div
 					id="@(page.PageInformation.Id)"
-					@key="page.PageInformation.Id"
 					@ref="_elementRefs[page.PageInformation.Id]"
 					draggable="true"
 					tabindex="1"
@@ -69,7 +69,8 @@
 		// Animate current and hovered items
 		var draggedRef = _elementRefs[draggedItem.PageInformation.Id];
 		var hoveredRef = _elementRefs[hoveredItem.PageInformation.Id];
-		await JsRuntime.InvokeVoidAsync("reorder.animateSwapTwoImages", draggedRef, hoveredRef);
+		await JsRuntime.InvokeVoidAsync("reorder.animateSwapTwoImages", draggedRef, hoveredRef, 300);
+		await Task.Delay(300); //Same as swapDuration in reorder.animateSwapTwoImages
 
 		// Swap them in the displayed list
 		Pages[_currentlyDraggedIndex] = hoveredItem;
@@ -81,8 +82,12 @@
 
 		_currentlyDraggedIndex = hoveredIndex;
 
-		Pages = ReadingPageHandler.CreatePageInfo(Pages.Select(p => p.PageInformation));
-
+		var newPages = ReadingPageHandler.CreatePageInfo(Pages.Select(p => p.PageInformation));
+		
+		Pages.Clear();
+		Pages.AddRange(newPages);
+		
+		
 		await PagesChanged.InvokeAsync(Pages);
 	}
 
