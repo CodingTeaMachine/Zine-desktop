@@ -13,6 +13,7 @@ module.exports = {
 				primary: '#776be7', // mud-theme-primary
 				light: '#383843', // mud-theme-light
 				dark: '#27272f', //mud-theme-dark
+				orange: '#FF9800' //mud-orange
 			}
 		},
 	},

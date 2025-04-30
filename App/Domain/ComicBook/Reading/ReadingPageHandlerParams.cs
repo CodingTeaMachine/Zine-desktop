@@ -18,4 +18,6 @@ public class ReadingPageHandlerParams
 	public required string CanvasId { get; init; }
 	public required int GroupId { get; init; }
 	public required int ComicBookId { get; init; }
+	public required Action UserActive { get; init; }
+	public required Action UserIdle { get; init; }
 }

@@ -82,6 +82,15 @@
 					<th>Pages</th>
 					<td>@ComicBook.Pages.Count</td>
 				</tr>
+				
+				<tr>
+					<th>Total time read</th>
+					<td>
+						<span class="rounded-xl px-2 py-1 text-sm">
+							@_totalTimeSpentReading.ToString(_totalTimeSpentReading.Hours != 0 ? @"hh\:mm\:ss" : @"mm\:ss")
+						</span>
+					</td>
+				</tr>
 
 				<tr>
 					<th>Drawn by</th>
@@ -336,7 +345,9 @@
 @code {
 	private bool _open;
 	private bool _editMode = false;
-
+	
+	private ComicBook? ComicBook { get; set; }
+	
 	private List<Person> Draftsmen { get; set; } = [];
 	private List<Person> Colorists { get; set; } = [];
 	private List<Person> Writers { get; set; } = [];
@@ -348,6 +359,8 @@
 	private string Issue { get; set; } = String.Empty;
 	private DateTime? ReleaseDate { get; set; } = null;
 
+	private TimeSpan _totalTimeSpentReading = TimeSpan.Zero;
+	
 	public bool Open
 	{
 		get => _open;
@@ -370,7 +383,6 @@
 
 	private Action? _unsubscribe = null;
 
-	private ComicBook? ComicBook { get; set; }
 
 	private void OpenDrawer(int comicBookId)
 	{
@@ -415,8 +427,9 @@
 	{
 		try
 		{
-			Console.WriteLine("Loading comic");
 			var comicBook = ComicBookService.GetForInformationDrawer(comicBookId);
+
+			_totalTimeSpentReading = GetTotalReadingTime(comicBook);
 
 			Draftsmen.AddRange(comicBook.Information.Draftsmen);
 			Colorists.AddRange(comicBook.Information.Colorists);
@@ -434,9 +447,9 @@
 
 			ComicBook = comicBook;
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
-			Snackbar.Add("Could not find comic book", Severity.Error);
+			Snackbar.Add("Could not open comic book information panel", Severity.Error);
 			Open = false;
 		}
 	}
@@ -462,6 +475,13 @@
 		DisableEditMode();
 	}
 
+	private static TimeSpan GetTotalReadingTime(ComicBook comicBook)
+	{
+		return comicBook.
+			Pages
+			.Aggregate(TimeSpan.Zero, (current, page) => current + (page.TimeSpentReadingPage ?? TimeSpan.Zero));
+	}
+	
 	// Person
 
 	private void Person_Create(string name, Role role)

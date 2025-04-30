@@ -5,6 +5,7 @@
 @implements IJsScrollEventListener
 @implements IAsyncDisposable
 @using System.Data
+@using ElectronNET.API
 @using Microsoft.AspNetCore.SignalR.Client
 @using Zine.App
 @using Zine.App.Domain.ComicBook
@@ -77,38 +78,48 @@
 
 		<main class="h-full w-full flex flex-col gap-3">
 
-			<div class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-end items-center leading-8 mud-elevation-1">
-				<div class="flex items-center gap-2 sm:gap-1">
-					<MudIcon
-						Icon="@Icons.Material.Filled.RotateRight"
-						class="toolbar-icon"
-						@onclick="_readingPageHandler.RotateRight"
-					/>
-					<MudIcon
-						Icon="@Icons.Material.Filled.RotateLeft"
-						class="toolbar-icon"
-						@onclick="_readingPageHandler.RotateLeft"
-					/>
+			<div
+				class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-between items-center leading-8 mud-elevation-1">
+				@* Beggining of the bar *@
+				<div>
+					@if (_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.HasValue)
+					{
+						<span class="rounded-xl px-2 py-1 text-sm @(_isUserActive ? "bg-primary" : "bg-orange")">
+							@_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.Value.ToString(_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.Value.Hours != 0 ? @"hh\:mm\:ss" : @"mm\:ss")
+						</span>
+					}
 				</div>
+				@* End of the bar *@
+				<div class="flex">
+					<div class="flex items-center gap-2 sm:gap-1">
+						<MudIcon
+							Icon="@Icons.Material.Filled.RotateRight"
+							class="toolbar-icon"
+							@onclick="_readingPageHandler.RotateRight"/>
+						<MudIcon
+							Icon="@Icons.Material.Filled.RotateLeft"
+							class="toolbar-icon"
+							@onclick="_readingPageHandler.RotateLeft"/>
+					</div>
 
-				<span class="bg-light mx-2 w-[1px] h-4/5"></span>
+					<span class="bg-light mx-2 w-[1px] h-4/5"></span>
 
-				<div class="flex items-center gap-2 sm:gap-1">
-					<MudIcon
-						Icon="@Icons.Material.Filled.ZoomIn"
-						class="toolbar-icon"
-						@onclick="_readingPageHandler.ZoomIn"
-					/>
-					<MudIcon
-						Icon="@Icons.Material.Filled.ZoomOut"
-						class="toolbar-icon"
-						@onclick="_readingPageHandler.ZoomOut"
-					/>
+					<div class="flex items-center gap-2 sm:gap-1">
+						<MudIcon
+							Icon="@Icons.Material.Filled.ZoomIn"
+							class="toolbar-icon"
+							@onclick="_readingPageHandler.ZoomIn"/>
+						<MudIcon
+							Icon="@Icons.Material.Filled.ZoomOut"
+							class="toolbar-icon"
+							@onclick="_readingPageHandler.ZoomOut"/>
 
-					<div class="ml-2 w-10 text-end">
-						@_readingPageHandler.ZoomScale%
+						<div class="ml-2 w-10 text-end">
+							@_readingPageHandler.ZoomScale%
+						</div>
 					</div>
 				</div>
+
 
 			</div>
 
@@ -161,14 +172,11 @@
 
 @code {
 
-	[SupplyParameterFromQuery]
-	private string? ReturnTo { get; set; }
+	[SupplyParameterFromQuery] private string? ReturnTo { get; set; }
 
-	[Parameter]
-	public int ComicBookId { get; set; }
+	[Parameter] public int ComicBookId { get; set; }
 
-	[Parameter]
-	public int GroupId { get; set; }
+	[Parameter] public int GroupId { get; set; }
 
 	private const string CanvasId = "Canvas";
 
@@ -181,6 +189,11 @@
 	private bool _reorderMode = false;
 
 	private HubConnection? _hubConnection;
+
+	private bool _isUserActive = true;
+
+	private readonly int _mouseIdleTime = (int)TimeSpan.FromMinutes(2).TotalMilliseconds;
+
 
 	[JSInvokable]
 	public void JS_OnKeyDown(KeyboardEventArgs keyboardEvent)
@@ -197,6 +210,23 @@
 		if (scrollEvent.Modifier == KeyModifier.None)
 			HandlePageChangeByScroll(scrollEvent.Direction);
 	}
+
+	[JSInvokable]
+	public void JS_OnUserActive()
+	{
+		_isUserActive = true;
+		_readingPageHandler?.StartTimer();
+		InvokeAsync(StateHasChanged);
+	}
+
+	[JSInvokable]
+	public void JS_OnUserIdle()
+	{
+		_isUserActive = false;
+		_readingPageHandler?.StopTimer();
+		InvokeAsync(StateHasChanged);
+	}
+
 
 	[JSInvokable]
 	public async Task JS_UpdatePageZoomDisplay()
@@ -233,11 +263,9 @@
 		switch (keyboardEvent.Key)
 		{
 			case "=":
-				_ = _readingPageHandler?.ZoomIn();
-				break;
+				_readingPageHandler?.ZoomIn(); break;
 			case "-":
-				_ = _readingPageHandler?.ZoomOut();
-				break;
+				_readingPageHandler?.ZoomOut(); break;
 		}
 	}
 
@@ -275,7 +303,9 @@
 		{
 			JsRuntime = JsRuntime,
 			NavigationManager = NavigationManager,
-			UiUpdateHandler = StateHasChanged,
+			UiUpdateHandler = () => InvokeAsync(StateHasChanged),
+			UserActive = JS_OnUserActive,
+			UserIdle = JS_OnUserIdle,
 
 			ComicBookService = ComicBookService,
 			ComicBookInformationService = ComicBookInformationService,
@@ -312,7 +342,7 @@
 		bool? changeStatus = await DialogService.ShowMessageBox(
 			"Congratulations!",
 			$"You have finished the comic book! Would you like to move '{_readingPageHandler!.ComicBook.Title}' to the 'Finished' status?",
-				yesText: "Yes!", noText: "No"
+			yesText: "Yes!", noText: "No"
 		);
 
 		if (changeStatus is true)
@@ -334,12 +364,12 @@
 	{
 		if (ReturnTo == null)
 		{
-		    NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(AppConstants.MainGroupId));
+			NavigationManager.NavigateTo(PageManager.GetLibraryGroupLink(AppConstants.MainGroupId));
 		}
 		else
 		{
-		    Zine.App.Domain.ComicBook.ComicBookService.CleanReadingDirectory();
-		    NavigationManager.NavigateTo(ReturnTo);
+			Zine.App.Domain.ComicBook.ComicBookService.CleanReadingDirectory();
+			NavigationManager.NavigateTo(ReturnTo);
 		}
 	}
 
@@ -368,6 +398,7 @@
 
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerKeyDownEventListener", _componentRef);
 			await JsRuntime.InvokeVoidAsync("JsFunctions.registerOnScrollListener", CanvasId, _componentRef, HandlerType.Async);
+			await JsRuntime.InvokeVoidAsync("setupMouseIdleWatcher", _componentRef, _mouseIdleTime);
 		}
 	}
 
@@ -378,6 +409,11 @@
 		if (_hubConnection != null)
 		{
 			await _hubConnection.DisposeAsync();
+		}
+
+		if (_readingPageHandler != null)
+		{
+			await _readingPageHandler.DisposeAsync();
 		}
 	}
 

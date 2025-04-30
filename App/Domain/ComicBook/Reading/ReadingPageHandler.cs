@@ -1,11 +1,15 @@
 using System.Data;
+using System.Timers;
+using ElectronNET.API;
 using Microsoft.JSInterop;
 using Zine.App.Domain.ComicBookPageInformation;
+using Zine.App.Enums;
 using Zine.App.Helpers.Canvas;
+using Timer = System.Timers.Timer;
 
 namespace Zine.App.Domain.ComicBook.Reading;
 
-public class ReadingPageHandler
+public class ReadingPageHandler : IAsyncDisposable
 {
 	public ComicBook ComicBook { get; set; } = null!;
 
@@ -32,6 +36,10 @@ public class ReadingPageHandler
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
 
+	private Timer? _readingTimer;
+
+	private Action? _userActive;
+	private Action? _userIdle;
 
 	/// <summary>
 	///
@@ -47,11 +55,15 @@ public class ReadingPageHandler
 			_comicBookPageInformationService = handlerParams.ComicBookPageInformationService,
 			_jsRuntime = handlerParams.JsRuntime,
 			_uiUpdateHandler = handlerParams.UiUpdateHandler,
-			_canvasHandler = new CanvasHandler(handlerParams.JsRuntime, handlerParams.CanvasId)
+			_canvasHandler = new CanvasHandler(handlerParams.JsRuntime, handlerParams.CanvasId),
+			_userActive = handlerParams.UserActive,
+			_userIdle = handlerParams.UserIdle,
 		};
 
 		handler.LoadComic(handlerParams.ComicBookId);
 		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(handler.ComicBook.Information.Id);
+
+		handler.InitTimer();
 
 		return handler;
 	}
@@ -78,6 +90,12 @@ public class ReadingPageHandler
 			SetImageOnCanvas(value);
 			ScrollImageToViewInSidebar();
 			_ = UpdateZoomScale();
+			
+			if(CurrentPage.PageInformation.TimeSpentReadingPage == null)
+				CurrentPage.PageInformation.TimeSpentReadingPage = TimeSpan.Zero;
+			
+			//Restart the timer, so we don't get spillover time
+			ResetTimer();
 		}
 	}
 
@@ -172,7 +190,7 @@ public class ReadingPageHandler
 			var key = page.PageInformation.Id;
 			var value = page.PageInformation.Index;
 
-			//If the dictionarry already contains the key, this removes it
+			//If the dictionary already contains the key, this removes it
             _originalPageOrder.Remove(key);
 
             _originalPageOrder.Add(key, value);
@@ -218,7 +236,59 @@ public class ReadingPageHandler
 	private static string GetFilename(ComicBookPageInformation.ComicBookPageInformation pageInfo)
 	{
 		var pageName = Path.GetFileName(pageInfo.PageFileName);
+		return Path.Join(DataPath.ComicBookReadingDirectoryFromAssetRoot, Uri.EscapeDataString(pageName));
+	}
+	private void InitTimer()
+	{
+		_readingTimer = new Timer(1000);
+		_readingTimer.Elapsed += IncreaseSecondsRead;
+		_readingTimer.AutoReset = true;
+		StartTimer();
 
-		return "/images/Reading/" + Uri.EscapeDataString(pageName);
+		var mainWindow = Electron.WindowManager.BrowserWindows.First();
+
+		mainWindow.OnBlur += () =>
+		{
+			_userIdle?.Invoke();
+			StopTimer();
+		};
+		
+		mainWindow.OnFocus += () =>
+		{
+			_userActive?.Invoke();
+			StartTimer();
+		};
+		
+	}
+
+	private void IncreaseSecondsRead(object? source, ElapsedEventArgs e)
+	{
+		CurrentPage.PageInformation.TimeSpentReadingPage += TimeSpan.FromSeconds(1);
+		_uiUpdateHandler?.Invoke();
+	}
+	
+	public void StartTimer()
+	{
+		_readingTimer?.Start();
+	}
+
+	public void StopTimer()
+	{
+		_readingTimer?.Stop();
+	}
+
+
+	private void ResetTimer()
+	{
+		StopTimer();
+		StartTimer();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_canvasHandler != null)
+			await _canvasHandler.DisposeAsync();
+		
+		_readingTimer?.Dispose();
 	}
 }

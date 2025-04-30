@@ -58,6 +58,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Watch Remove="bin\**\TempReading\**" />
+    <Content Remove="wwwroot/images/Reading/**" />
   </ItemGroup>
 </Project>

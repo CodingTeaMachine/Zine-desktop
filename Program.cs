@@ -114,13 +114,6 @@ if (!Directory.Exists(DataPath.ComicBookReadingDirectory))
     Directory.CreateDirectory(DataPath.ComicBookReadingDirectory);
 }
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(DataPath.ComicBookReadingDirectory),
-    RequestPath = "/images/Reading", // Maps the directory to this URL path
-    ServeUnknownFileTypes = true
-});
-
 
 app.UseStaticFiles();
 

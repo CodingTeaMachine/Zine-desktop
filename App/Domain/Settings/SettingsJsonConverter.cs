@@ -9,9 +9,7 @@ public static class SettingsJsonConverter
 
 	public static void WriteDefaultIfNeeded(string destination)
 	{
-
-		Console.WriteLine("Writing default settings...");
-
+		
 		//If the file already exists read the existing settings
 		//If a given key is now written to disc, the default initializer will run, so we write the new values back
 		var defaultSettings = File.Exists(destination)
@@ -27,7 +25,6 @@ public static class SettingsJsonConverter
 	
 	public static void Write(string destination, Settings settings)
 	{
-		Console.WriteLine("Writing settings...");
 		string defaultSettingsContent = JsonSerializer.Serialize(settings, JsonOptions);
 		
 		CreateDirectoryIfNeeded(destination);
@@ -47,7 +44,6 @@ public static class SettingsJsonConverter
 		if(!File.Exists(destination))
 			throw new FileNotFoundException("Settings file does not exist", destination);
 
-		Console.WriteLine("Reading settings...");
 		var settingsContent = File.ReadAllText(destination);
 		var settings = JsonSerializer.Deserialize<Settings>(settingsContent, JsonOptions);
 

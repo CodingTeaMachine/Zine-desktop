@@ -29,4 +29,7 @@ public class ComicBookPageInformation : IId
 
 	[DefaultValue(false)]
 	public bool IsRead { get; set; }
+
+	[DefaultValue(null)]
+	public TimeSpan? TimeSpentReadingPage { get; set; }
 }
