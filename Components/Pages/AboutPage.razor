@@ -1,0 +1,31 @@
+@page "/about"
+@using ElectronNET.API
+@using Microsoft.Extensions.Options
+@using Zine.App.Configurations
+@using Zine.App.Enums
+@using Zine.App.Helpers
+@using Page = Zine.App.Enums.Page
+
+@inject IOptions<AboutPageLinks> AboutPageLinksOptions
+
+<div class="flex flex-col justify-center align-center gap-5 mx-auto mt-20 max-w-screen-md text-2xl">
+    <div>
+        This project was created as a university thesis project on developing multi desktop platform (linux, windows, macOS) applications in C# using web technologies and electron.
+    </div>
+    <div class="flex gap-3">
+        <MudIconButton Size="Size.Large" Icon="@Icons.Custom.Brands.GitHub" OnClick="@(() => OpenExternalLink(AboutPageLinksOptions.Value.GitHub))"/>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        PageManager.SetPageTitle(Page.About);
+    }
+
+    async Task OpenExternalLink(string link)
+    {
+        await Electron.Shell.OpenExternalAsync(link);
+    }
+}

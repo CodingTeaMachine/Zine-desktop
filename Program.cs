@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using MudBlazor;
 using MudBlazor.Services;
 using MudExtensions.Services;
+using Zine.App.Configurations;
 using Zine.App.Database;
 using Zine.App.Domain.ComicBook;
 using Zine.App.Domain.ComicBook.Import;
@@ -46,6 +47,10 @@ builder.Services.AddDbContextFactory<ZineDbContext>(opt =>
                   ?? throw new InvalidOperationException("Connection string 'DbContext' not found.")));
 
 SettingsJsonConverter.WriteDefaultIfNeeded(builder.Configuration.GetConnectionString(ConfigKeys.SettingsLocation)!);
+
+builder.Services.Configure<AboutPageLinks>(
+    builder.Configuration.GetSection(ConfigKeys.AboutPageLinks)
+);
 
 builder.Services.AddScoped(typeof(GenericRepository<>));
 

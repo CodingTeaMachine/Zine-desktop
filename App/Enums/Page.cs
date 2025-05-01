@@ -6,4 +6,5 @@ public static class Page
     public const string Library = "/Library"; // Loads the main group
     public const string Reading = "/Reading";
     public const string Settings = "/Settings";
+    public const string About = "/About";
 }
