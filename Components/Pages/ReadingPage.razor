@@ -82,12 +82,9 @@
 				class="toolbar w-full h-10 bg-dark rounded-lg py-2 px-4 flex justify-between items-center leading-8 mud-elevation-1">
 				@* Beggining of the bar *@
 				<div>
-					@if (_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.HasValue)
-					{
-						<span class="rounded-xl px-2 py-1 text-sm @(_isUserActive ? "bg-primary" : "bg-orange")">
-							@_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.Value.ToString(_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.Value.Hours != 0 ? @"hh\:mm\:ss" : @"mm\:ss")
-						</span>
-					}
+					<span class="rounded-xl px-2 py-1 text-sm @(_isUserActive ? "bg-primary" : "bg-orange")">
+						@_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.ToString(_readingPageHandler.CurrentPage.PageInformation.TimeSpentReadingPage.Hours != 0 ? @"hh\:mm\:ss" : @"mm\:ss")
+					</span>
 				</div>
 				@* End of the bar *@
 				<div class="flex">
@@ -272,6 +269,7 @@
 	private void StartReorderingMode()
 	{
 		_reorderMode = true;
+		JS_OnUserIdle();
 	}
 
 	private void FinishReorderingMode()
@@ -279,6 +277,7 @@
 		_reorderMode = false;
 		UpdatePageOrder(_readingPageHandler!.Pages);
 		_readingPageHandler.GoToFirstPage();
+		JS_OnUserActive();
 	}
 
 	private void CancelReordering()

@@ -10,16 +10,15 @@
 	<div class="flex flex-col gap-2 m-2">
 		@foreach (var page in Pages)
 		{
-			<div @key="page.PageInformation.Id">
+			<div >
 				<div class="mb-0.5">
-					<span>@(page.PageInformation.Index)</span>
 					@if (page.PageInformation.PageType == PageType.Double)
 					{
 						<span>@(page.PageNumberStart) - @(page.PageNumberEnd)</span>
 					}
 					else
 					{
-						<span>@(page.PageNumberStart) -> @(page.PageNumberEnd)</span>
+						<span>@(page.PageNumberStart)</span> 
 					}
 				</div>
 				<div

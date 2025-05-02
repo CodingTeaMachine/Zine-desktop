@@ -10,12 +10,15 @@
 @using Zine.App.Domain.ComicBookInformation.Enum
 @using Zine.App.Domain.Series
 @using Zine.App.Domain.Series.Converter
+@using Zine.App.Domain.StatusTag
+@using Zine.App.Domain.StatusTag.Converter
 @using Zine.App.Domain.Tag.Converter
 
 @inject IPersonService PersonService
 @inject IPublisherService PublisherService
 @inject ITagService TagService
 @inject ISeriesService SeriesService
+@inject IStatusTagService StatusTagService
 
 <MudExpansionPanels Elevation="1">
 	<MudExpansionPanel>
@@ -155,6 +158,20 @@
 					Variant="Variant.Outlined"
 					DateRangeChanged="@((selectedDateRange) => UpdateSearch(() => _search.ReleaseDateDateRange = selectedDateRange))" />
 
+				@* Status tag *@
+				<MudAutocomplete
+					T="StatusTag"
+					Value="@_search.StatusTag"
+					Label="Status"
+					ToStringFunc="StatusTagConverter.ToString"
+					Variant="Variant.Outlined"
+					Margin="Margin.Dense"
+					Clearable="true"
+					ResetValueOnEmptyText="true"
+					Strict="false"
+					SearchFunc="@StatusTag_Search"
+					ValueChanged="@(selectedStatusTag => UpdateSearch(() => _search.StatusTag = selectedStatusTag))" />
+				
 				@* Read state *@
 				<MudButtonGroup
 					Size="Size.Medium"
@@ -238,6 +255,13 @@
 			return true;
 
 		return tag.Name.Contains(searchTerm!, StringComparison.OrdinalIgnoreCase);
+	}
+	
+	private Task<IEnumerable<StatusTag>> StatusTag_Search(string? searchTerm, CancellationToken cancellationToken)
+	{
+		var searchDto = new GenericSearchDto { SearchTerm = searchTerm };
+
+		return Task.FromResult(StatusTagService.Search(searchDto));
 	}
 
 	private void MapSelectedTagListToLocalTagList(IEnumerable<Tag?>? selectedTags)

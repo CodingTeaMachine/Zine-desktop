@@ -31,5 +31,5 @@ public class ComicBookPageInformation : IId
 	public bool IsRead { get; set; }
 
 	[DefaultValue(null)]
-	public TimeSpan? TimeSpentReadingPage { get; set; }
+	public TimeSpan TimeSpentReadingPage { get; set; }
 }

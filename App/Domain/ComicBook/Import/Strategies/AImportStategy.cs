@@ -31,7 +31,7 @@ public abstract class AImportStrategy(ImportUnitOfWork unitOfWork, ImportEventSe
 			var createdPageInfo =  unitOfWork.ComicBookPageInformationService.CreateMany(comicBookPathOnDisk, createdComicBook.Id);
 
 			var coverImage = new PageInfoHelper(createdPageInfo).GetCover();
-			unitOfWork.ComicBookInformationService.Create(comicBookPathOnDisk, createdComicBook.Id, coverImage);
+			unitOfWork.ComicBookInformationService.Create(createdComicBook.Id, coverImage);
 
 			transaction.Commit();
 

@@ -91,6 +91,10 @@ public class ZineDbContext(IConfiguration configuration) : DbContext
 
         modelBuilder.Entity<StatusTag>()
             .HasData(BaseStatusTags.StatusTags);
+        
+        modelBuilder.Entity<ComicBookPageInformation>()
+            .Property(p => p.TimeSpentReadingPage)
+            .HasDefaultValue(TimeSpan.Zero);
 
         base.OnModelCreating(modelBuilder);
     }

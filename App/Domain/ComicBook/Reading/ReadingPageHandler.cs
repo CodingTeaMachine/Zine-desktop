@@ -36,7 +36,7 @@ public class ReadingPageHandler : IAsyncDisposable
 	// ReSharper disable once RedundantDefaultMemberInitializer
 	private int _currentPageIndex = 0;
 
-	private Timer? _readingTimer;
+	private Timer _readingTimer = new(1000);
 
 	private Action? _userActive;
 	private Action? _userIdle;
@@ -62,7 +62,7 @@ public class ReadingPageHandler : IAsyncDisposable
 
 		handler.LoadComic(handlerParams.ComicBookId);
 		handlerParams.ComicBookInformationService.UpdateLastReadTimeToCurrentTime(handler.ComicBook.Information.Id);
-
+		
 		handler.InitTimer();
 
 		return handler;
@@ -90,9 +90,6 @@ public class ReadingPageHandler : IAsyncDisposable
 			SetImageOnCanvas(value);
 			ScrollImageToViewInSidebar();
 			_ = UpdateZoomScale();
-			
-			if(CurrentPage.PageInformation.TimeSpentReadingPage == null)
-				CurrentPage.PageInformation.TimeSpentReadingPage = TimeSpan.Zero;
 			
 			//Restart the timer, so we don't get spillover time
 			ResetTimer();
@@ -253,20 +250,7 @@ public class ReadingPageHandler : IAsyncDisposable
 		_readingTimer.AutoReset = true;
 		StartTimer();
 
-		var mainWindow = Electron.WindowManager.BrowserWindows.First();
-
-		mainWindow.OnBlur += () =>
-		{
-			_userIdle?.Invoke();
-			StopTimer();
-		};
-		
-		mainWindow.OnFocus += () =>
-		{
-			_userActive?.Invoke();
-			StartTimer();
-		};
-		
+		SubscribeToWindowEvents();
 	}
 
 	private void IncreaseSecondsRead(object? source, ElapsedEventArgs e)
@@ -277,7 +261,16 @@ public class ReadingPageHandler : IAsyncDisposable
 	
 	public void StartTimer()
 	{
-		_readingTimer?.Start();
+		try
+		{
+			
+			_readingTimer?.Start();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.Message);
+			throw;
+		}
 	}
 
 	public void StopTimer()
@@ -292,11 +285,39 @@ public class ReadingPageHandler : IAsyncDisposable
 		StartTimer();
 	}
 
+	private void SubscribeToWindowEvents()
+	{
+		var mainWindow = Electron.WindowManager.BrowserWindows.First();
+		mainWindow.OnBlur += OnBlur;
+		mainWindow.OnFocus += OnFocus;
+	}
+
+	private void UnsubscribeFromWindowEvents()
+	{
+		var mainWindow = Electron.WindowManager.BrowserWindows.First();
+		mainWindow.OnBlur -= OnBlur;
+		mainWindow.OnFocus -= OnFocus;
+	}
+
+	private void OnFocus()
+	{
+		_userActive?.Invoke();
+		StartTimer();
+	}
+
+	private void OnBlur()
+	{
+		_userIdle?.Invoke();
+		StopTimer();
+	}
+
 	public async ValueTask DisposeAsync()
 	{
 		if (_canvasHandler != null)
 			await _canvasHandler.DisposeAsync();
 		
 		_readingTimer?.Dispose();
+		UnsubscribeFromWindowEvents();
+
 	}
 }

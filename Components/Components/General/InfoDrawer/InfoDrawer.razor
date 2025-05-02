@@ -243,9 +243,9 @@
 							}
 							else
 							{
-								<MudChip T="string" Variant="Variant.Filled" Color="@StatusTag.Color">
+								<MudChip T="string" Variant="Variant.Filled" Color="@StatusTag.Color" Size="Size.Small">
 									@StatusTag.Name
-								</MudChip>
+								</MudChip> 
 							}
 						}
 						else
@@ -309,7 +309,7 @@
 								@bind-Text="Issue"
 								Label="Issue"
 								Disabled="Series == null"
-								MaxLength="50"
+								Class="w-full"
 							/>
 						}
 					</td>
@@ -479,7 +479,7 @@
 	{
 		return comicBook.
 			Pages
-			.Aggregate(TimeSpan.Zero, (current, page) => current + (page.TimeSpentReadingPage ?? TimeSpan.Zero));
+			.Aggregate(TimeSpan.Zero, (current, page) => current + page.TimeSpentReadingPage);
 	}
 	
 	// Person

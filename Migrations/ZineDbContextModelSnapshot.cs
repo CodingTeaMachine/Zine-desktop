@@ -157,8 +157,10 @@ namespace Zine.Migrations
                     b.Property<int>("PageType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<TimeSpan?>("TimeSpentReadingPage")
-                        .HasColumnType("TEXT");
+                    b.Property<TimeSpan>("TimeSpentReadingPage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue(new TimeSpan(0, 0, 0, 0, 0));
 
                     b.HasKey("Id");
 

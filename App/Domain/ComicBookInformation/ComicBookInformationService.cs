@@ -13,7 +13,7 @@ public class ComicBookInformationService(
 	GenericRepository<ComicBookInformation> repository,
 	GenericRepository<StatusTag.StatusTag> statusTagRepository) : IComicBookInformationService
 {
-	public ComicBookInformation Create(string comicBookPathOnDisk, int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
+	public ComicBookInformation Create(int comicBookId, ComicBookPageInformation.ComicBookPageInformation comicBookPageInformation)
 	{
 		var fileName = comicBookId + Path.GetExtension(comicBookPageInformation.PageFileName).ToLower(); //Sometimes the extension are capitalized
 
