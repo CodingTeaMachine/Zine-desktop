@@ -25,7 +25,8 @@ public class ComicBookImageHandler(ILoggerService? logger = null)
 
 	private void WriteImageToDisc(string filePath, string coverImageFileName, string filePathToSave)
 	{
-		var coverImage = CompressedComicBookPageInformationExtractor.GetCoverImage(filePath, coverImageFileName);
+		using IArchive comicBookFile = ArchiveFactory.Open(filePath);
+		var coverImage = CompressedComicBookPageInformationExtractor.GetCoverImage(comicBookFile, coverImageFileName);
 
 		try
 		{
@@ -40,6 +41,8 @@ public class ComicBookImageHandler(ILoggerService? logger = null)
 			logger?.Warning($"Could not resize image, writing original size to disc ({originalDimensions.Height}x{originalDimensions.Width})");
 			coverImage.WriteToFile(filePathToSave);
 		}
+
+		Console.WriteLine("Done importing: " + coverImageFileName);
 	}
 
 }

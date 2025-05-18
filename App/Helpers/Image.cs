@@ -66,7 +66,7 @@ public static class Image
 
 	private static SKEncodedImageFormat GetImageFormat(IArchiveEntry entry)
 	{
-		var entryStream = entry.OpenEntryStream();
+		using var entryStream = entry.OpenEntryStream();
 		var codec = SKCodec.Create(entryStream);
 		return
 			codec?.EncodedFormat
@@ -78,7 +78,7 @@ public static class Image
 	/// <exception cref="DataException"></exception>
 	private static SKBitmap GetImageBitmapFromArchiveEntry(IArchiveEntry entry)
 	{
-		var entryStream = entry.OpenEntryStream();
+		using var entryStream = entry.OpenEntryStream();
 		var originalImage = SKBitmap.Decode(entryStream);
 
 
