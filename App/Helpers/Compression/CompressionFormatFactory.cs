@@ -7,7 +7,8 @@ public static class CompressionFormatFactory
     /// </summary>
     private static readonly Dictionary<CompressionFormat, KeyValuePair<int, byte[]>[]> CompressionFormatMagicBytesMap = new()
     {
-        { CompressionFormat._7Z,
+        { 
+            CompressionFormat._7Z,
             [
                 new KeyValuePair<int, byte[]>(0, [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) // .7z - 7 zip
             ]

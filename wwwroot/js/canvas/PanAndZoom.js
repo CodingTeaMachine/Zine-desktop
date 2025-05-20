@@ -163,7 +163,7 @@ export default class PanAndZoom {
 		this.ctx.canvas.addEventListener("mousemove", e => this.onMouseMove(e));
 		this.ctx.canvas.addEventListener("mousedown", e => this.onMouseDown(e));
 
-		// When the mouse is out of the
+		// When the mouse is out of the canvas
 		document.addEventListener("mouseup", e => this.onMouseUp(e));
 	}
 

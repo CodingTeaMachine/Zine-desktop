@@ -24,6 +24,9 @@ window.addEventListener("resize", setCanvasSize);
  * @param {string} canvasId
  */
 export function init(canvasId) {
+	/**
+	 * @type {HTMLCanvasElement}
+	 */
 	const canvas = document.getElementById(canvasId);
 	context = canvas.getContext("2d");
 	panAndZoom = new PanAndZoom(context, drawImage);
